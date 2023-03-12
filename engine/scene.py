@@ -1,10 +1,18 @@
+from __future__ import annotations
 from engine.gameobjectconainer import GameObjectContainer
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from engine.world import World
 
 class Scene(GameObjectContainer):
     @classmethod
     @property
     def name(cls):
         return cls.__name__
+        
+    def __init__(self, world: World):
+        super().__init__()
+        self.world = world
 
 class SceneDirector():
     _scenes: dict[str, Scene]

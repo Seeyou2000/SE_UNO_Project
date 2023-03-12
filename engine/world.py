@@ -29,6 +29,7 @@ class World():
         self.clock.tick(self.target_fps)
 
     def render(self):
+        self.screen.fill(pygame.Color('black'))
         self.director.get_current().render(self.screen)
         pygame.display.flip()
 
@@ -39,3 +40,4 @@ class World():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 World.events.emit('click', event)
+                
