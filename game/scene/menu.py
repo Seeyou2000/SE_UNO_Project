@@ -5,6 +5,7 @@ from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
 from game.scene.ingame import InGameScene
+from game.scene.ingame2 import InGameScene2
 
 
 class MenuScene(Scene):
@@ -21,5 +22,6 @@ class MenuScene(Scene):
             Button('Start', button_rect.move(20, 20), font, on_click=lambda event: self.world.director.change_scene(InGameScene)),
             Button('Settings', button_rect.move(20, 110), font),
             Button('Exit', button_rect.move(20, 200), font, on_click=lambda event: sys.exit()),
+            Button('Start', button_rect.move(250, 20), font, on_click=lambda event: self.world.director.change_scene(InGameScene2)),
             sprite
         ])

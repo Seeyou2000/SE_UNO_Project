@@ -1,5 +1,5 @@
 from engine.world import World
-from game.scene.menu import MenuScene, InGameScene
+from game.scene.menu import MenuScene, InGameScene, InGameScene2
 
 def main():
     world = World((800, 600), 60)
@@ -7,6 +7,7 @@ def main():
     world.director.change_scene(MenuScene)
 
     world.director.add(InGameScene(world))
+    world.director.add(InGameScene2(world))
 
     world.loop()
 
