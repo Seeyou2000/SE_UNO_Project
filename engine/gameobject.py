@@ -1,11 +1,13 @@
 import pygame
 import abc
 
-class GameObject(abc.ABC):
+from engine.event import EventEmitter
+
+class GameObject(EventEmitter, abc.ABC):
     rect: pygame.Rect
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def update(self):
         pass

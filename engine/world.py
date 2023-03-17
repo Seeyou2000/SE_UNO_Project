@@ -1,11 +1,9 @@
 import pygame
 import sys
-from engine.event import EventEmiiter
+from engine.event import Event
 from engine.scene import SceneDirector
 
 class World():
-    events: EventEmiiter = EventEmiiter()
-
     screen: pygame.Surface
     director: SceneDirector
     clock: pygame.time.Clock
@@ -35,9 +33,11 @@ class World():
 
     def handle_event(self):
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                World.events.emit('click', event)
-                
+            match event.type:
+                case pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                case pygame.MOUSEBUTTONDOWN:
+                    self.director.get_current().emit('mouse_down', Event(event.dict))
+                case pygame.MOUSEMOTION:
+                    self.director.get_current().emit('mouse_move', Event(event.dict))
