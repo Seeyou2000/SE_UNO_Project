@@ -1,5 +1,5 @@
 from __future__ import annotations
-from engine.gameobjectconainer import GameObjectContainer
+from engine.gameobjectcontainer import GameObjectContainer
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from engine.world import World
