@@ -9,7 +9,6 @@ class InGameScene(Scene):
 
         self.sprite = Sprite(pygame.image.load('resources/uno.jpg'))
         
-        
         self.children.extend([
             self.sprite
         ])

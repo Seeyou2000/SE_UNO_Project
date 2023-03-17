@@ -4,11 +4,11 @@ from engine.button import Button
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
-from game.scene.ingame import InGameScene
 
 
 class MenuScene(Scene):
     def __init__(self, world: World):
+        from game.scene.ingame import InGameScene
         super().__init__(world)
 
         font = pygame.font.SysFont('나눔스퀘어', 20)
@@ -18,7 +18,7 @@ class MenuScene(Scene):
         sprite.rect.move_ip(200, 200)
 
         self.children.extend([
-            Button('Start', button_rect.move(20, 20), font, on_click=lambda event: self.world.director.change_scene(InGameScene)),
+            Button('Start', button_rect.move(20, 20), font, on_click=lambda event: self.world.director.change_scene(InGameScene(self.world))),
             Button('Settings', button_rect.move(20, 110), font),
             Button('Exit', button_rect.move(20, 200), font, on_click=lambda event: sys.exit()),
             sprite
