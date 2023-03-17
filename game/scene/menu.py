@@ -4,7 +4,6 @@ from engine.button import Button
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
-from game.scene.ingame import InGameScene
 
 
 class MenuScene(Scene):
@@ -17,8 +16,9 @@ class MenuScene(Scene):
         sprite = Sprite(pygame.image.load('resources/uno.jpg'))
         sprite.rect.move_ip(200, 200)
 
+        from game.scene.ingame import InGameScene
         self.children.extend([
-            Button('Start', button_rect.move(20, 20), font, on_click=lambda event: self.world.director.change_scene(InGameScene)),
+            Button('Start', button_rect.move(20, 20), font, on_click=lambda event: self.world.director.change_scene(InGameScene(self.world))),
             Button('Settings', button_rect.move(20, 110), font),
             Button('Exit', button_rect.move(20, 200), font, on_click=lambda event: sys.exit()),
             sprite
