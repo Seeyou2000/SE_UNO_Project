@@ -8,6 +8,7 @@ class Text(GameObject):
     color: pygame.Color
     
     def __init__(self, text: str, position: pygame.Vector2, font: pygame.font.Font, color: pygame.Color):
+        super().__init__()
         self.text = text
         self.position = position
         self.font = font

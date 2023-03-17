@@ -13,7 +13,7 @@ class InGameScene(Scene):
         from game.scene.menu import MenuScene
         menu_button = Button('Back to menu', pygame.Rect(10, 10, 200, 100), pygame.font.SysFont('Arial', 20), lambda event: self.world.director.change_scene(MenuScene(self.world)))
         
-        self.children.extend([
+        self.add_children([
             self.sprite,
             menu_button
         ])
