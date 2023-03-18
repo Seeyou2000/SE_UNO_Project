@@ -1,7 +1,6 @@
 import pygame
 from engine.event import Event, EventHandler
 from engine.gameobject import GameObject
-from engine.world import World
 
 class Button(GameObject):
     font: pygame.font.Font
@@ -28,7 +27,7 @@ class Button(GameObject):
         if self._is_hovered:
             pygame.draw.rect(surface, pygame.Color('red'), self.rect)
         else:
-            pygame.draw.rect(surface, pygame.Color('white'), self.rect)
+            pygame.draw.rect(surface, pygame.Color('yellow'), self.rect)
         
         surface.blit(self._rendered_text, self._rendered_text.get_rect(center=self.rect.center))
 

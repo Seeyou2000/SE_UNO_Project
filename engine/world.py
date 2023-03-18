@@ -27,7 +27,7 @@ class World():
         self.clock.tick(self.target_fps)
 
     def render(self):
-        self.screen.fill(pygame.Color('black'))
+        self.screen.fill(pygame.Color('white'))
         self.director.get_current().render(self.screen)
         pygame.display.flip()
 
