@@ -11,10 +11,16 @@ class World():
 
     def __init__(self, size: tuple[float, float], target_fps: float = 60):
         pygame.init()
-        self.screen = pygame.display.set_mode(size)
+        self.set_size(size)
         self.director = SceneDirector()
         self.clock = pygame.time.Clock()
         self.target_fps = target_fps
+
+    def set_size(self, size: tuple[float, float]):
+        self.screen = pygame.display.set_mode(size)
+
+    def get_size(self):
+        return self.screen.get_rect()
 
     def loop(self):
         while True:
