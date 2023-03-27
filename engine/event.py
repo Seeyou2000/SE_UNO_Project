@@ -47,4 +47,3 @@ class EventEmitter:
         if event_name in self.event_map:
             for handler in self.event_map[event_name]:
                 handler(event)
-                handler(event)
