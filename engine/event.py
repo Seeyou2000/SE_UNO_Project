@@ -1,9 +1,12 @@
 from __future__ import annotations
-from typing import Any, Callable, Self
+
+from collections.abc import Callable
+from typing import Any, Self
 
 EventData = dict[str, Any] | None
 
-class Event():
+
+class Event:
     data: EventData
     is_propagation_stopped: bool
     target: EventEmitter | None
@@ -13,21 +16,23 @@ class Event():
 
         self.data = data
         self.target = None
-    
-    def stopPropagation(self):
+
+    def stop_propagation(self) -> None:
         self.is_propagation_stopped = True
+
 
 EventHandler = Callable[[Event], None]
 
-class EventEmitter():
+
+class EventEmitter:
     event_map: dict[str, list[EventHandler]]
     parent: Self | None
 
     def __init__(self, parent: Self | None = None) -> None:
         self.event_map = {}
         self.parent = parent
-        
-    def on(self, event_name: str, handler: EventHandler):
+
+    def on(self, event_name: str, handler: EventHandler) -> None:
         if handler is None:
             return
         if event_name in self.event_map:
@@ -35,10 +40,11 @@ class EventEmitter():
         else:
             self.event_map[event_name] = [handler]
 
-    def emit(self, event_name: str, event: Event):
+    def emit(self, event_name: str, event: Event) -> None:
         if event.is_propagation_stopped:
             return
 
         if event_name in self.event_map:
             for handler in self.event_map[event_name]:
+                handler(event)
                 handler(event)

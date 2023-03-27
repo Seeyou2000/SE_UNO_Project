@@ -2,5 +2,13 @@
   "editor.tabSize": 4,
   "files.exclude": {
     "**/__pycache__": true
-  }
+  },
+  "python.formatting.provider": "black",
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+  },
+  "isort.args":["--profile", "black"],
 }
