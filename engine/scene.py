@@ -1,26 +1,26 @@
 from __future__ import annotations
-from engine.gameobjectcontainer import GameObjectContainer
+
 from typing import TYPE_CHECKING
+
+from engine.gameobjectcontainer import GameObjectContainer
+
 if TYPE_CHECKING:
     from engine.world import World
 
+
 class Scene(GameObjectContainer):
-    @classmethod
-    @property
-    def name(cls):
-        return cls.__name__
-        
-    def __init__(self, world: World):
+    def __init__(self, world: World) -> None:
         super().__init__()
         self.world = world
 
-class SceneDirector():
+
+class SceneDirector:
     _current_scene: Scene
 
-    def change_scene(self, scene: Scene):
+    def change_scene(self, scene: Scene) -> None:
         self._current_scene = scene
 
-    def get_current(self):
+    def get_current(self) -> None:
         try:
             return self._current_scene
         except AttributeError:
