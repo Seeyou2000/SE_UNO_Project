@@ -7,7 +7,7 @@ from game.scene.player import Player
 
 
 class Gameplay:
-    def __init__(self):
+    def __init__(self) -> None:
         self.cards = [
             Card(color, number) for number in (range(1, 10)) for color in COLORS
         ]
@@ -18,12 +18,12 @@ class Gameplay:
         random.shuffle(self.cards)
         self.gamedeck = Deck(self.cards)
 
-    def start(self, index):
+    def start(self, index: int) -> None:
         self.players = [Player(name) for name in NAME[:index]]
         for player in self.players:
             for j in range(0, 7):
                 player.drow_card(self.gamedeck)
         self.nowplaying = 0
 
-    def nowplayer(self):
+    def nowplayer(self) -> None:
         return self.players[self.nowplaying]

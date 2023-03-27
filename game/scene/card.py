@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 import pygame
 
 from engine.button import Button
@@ -5,7 +7,9 @@ from engine.gameobjectcontainer import GameObjectContainer
 
 
 class Card(GameObjectContainer):
-    def __init__(self, color, number=0, ability=None):  # 일반 숫자 카드
+    def __init__(
+        self, color: str, number: int = 0, ability: Callable = None
+    ) -> None:  # 일반 숫자 카드
         super().__init__()
         self.color = color
         self.number = number
@@ -21,24 +25,24 @@ class Card(GameObjectContainer):
         )
         self.add_child(self.card_button)
 
-    def render(self, surface: pygame.Surface):
+    def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
         pygame.draw.rect(surface, pygame.Color(self.color), self.rect)
         surface.blit(
             self.card_number, self.card_number.get_rect(center=self.rect.center)
         )
 
-    def abil_add2(self, nowplaying):
+    def abil_add2(self, nowplaying) -> None:
         print("work")
 
-    def abil_skip(self, nowplaying):
+    def abil_skip(self, nowplaying) -> None:
         print("work")
 
-    def abil_reverse(self, nowplaying):
+    def abil_reverse(self, nowplaying) -> None:
         print("work")
 
-    def abil_change(self):
+    def abil_change(self) -> None:
         print("work")
 
-    def abil_add4(self):
+    def abil_add4(self) -> None:
         print("work")

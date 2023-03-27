@@ -2,13 +2,12 @@ import pygame
 
 from engine.button import Button
 from engine.scene import Scene
-from engine.sprite import Sprite
 from engine.world import World
 from game.scene.gameplay import Gameplay
 
 
 class InGameScene(Scene):
-    def __init__(self, world: World, player_index):
+    def __init__(self, world: World, player_index: int) -> None:
         super().__init__(world)
 
         from game.scene.menu import MenuScene
@@ -32,10 +31,10 @@ class InGameScene(Scene):
         self.currentgame = Gameplay()
         self.currentgame.start(player_index)
 
-    def update(self):
+    def update(self) -> None:
         super().update()
 
-    def render(self, surface: pygame.Surface):
+    def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
         pygame.draw.rect(surface, (80, 188, 223, 0), self.hand)
         for i, card in enumerate(self.currentgame.nowplayer().cards):

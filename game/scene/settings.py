@@ -1,16 +1,13 @@
-import sys
-
 import pygame
 
 from engine.button import Button
 from engine.scene import Scene
-from engine.sprite import Sprite
 from engine.world import World
 from game.scene.menu import MenuScene
 
 
 class SettingScene(Scene):
-    def __init__(self, world: World):
+    def __init__(self, world: World) -> None:
         super().__init__(world)
 
         font = pygame.font.SysFont("나눔스퀘어", 20)

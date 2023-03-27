@@ -9,7 +9,7 @@ from game.scene.select import SelectScene
 
 
 class MenuScene(Scene):
-    def __init__(self, world: World):
+    def __init__(self, world: World) -> None:
         super().__init__(world)
 
         font = pygame.font.SysFont("나눔스퀘어", 20)

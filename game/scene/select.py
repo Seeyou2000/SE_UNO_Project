@@ -2,14 +2,13 @@ import pygame
 
 from engine.button import Button
 from engine.scene import Scene
-from engine.sprite import Sprite
 from engine.world import World
 from game.scene.gameplay import Gameplay
 from game.scene.ingame import InGameScene
 
 
 class SelectScene(Scene):
-    def __init__(self, world: World):
+    def __init__(self, world: World) -> None:
         super().__init__(world)
         self.player_index = 0
 
@@ -72,9 +71,9 @@ class SelectScene(Scene):
         self.currentgame = Gameplay()
         self.currentgame.start(self.player_index)
 
-    def update(self):
+    def update(self) -> None:
         super().update()
 
-    def select_player_num(self, number):
+    def select_player_num(self, number: int) -> None:
         self.player_index = number
         self.world.director.change_scene(InGameScene(self.world, self.player_index))
