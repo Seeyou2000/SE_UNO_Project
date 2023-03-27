@@ -15,25 +15,21 @@ class MenuScene(Scene):
         font = pygame.font.SysFont("나눔스퀘어", 20)
         button_rect = pygame.Rect(0, 0, 200, 80)
 
-        sprite = Sprite(pygame.image.load("resources/uno.jpg"))
-        sprite.rect.move_ip(200, 200)
-
-        from game.scene.ingame import InGameScene
+        sprite = Sprite(
+            pygame.transform.scale(pygame.image.load("resources/uno.jpg"), [500, 600])
+        )
 
         self.add_children(
             [
                 Button(
                     "Start",
-                    button_rect.move(20, 20),
+                    button_rect.move(500, 20),
                     font,
-                    on_click=lambda event: self.world.director.change_scene(
-                        InGameScene(self.world)
-                    ),
                 ),
-                Button("Settings", button_rect.move(20, 110), font),
+                Button("Settings", button_rect.move(500, 110), font),
                 Button(
                     "Exit",
-                    button_rect.move(20, 200),
+                    button_rect.move(500, 200),
                     font,
                     on_click=lambda event: sys.exit(),
                 ),
