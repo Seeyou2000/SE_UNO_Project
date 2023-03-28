@@ -10,7 +10,7 @@ class Player:
         self.cards = []
 
     def draw_card(self, deck: Deck) -> None:
-        self.cards.append(deck.drow())
+        self.cards.append(deck.draw())
 
     def play_card(self, index: int) -> Card:
         return self.cards.pop(index)

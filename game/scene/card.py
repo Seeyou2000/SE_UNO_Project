@@ -8,7 +8,7 @@ from engine.gameobjectcontainer import GameObjectContainer
 
 class Card(GameObjectContainer):
     def __init__(
-        self, color: str, number: int = 0, ability: Callable = None
+        self, color: str, number: int = None, ability: Callable = None
     ) -> None:  # 일반 숫자 카드
         super().__init__()
         self.color = color
@@ -32,8 +32,8 @@ class Card(GameObjectContainer):
             self.card_number, self.card_number.get_rect(center=self.rect.center)
         )
 
-    def abil_add2(self, nowplaying) -> None:
-        print("work")
+    def abil_add2(self) -> None:
+        pass
 
     def abil_skip(self, nowplaying) -> None:
         print("work")

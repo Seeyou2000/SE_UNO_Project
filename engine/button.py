@@ -50,6 +50,7 @@ class Button(GameObject):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if self.on_click is None:
                 return
+            event.target = self
             self.on_click(event)
             event.stop_propagation()
 

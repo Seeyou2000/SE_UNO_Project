@@ -16,6 +16,7 @@ class GameStartFlowNode(AbstractGameFlowNode):
         for player in self.players:
             for _ in range(0, 7):
                 player.draw_card(self.game_state.game_deck)
+        self.game_state.drawn_deck.cards.append(self.game_state.game_deck.draw())
 
         from game.gameplay.flow.turnstart import TurnStartFlowNode
 

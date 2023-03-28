@@ -22,13 +22,14 @@ class GameState(EventEmitter):
         super().__init__()
         self.game_deck = Deck(self.create_full_deck_cards())
         self.drawn_deck = Deck([])
+        self.attack_cards = Card([])
 
     def create_full_deck_cards(self) -> list[Card]:
         cards = [Card(color, number) for number in (range(1, 10)) for color in COLORS]
         cards += [
-            Card(color, 0, ability) for ability in ABILITY[:3] for color in COLORS
+            Card(color, None, ability) for ability in ABILITY[:3] for color in COLORS
         ]
-        cards += [Card("black", 0, ability) for ability in ABILITY[3:]]
+        cards += [Card("black", None, ability) for ability in ABILITY[3:]]
         random.shuffle(cards)
         return cards
 
