@@ -3,7 +3,7 @@ import pygame
 from engine.button import Button
 from engine.scene import Scene
 from engine.world import World
-from game.scene.gameplay import Gameplay
+from game.gameplay.gamestate import GameState
 from game.scene.ingame import InGameScene
 
 
@@ -68,8 +68,6 @@ class SelectScene(Scene):
                 six_player_button,
             ]
         )
-        self.currentgame = Gameplay()
-        self.currentgame.start(self.player_index)
 
     def update(self) -> None:
         super().update()

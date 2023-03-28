@@ -3,11 +3,19 @@ import pygame
 from engine.button import Button
 from engine.scene import Scene
 from engine.world import World
-from game.scene.gameplay import Gameplay
+from game.gameplay.flow.gameflowmachine import (
+    GameFlowMachine,
+    GameFlowMachineEventType,
+    TransitionEvent,
+)
+from game.gameplay.flow.gamestart import GameStartFlowNode
+from game.gameplay.gamestate import GameState
+from game.scene.constant import NAME
+from game.scene.player import Player
 
 
 class InGameScene(Scene):
-    def __init__(self, world: World, player_index: int) -> None:
+    def __init__(self, world: World, player_count: int) -> None:
         super().__init__(world)
 
         from game.scene.menu import MenuScene
@@ -22,14 +30,23 @@ class InGameScene(Scene):
             "",
             pygame.Rect(300, 200, 30, 50),
             pygame.font.SysFont("Arial", 20),
-            lambda event: self.currentgame.nowplayer().drow_card(
-                self.currentgame.gamedeck
+            lambda event: self.game_state.get_current_player().draw_card(
+                self.game_state.game_deck
             ),
         )
         self.hand = pygame.Rect(0, 500, 600, 100)
         self.add_children([menu_button, deck_button])
-        self.currentgame = Gameplay()
-        self.currentgame.start(player_index)
+
+        self.game_state = GameState()
+
+        self.flow = GameFlowMachine()
+
+        self.flow.events.on(GameFlowMachineEventType.TRANSITION, self.handle_flow)
+        self.flow.transition_to(
+            GameStartFlowNode(
+                self.game_state, [Player(name) for name in NAME[:player_count]]
+            )
+        )
 
     def update(self) -> None:
         super().update()
@@ -37,7 +54,8 @@ class InGameScene(Scene):
     def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
         pygame.draw.rect(surface, (80, 188, 223, 0), self.hand)
-        for i, card in enumerate(self.currentgame.nowplayer().cards):
-            card.rect.center = (50 + 50 * i, 550)
-            card.card_button.rect.center = (50 + 60 * i, 550)
-            card.render(surface)
+
+    def handle_flow(self, event: TransitionEvent) -> None:
+        match event.transition_from, event.transition_to:
+            case "GameStartFlowNode", "TurnStartFlowNode":
+                print("test")
