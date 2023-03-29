@@ -16,7 +16,7 @@ class GameState(EventEmitter):
     """
 
     players: list[Player]
-    _turn: Turn
+    turn: Turn
 
     def __init__(self) -> None:
         super().__init__()
@@ -35,7 +35,7 @@ class GameState(EventEmitter):
 
     def reset(self, players: list[Player]) -> None:
         self.players = players
-        self._turn = Turn(len(players))
+        self.turn = Turn(len(players))
 
     def get_current_player(self) -> Player:
-        return self.players[self._turn.current]
+        return self.players[self.turn.current]

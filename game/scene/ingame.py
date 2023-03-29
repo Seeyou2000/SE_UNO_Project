@@ -6,6 +6,7 @@ from engine.button import Button
 from engine.event import Event
 from engine.scene import Scene
 from engine.world import World
+from game.gameplay.flow.drawcard import DrawCardFlowNode
 from game.gameplay.flow.gameflowmachine import (
     GameFlowMachine,
     GameFlowMachineEventType,
@@ -35,9 +36,7 @@ class InGameScene(Scene):
             "",
             pygame.Rect(300, 200, 30, 50),
             pygame.font.SysFont("Arial", 20),
-            lambda event: self.game_state.get_current_player().draw_card(
-                self.game_state.game_deck
-            ),
+            lambda event: self.flow.transition_to(DrawCardFlowNode(self.game_state)),
         )
         self.hand = pygame.Rect(0, 500, 600, 100)
         self.add_children([menu_button, self.deck_button])

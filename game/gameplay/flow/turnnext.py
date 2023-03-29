@@ -12,4 +12,5 @@ class TurnNextFlowNode(AbstractGameFlowNode):
         if len(self.game_state.get_current_player().cards) == 1:
             pass
         else:
+            self.game_state.turn.next()
             self.machine.transition_to(TurnStartFlowNode(self.game_state))
