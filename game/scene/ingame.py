@@ -40,6 +40,7 @@ class InGameScene(Scene):
         )
 
         self.hand = pygame.Rect(0, 500, 600, 100)
+        self.otherplayer = pygame.Rect(600, 0, 200, 500)
         self.add_children([menu_button, self.deck_button])
 
         self.game_state = GameState()
@@ -58,6 +59,7 @@ class InGameScene(Scene):
 
     def render(self, surface: pygame.Surface) -> None:
         pygame.draw.rect(surface, (80, 188, 223, 0), self.hand)
+        pygame.draw.rect(surface, (100, 100, 100, 0), self.otherplayer)
         super().render(surface)
 
     def handle_flow(self, event: TransitionEvent) -> None:
