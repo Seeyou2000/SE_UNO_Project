@@ -6,6 +6,7 @@ from engine.button import Button
 from engine.event import Event
 from engine.scene import Scene
 from engine.world import World
+from game.gameplay.flow.abilitycard import AbilityCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
 from game.gameplay.flow.gameflowmachine import (
     GameFlowMachine,
@@ -80,6 +81,6 @@ class InGameScene(Scene):
             if card.ability is None:
                 self.flow.transition_to(NumberCardFlowNode(self.game_state, card))
             else:
-                pass
+                self.flow.transition_to(AbilityCardFlowNode(self.game_state, card))
 
         return handler

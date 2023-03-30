@@ -23,6 +23,7 @@ class GameState(EventEmitter):
         self.game_deck = Deck(self.create_full_deck_cards())
         self.drawn_deck = Deck([])
         self.attack_cards = Card([])
+        self.now_color = "red"
 
     def create_full_deck_cards(self) -> list[Card]:
         cards = [Card(color, number) for number in (range(1, 10)) for color in COLORS]
@@ -39,3 +40,8 @@ class GameState(EventEmitter):
 
     def get_current_player(self) -> Player:
         return self.players[self.turn.current]
+
+    def to_drawn_deck(self, card: Card) -> None:
+        self.drawn_deck.cards.append(card)
+        self.now_color = card.color
+        self.get_current_player().cards.remove(card)

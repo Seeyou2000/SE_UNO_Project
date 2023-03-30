@@ -17,6 +17,7 @@ class GameStartFlowNode(AbstractGameFlowNode):
             for _ in range(0, 7):
                 player.draw_card(self.game_state.game_deck)
         self.game_state.drawn_deck.cards.append(self.game_state.game_deck.draw())
+        self.game_state.now_color = self.game_state.drawn_deck.get_last().color
 
         from game.gameplay.flow.turnstart import TurnStartFlowNode
 

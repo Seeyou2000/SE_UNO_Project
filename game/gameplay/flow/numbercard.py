@@ -13,9 +13,12 @@ class NumberCardFlowNode(AbstractGameFlowNode):
     def enter(self) -> None:
         super().enter()
         drawn_card = self.game_state.drawn_deck.get_last()
-        if drawn_card.color == self.card.color or drawn_card.number == self.card.number:
-            self.game_state.drawn_deck.cards.append(self.card)
-            self.game_state.get_current_player().cards.remove(self.card)
+        if (
+            self.game_state.now_color == "black"
+            or self.game_state.now_color == self.card.color
+            or drawn_card.number == self.card.number
+        ):
+            self.game_state.to_drawn_deck(self.card)
             self.machine.transition_to(TurnNextFlowNode(self.game_state))
         else:
             self.machine.transition_to(TurnStartFlowNode(self.game_state))
