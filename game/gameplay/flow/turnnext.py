@@ -11,7 +11,7 @@ class TurnNextFlowNode(AbstractGameFlowNode):
     def enter(self) -> None:
         super().enter()
         if len(self.game_state.get_current_player().cards) == 1:
-            pass
+            pass  # UNO 판별 필요
         elif len(self.game_state.get_current_player().cards) == 0:
             self.machine.transition_to(GameEndFlowNode(self.game_state))
         else:

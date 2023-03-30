@@ -38,6 +38,7 @@ class InGameScene(Scene):
             pygame.font.SysFont("Arial", 20),
             lambda event: self.flow.transition_to(DrawCardFlowNode(self.game_state)),
         )
+
         self.hand = pygame.Rect(0, 500, 600, 100)
         self.add_children([menu_button, self.deck_button])
 
@@ -75,10 +76,7 @@ class InGameScene(Scene):
     def handle_click_card(self, card: Card) -> None:
         def handler(event: Event) -> None:
             if card.ability is None:
-                if self.game_state.drawn_deck.get_last().color == card.color:
-                    self.flow.transition_to(NumberCardFlowNode(self.game_state, card))
-                    self.remove_child(card)
-                    print("work")
+                self.flow.transition_to(NumberCardFlowNode(self.game_state, card))
             else:
                 pass
 
