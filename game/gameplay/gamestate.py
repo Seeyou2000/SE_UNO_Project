@@ -3,7 +3,7 @@ import random
 from engine.event import EventEmitter
 from game.gameplay.turn import Turn
 from game.scene.card import Card
-from game.scene.constant import ABILITY, COLORS
+from game.scene.constant import COLORS, ColorableAbilityType, NonColorableAbilityType
 from game.scene.deck import Deck
 from game.scene.player import Player
 
@@ -22,16 +22,23 @@ class GameState(EventEmitter):
         super().__init__()
         self.game_deck = Deck(self.create_full_deck_cards())
         self.drawn_deck = Deck([])
-        self.attack_cards = Card([])
+        self.attack_cards = []
         self.now_color = "red"
 
     def create_full_deck_cards(self) -> list[Card]:
         cards = [Card(color, number) for number in (range(1, 10)) for color in COLORS]
         cards += [
-            Card(color, None, ability) for ability in ABILITY[:3] for color in COLORS
+            Card(color, None, ability)
+            for ability in ColorableAbilityType
+            for color in COLORS
         ]
-        cards += [Card("black", None, ability) for ability in ABILITY[3:]]
+        cards += [Card("black", None, ability) for ability in NonColorableAbilityType]
         random.shuffle(cards)
+        return cards
+
+    def flush_attack_cards(self) -> list[Card]:
+        cards = self.attack_cards.copy()
+        self.attack_cards.clear()
         return cards
 
     def reset(self, players: list[Player]) -> None:

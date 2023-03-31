@@ -18,6 +18,9 @@ class Turn:
             if self._index < 0:
                 self._index = self._player_count - 1
 
+    def reverse(self) -> None:
+        self._is_clockwise = not self._is_clockwise
+
     @property
     def current(self) -> int:
         return self._index

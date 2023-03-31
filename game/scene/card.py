@@ -1,14 +1,13 @@
-from collections.abc import Callable
-
 import pygame
 
 from engine.button import Button
 from engine.gameobjectcontainer import GameObjectContainer
+from game.scene.constant import AbilityType
 
 
 class Card(GameObjectContainer):
     def __init__(
-        self, color: str, number: int = None, ability: Callable = None
+        self, color: str, number: int = None, ability: AbilityType = None
     ) -> None:  # 일반 숫자 카드
         super().__init__()
         self.color = color
@@ -24,18 +23,3 @@ class Card(GameObjectContainer):
         surface.blit(
             self.card_number, self.card_number.get_rect(center=self.rect.center)
         )
-
-    def abil_add2(self) -> None:
-        pass
-
-    def abil_skip(self, nowplaying) -> None:
-        print("work")
-
-    def abil_reverse(self, nowplaying) -> None:
-        print("work")
-
-    def abil_change(self) -> None:
-        print("work")
-
-    def abil_add4(self) -> None:
-        print("work")

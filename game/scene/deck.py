@@ -5,7 +5,7 @@ class Deck:
     def __init__(self, cards: list) -> None:
         self.cards = cards
 
-    def draw(self) -> None:
+    def draw(self) -> Card:
         return self.cards.pop()
 
     def get_last(self) -> Card:
