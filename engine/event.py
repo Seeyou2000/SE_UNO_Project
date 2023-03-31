@@ -40,7 +40,9 @@ class EventEmitter:
         else:
             self.event_map[event_name] = [handler]
 
-    def emit(self, event_name: str, event: Event) -> None:
+    def emit(self, event_name: str, event: Event, is_target_self: bool = True) -> None:
+        if is_target_self:
+            event.target = self
         if event.is_propagation_stopped:
             return
 

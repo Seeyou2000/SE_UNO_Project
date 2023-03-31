@@ -33,11 +33,13 @@ class GameObjectContainer(GameObject, abc.ABC):
         self._children.remove(child)
         child.parent = None
 
-    def emit(self, event_name: str, event: Event) -> None:
-        super().emit(event_name, event)
+    def emit(self, event_name: str, event: Event, is_target_self: bool = True) -> None:
+        super().emit(event_name, event, is_target_self)
+        # 마우스 이벤트라면 위에서 이벤트를 감지했다면 앞에 깔려있는 오브젝트에 전파를 하지 않아도 된다
+        # _children의 뒤에 있을 수록 나중에 렌더링되므로 순회를 역순으로 한다
         for child in reversed(self._children):
             if event.target is child:
                 continue
             if event.is_propagation_stopped:
                 break
-            child.emit(event_name, event)
+            child.emit(event_name, event, False)
