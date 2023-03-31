@@ -39,6 +39,8 @@ class Button(GameObject):
         else:
             pygame.draw.rect(surface, pygame.Color("yellow"), self.rect)
 
+        pygame.draw.rect(surface, pygame.Color("black"), self.rect, 2)
+
         surface.blit(
             self._rendered_text, self._rendered_text.get_rect(center=self.rect.center)
         )

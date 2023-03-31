@@ -22,7 +22,7 @@ class World:
     def set_size(self, size: tuple[float, float]) -> None:
         self.screen = pygame.display.set_mode(size)
 
-    def get_size(self) -> None:
+    def get_rect(self) -> pygame.Rect:
         return self.screen.get_rect()
 
     def loop(self) -> None:

@@ -9,7 +9,6 @@ from engine.world import World
 class InGameScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
-
         self.sprite = Sprite(pygame.image.load("resources/uno.jpg"))
 
         from game.scene.menu import MenuScene
