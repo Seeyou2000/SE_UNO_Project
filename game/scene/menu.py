@@ -13,6 +13,9 @@ class MenuScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
 
+        from game.scene.ingame import InGameScene
+        from game.scene.setting import SettingScene
+
         font = pygame.font.SysFont("나눔스퀘어", 20)
         button_rect = pygame.Rect(0, 0, 200, 80)
 
@@ -25,7 +28,12 @@ class MenuScene(Scene):
                 button_rect.copy(),
                 font,
             ),
-            Button("Settings", button_rect.copy(), font),
+            Button(
+                "Settings",
+                button_rect.copy(),
+                font,
+                lambda event: world.director.change_scene(SettingScene(world)),
+            ),
             Button(
                 "Exit",
                 button_rect.copy(),
