@@ -17,13 +17,6 @@ class Card(GameObjectContainer):
         self.font = pygame.font.SysFont("Arial", 20)
         self.rect = pygame.Rect(0, 0, 30, 50)
         self.card_number = self.font.render(f"{number}", True, pygame.Color("black"))
-        self.card_button = Button(
-            "",
-            pygame.Rect(0, 0, 30, 50),
-            pygame.font.SysFont("Arial", 20),
-            lambda event: self.ability(),
-        )
-        self.add_child(self.card_button)
 
     def render(self, surface: pygame.Surface) -> None:
         super().render(surface)

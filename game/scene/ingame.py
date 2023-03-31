@@ -73,8 +73,8 @@ class InGameScene(Scene):
                 )
                 for i, card in enumerate(self.game_state.get_current_player().cards):
                     card.rect.center = (50 + 50 * i, 550)
-                    card.card_button.rect.center = (50 + 50 * i, 550)
-                    card.card_button.on_click = self.handle_click_card(card)
+                    card.off("click")
+                    card.on("click", self.handle_click_card(card))
 
     def handle_click_card(self, card: Card) -> None:
         def handler(event: Event) -> None:

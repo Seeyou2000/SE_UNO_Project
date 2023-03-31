@@ -40,6 +40,12 @@ class EventEmitter:
         else:
             self.event_map[event_name] = [handler]
 
+    def off(self, event_name: str) -> None:
+        self.event_map[event_name] = []
+
+    def off_one(self, event_name: str, handler: EventHandler) -> None:
+        self.event_map[event_name].remove(handler)
+
     def emit(self, event_name: str, event: Event, is_target_self: bool = True) -> None:
         if is_target_self:
             event.target = self
