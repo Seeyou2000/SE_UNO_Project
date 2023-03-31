@@ -46,13 +46,13 @@ class InGameScene(Scene):
         self.otherplayers = pygame.Rect(600, 0, 200, 500)
         self.otherplayer = []
         for i in range(0, self.player_count):
-            self.otherplayer.append(pygame.Rect(600, i * 100, 200, 100))
+            self.otherplayer.append(pygame.Rect(600, i * 83, 200, 83))
         self.otherplayertext = []
         for i in range(0, self.player_count):
             self.otherplayertext.append(
                 Button(
                     self.name[i],
-                    pygame.Rect(600, i * 100, 200, 20),
+                    pygame.Rect(600, i * 83, 200, 20),
                     pygame.font.SysFont("Arial", 20),
                 )
             )
