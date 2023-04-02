@@ -4,6 +4,7 @@ import pygame
 
 from engine.event import Event
 from engine.scene import SceneDirector
+from game.settings.settings import Settings
 
 
 class World:
@@ -11,16 +12,22 @@ class World:
     director: SceneDirector
     clock: pygame.time.Clock
     target_fps: float
+    settings: Settings
 
     def __init__(self, size: tuple[float, float], target_fps: float = 60) -> None:
         pygame.init()
-        self.set_size(size)
         self.director = SceneDirector()
+        self.set_size(size)
         self.clock = pygame.time.Clock()
         self.target_fps = target_fps
+        self.settings = Settings()
+        self.settings.on("change", self.handle_settings_change)
 
     def set_size(self, size: tuple[float, float]) -> None:
-        self.screen = pygame.display.set_mode(size)
+        self.screen = pygame.display.set_mode(size, pygame.RESIZABLE)
+        current_scene = self.director.get_current()
+        if current_scene is not None:
+            current_scene.emit("resize", Event(None))
 
     def get_rect(self) -> pygame.Rect:
         return self.screen.get_rect()
@@ -50,3 +57,12 @@ class World:
                     self.director.get_current().emit("mouse_down", Event(event.dict))
                 case pygame.MOUSEMOTION:
                     self.director.get_current().emit("mouse_move", Event(event.dict))
+                case pygame.WINDOWRESIZED:
+                    event_width = event.dict["x"]
+                    event_height = event.dict["y"]
+                    clipped_width = max(800, event_width)
+                    clipped_height = max(600, event_height)
+                    self.set_size((clipped_width, clipped_height))
+
+    def handle_settings_change(self, _: Event) -> None:
+        self.set_size(self.settings.window_size)
