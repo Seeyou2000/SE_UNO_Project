@@ -14,7 +14,7 @@ class MenuScene(Scene):
         super().__init__(world)
 
         from game.scene.ingame import InGameScene
-        from game.scene.setting import SettingScene
+        from game.settings.settingscene import SettingScene
 
         font = pygame.font.SysFont("나눔스퀘어", 20)
         button_rect = pygame.Rect(0, 0, 200, 80)
