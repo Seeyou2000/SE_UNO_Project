@@ -1,6 +1,22 @@
+from enum import Enum
+
 import pygame
 
 from engine.gameobject import GameObject
+
+
+class LayoutAnchor:
+    TOP_LEFT = pygame.Vector2(0, 0)
+    MIDDLE_LEFT = pygame.Vector2(0, 0.5)
+    BOTTOM_LEFT = pygame.Vector2(0, 1)
+
+    TOP_CENTER = pygame.Vector2(0.5, 0)
+    CENTER = pygame.Vector2(0.5, 0.5)
+    BOTTOM_CENTER = pygame.Vector2(0.5, 1)
+
+    TOP_RIGHT = pygame.Vector2(1, 0)
+    MIDDLE_RIGHT = pygame.Vector2(1, 0.5)
+    BOTTOM_RIGHT = pygame.Vector2(1, 1)
 
 
 class LayoutConstraint:
