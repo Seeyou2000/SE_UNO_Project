@@ -5,6 +5,7 @@ import pygame
 from engine.button import Button
 from engine.layout import Layout
 from engine.scene import Scene
+from engine.sprite import Sprite
 from engine.world import World
 from game.scene.select import SelectScene
 
@@ -21,7 +22,7 @@ class MenuScene(Scene):
         sprite = Sprite(
             pygame.transform.scale(pygame.image.load("resources/uno.jpg"), [500, 600])
         )
-        
+
         button_list = [
             Button(
                 "Start",
