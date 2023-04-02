@@ -54,9 +54,17 @@ class World:
                     pygame.quit()
                     sys.exit()
                 case pygame.MOUSEBUTTONDOWN:
-                    self.director.get_current().emit("mouse_down", Event(event.dict))
+                    self.director.get_current().emit(
+                        "global_mouse_down", Event(event.dict)
+                    )
+                case pygame.MOUSEBUTTONUP:
+                    self.director.get_current().emit(
+                        "global_mouse_up", Event(event.dict)
+                    )
                 case pygame.MOUSEMOTION:
-                    self.director.get_current().emit("mouse_move", Event(event.dict))
+                    self.director.get_current().emit(
+                        "global_mouse_move", Event(event.dict)
+                    )
                 case pygame.WINDOWRESIZED:
                     event_width = event.dict["x"]
                     event_height = event.dict["y"]

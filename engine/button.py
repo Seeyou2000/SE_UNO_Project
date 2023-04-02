@@ -1,19 +1,52 @@
 from typing import Self
 
 import pygame
+from attr import dataclass
 
-from engine.event import Event, EventHandler
+from engine.event import EventHandler
 from engine.gameobject import GameObject
 
 
-class Button(GameObject):
-    font: pygame.font.Font
+@dataclass
+class ButtonSurfaces:
+    normal: pygame.Surface
+    hover: pygame.Surface
+    pressed: pygame.Surface
 
+
+class BaseButton(GameObject):
+    font: pygame.font.Font
     on_click: EventHandler | None
 
-    _is_hovered: bool
-    _rendered_text: pygame.Surface
+    surfaces: ButtonSurfaces
 
+    def __init__(
+        self: Self,
+        rect: pygame.Rect,
+        surfaces: ButtonSurfaces,
+        on_click: EventHandler | None = None,
+    ) -> None:
+        super().__init__()
+
+        self.rect = rect
+        self.surfaces = surfaces
+
+        if on_click is not None:
+            self.on("click", on_click)
+
+    def render(self, surface: pygame.Surface) -> None:
+        super().render(surface)
+
+        button_surface = self.surfaces.normal
+        if self._is_pressed:
+            button_surface = self.surfaces.pressed
+        elif self._is_hovered:
+            button_surface = self.surfaces.hover
+
+        surface.blit(button_surface, self.rect)
+
+
+class Button(BaseButton):
     def __init__(
         self: Self,
         text: str,
@@ -21,50 +54,28 @@ class Button(GameObject):
         font: pygame.font.Font,
         on_click: EventHandler | None = None,
     ) -> None:
-        super().__init__()
+        normal_surface = pygame.Surface(rect.size)
+        normal_surface.fill(pygame.Color("#fff1e7"))
 
-        self.rect = rect
+        hover_surface = normal_surface.copy()
+        hover_surface.fill(pygame.Color("#ffe8d7"))
+
+        pressed_surface = normal_surface.copy()
+        pressed_surface.fill(pygame.Color("#ffdcc3"))
+        super().__init__(
+            rect,
+            ButtonSurfaces(normal_surface, hover_surface, pressed_surface),
+            on_click,
+        )
+
         self.font = font
-        self.on_click = on_click
-        self._is_hovered = False
-
         self.set_text(text)
-        self.on("mouse_down", self.handle_mouse_down)
-        self.on("mouse_move", self.handle_mouse_move)
-        self.on("mouse_out", self.handle_mouse_out)
+
+    def set_text(self, text: str) -> None:
+        self._rendered_text = self.font.render(text, True, pygame.Color("#451e11"))
 
     def render(self, surface: pygame.Surface) -> None:
-        if self._is_hovered:
-            pygame.draw.rect(surface, pygame.Color("red"), self.rect)
-        else:
-            pygame.draw.rect(surface, pygame.Color("yellow"), self.rect)
-
-        pygame.draw.rect(surface, pygame.Color("black"), self.rect, 2)
-
+        super().render(surface)
         surface.blit(
             self._rendered_text, self._rendered_text.get_rect(center=self.rect.center)
         )
-
-    def set_text(self, text: str) -> None:
-        self._rendered_text = self.font.render(text, True, pygame.Color("black"))
-
-    def handle_mouse_down(self, event: Event) -> None:
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
-            if self.on_click is None:
-                return
-            self.on_click(event)
-            event.stop_propagation()
-
-    def handle_mouse_move(self, event: Event) -> None:
-        if event.target is self:
-            return
-        if "pos" in event.data:
-            self._is_hovered = self.rect.collidepoint(event.data.get("pos"))
-        if self._is_hovered:
-            e = Event(None)
-            e.target = self
-            self.parent.emit("mouse_out", e)
-            event.stop_propagation()
-
-    def handle_mouse_out(self, event: Event) -> None:
-        self._is_hovered = False

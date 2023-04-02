@@ -5,15 +5,14 @@ import pygame
 from engine.button import Button
 from engine.layout import Layout
 from engine.scene import Scene
-from engine.sprite import Sprite
 from engine.world import World
+from game.scene.select import SelectScene
 
 
 class MenuScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
 
-        from game.scene.ingame import InGameScene
         from game.settings.settingscene import SettingScene
 
         font = pygame.font.SysFont("나눔스퀘어", 20)
@@ -22,12 +21,13 @@ class MenuScene(Scene):
         sprite = Sprite(
             pygame.transform.scale(pygame.image.load("resources/uno.jpg"), [500, 600])
         )
+        
         button_list = [
             Button(
                 "Start",
                 button_rect.copy(),
                 font,
-                lambda _: world.director.change_scene(InGameScene(world)),
+                lambda _: world.director.change_scene(SelectScene(world)),
             ),
             Button(
                 "Settings",
