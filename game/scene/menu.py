@@ -27,26 +27,33 @@ class MenuScene(Scene):
                 "Start",
                 button_rect.copy(),
                 font,
+                lambda _: world.director.change_scene(InGameScene(world)),
             ),
             Button(
                 "Settings",
                 button_rect.copy(),
                 font,
-                lambda event: world.director.change_scene(SettingScene(world)),
+                lambda _: world.director.change_scene(SettingScene(world)),
             ),
             Button(
                 "Exit",
                 button_rect.copy(),
                 font,
-                on_click=lambda event: sys.exit(),
+                on_click=lambda _: sys.exit(),
             ),
         ]
 
-        layout = Layout(world.get_rect())
-        layout.add(sprite, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, -130))
+        self.layout = Layout(world.get_rect())
+        self.on("resize", lambda _: self.layout.rect.update(self.world.get_rect()))
+
+        self.layout.add(sprite, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, -130))
 
         for i, item in enumerate(button_list):
-            layout.add(item, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, 90 * i))
-        layout.update()
+            self.layout.add(item, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, 90 * i))
+        self.layout.update()
 
         self.add_children([sprite] + button_list)
+
+    def update(self) -> None:
+        super().update()
+        self.layout.update()

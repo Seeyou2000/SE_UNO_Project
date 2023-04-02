@@ -17,11 +17,11 @@ class Scene(GameObjectContainer):
 class SceneDirector:
     _current_scene: Scene
 
+    def __init__(self) -> None:
+        self._current_scene = None
+
     def change_scene(self, scene: Scene) -> None:
         self._current_scene = scene
 
     def get_current(self) -> None:
-        try:
-            return self._current_scene
-        except AttributeError:
-            print("먼저 change_scene을 호출하세요.")
+        return self._current_scene
