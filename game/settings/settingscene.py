@@ -5,6 +5,7 @@ from engine.layout import Layout, LayoutAnchor
 from engine.scene import Scene
 from engine.text import Text
 from engine.world import World
+from game.constant import UI_FONT_BOLD_PATH
 from game.settings.settings import POSSIBLE_SCREEN_SIZES
 
 BUTTON_HEIGHT = 60
@@ -14,7 +15,7 @@ class SettingScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
 
-        self.font = pygame.font.SysFont("Arial", 20)
+        self.font = pygame.font.Font(UI_FONT_BOLD_PATH, 20)
         self.layout = Layout(world.get_rect())
         self.on("resize", lambda _: self.layout.rect.update(self.world.get_rect()))
 

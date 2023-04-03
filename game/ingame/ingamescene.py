@@ -6,7 +6,7 @@ from engine.button import Button
 from engine.event import Event
 from engine.scene import Scene
 from engine.world import World
-from game.constant import NAME
+from game.constant import NAME, UI_FONT_BOLD_PATH
 from game.gameplay.card import Card
 from game.gameplay.flow.abilitycard import AbilityCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
@@ -29,16 +29,19 @@ class InGameScene(Scene):
 
         self.player_count = player_count
         self.name = NAME
+
+        font = pygame.font.Font(UI_FONT_BOLD_PATH, 20)
+
         menu_button = Button(
             "Back to menu",
             pygame.Rect(600, 500, 200, 100),
-            pygame.font.SysFont("Arial", 20),
+            font,
             lambda event: self.world.director.change_scene(MenuScene(self.world)),
         )
         self.deck_button = Button(
             "",
             pygame.Rect(300, 200, 30, 50),
-            pygame.font.SysFont("Arial", 20),
+            font,
             lambda event: self.flow.transition_to(DrawCardFlowNode(self.game_state)),
         )
 
@@ -53,7 +56,7 @@ class InGameScene(Scene):
                 Button(
                     self.name[i + 1],
                     pygame.Rect(600, i * 100, 200, 20),
-                    pygame.font.SysFont("Arial", 20),
+                    font,
                 )
             )
             self.add_child(self.otherplayertext[i])

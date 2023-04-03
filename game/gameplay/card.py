@@ -2,7 +2,7 @@ import pygame
 
 from engine.button import Button
 from engine.gameobjectcontainer import GameObjectContainer
-from game.constant import AbilityType
+from game.constant import UI_FONT_BOLD_PATH, AbilityType
 
 
 class Card(GameObjectContainer):
@@ -13,7 +13,7 @@ class Card(GameObjectContainer):
         self.color = color
         self.number = number
         self.ability = ability
-        self.font = pygame.font.SysFont("Arial", 20)
+        self.font = pygame.font.Font(UI_FONT_BOLD_PATH, 20)
         self.rect = pygame.Rect(0, 0, 30, 50)
         self.card_number = self.font.render(f"{number}", True, pygame.Color("black"))
 

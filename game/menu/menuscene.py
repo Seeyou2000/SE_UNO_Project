@@ -7,6 +7,7 @@ from engine.layout import Layout
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
+from game.constant import UI_FONT_BOLD_PATH
 from game.select.selectscene import SelectScene
 
 
@@ -16,7 +17,7 @@ class MenuScene(Scene):
 
         from game.settings.settingscene import SettingScene
 
-        font = pygame.font.SysFont("나눔스퀘어", 20)
+        font = pygame.font.Font(UI_FONT_BOLD_PATH, 20)
         button_rect = pygame.Rect(0, 0, 200, 80)
 
         sprite = Sprite(

@@ -19,7 +19,7 @@ class Text(GameObject):
         self.text = text
         self.font = font
         self.color = color
-        self.rect = pygame.Rect(position, (0, 0))
+        self.rect = pygame.Rect(position.x, position.y, 0, 0)
         self.set_text(text)
 
     def render(self, surface: pygame.Surface) -> None:
