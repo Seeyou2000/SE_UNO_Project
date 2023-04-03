@@ -89,7 +89,7 @@ class SettingScene(Scene):
             self.add_child(change_key_button)
 
     def place_bottom_buttons(self) -> None:
-        from game.scene.menu import MenuScene
+        from game.menu.menuscene import MenuScene
 
         back_button = Button(
             "BACK",

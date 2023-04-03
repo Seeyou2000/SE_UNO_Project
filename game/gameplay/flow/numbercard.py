@@ -1,8 +1,8 @@
+from game.gameplay.card import Card
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.flow.turnnext import TurnNextFlowNode
 from game.gameplay.flow.turnstart import TurnStartFlowNode
 from game.gameplay.gamestate import GameState
-from game.scene.card import Card
 
 
 class NumberCardFlowNode(AbstractGameFlowNode):

@@ -1,6 +1,6 @@
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.gamestate import GameState
-from game.scene.player import Player
+from game.gameplay.player import Player
 
 
 class GameStartFlowNode(AbstractGameFlowNode):

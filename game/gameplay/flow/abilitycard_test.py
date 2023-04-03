@@ -1,12 +1,12 @@
 import pygame
 
+from game.constant import NAME, ColorableAbilityType
+from game.gameplay.card import Card
 from game.gameplay.flow.abilitycard import AbilityCardFlowNode
 from game.gameplay.flow.gameflowmachine import GameFlowMachine
 from game.gameplay.flow.gamestart import GameStartFlowNode
 from game.gameplay.gamestate import GameState
-from game.scene.card import Card
-from game.scene.constant import NAME, ColorableAbilityType
-from game.scene.player import Player
+from game.gameplay.player import Player
 
 
 def test_abilitycard():

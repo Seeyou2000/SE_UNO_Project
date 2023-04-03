@@ -1,11 +1,11 @@
 import random
 
 from engine.event import EventEmitter
+from game.constant import COLORS, ColorableAbilityType, NonColorableAbilityType
+from game.gameplay.card import Card
+from game.gameplay.deck import Deck
+from game.gameplay.player import Player
 from game.gameplay.turn import Turn
-from game.scene.card import Card
-from game.scene.constant import COLORS, ColorableAbilityType, NonColorableAbilityType
-from game.scene.deck import Deck
-from game.scene.player import Player
 
 
 class GameState(EventEmitter):

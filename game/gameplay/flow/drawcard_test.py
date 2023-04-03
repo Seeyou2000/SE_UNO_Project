@@ -1,11 +1,11 @@
 import pygame
 
+from game.constant import NAME
 from game.gameplay.flow.drawcard import DrawCardFlowNode
 from game.gameplay.flow.gameflowmachine import GameFlowMachine, GameFlowMachineEventType
 from game.gameplay.flow.gamestart import GameStartFlowNode
 from game.gameplay.gamestate import GameState
-from game.scene.constant import NAME
-from game.scene.player import Player
+from game.gameplay.player import Player
 
 
 def test_draw_card():

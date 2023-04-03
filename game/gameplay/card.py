@@ -2,7 +2,7 @@ import pygame
 
 from engine.button import Button
 from engine.gameobjectcontainer import GameObjectContainer
-from game.scene.constant import AbilityType
+from game.constant import AbilityType
 
 
 class Card(GameObjectContainer):

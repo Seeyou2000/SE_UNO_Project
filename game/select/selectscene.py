@@ -3,8 +3,7 @@ import pygame
 from engine.button import Button
 from engine.scene import Scene
 from engine.world import World
-from game.gameplay.gamestate import GameState
-from game.scene.ingame import InGameScene
+from game.ingame.ingamescene import InGameScene
 
 
 class SelectScene(Scene):
@@ -12,7 +11,7 @@ class SelectScene(Scene):
         super().__init__(world)
         self.player_index = 0
 
-        from game.scene.menu import MenuScene
+        from game.menu.menuscene import MenuScene
 
         menu_button = Button(
             "Back to menu",

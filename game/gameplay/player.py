@@ -1,5 +1,5 @@
-from game.scene.card import Card
-from game.scene.deck import Deck
+from game.gameplay.card import Card
+from game.gameplay.deck import Deck
 
 
 class Player:

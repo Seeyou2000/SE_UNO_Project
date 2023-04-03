@@ -7,7 +7,7 @@ from engine.layout import Layout
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
-from game.scene.select import SelectScene
+from game.select.selectscene import SelectScene
 
 
 class MenuScene(Scene):

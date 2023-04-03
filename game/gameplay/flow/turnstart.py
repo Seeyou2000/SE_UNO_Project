@@ -1,6 +1,6 @@
+from game.constant import ColorableAbilityType
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.gamestate import GameState
-from game.scene.constant import ColorableAbilityType
 
 
 class TurnStartFlowNode(AbstractGameFlowNode):

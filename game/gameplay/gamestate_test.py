@@ -1,8 +1,8 @@
 import pygame
 
+from game.constant import NAME
 from game.gameplay.gamestate import GameState
-from game.scene.constant import NAME
-from game.scene.player import Player
+from game.gameplay.player import Player
 
 
 def test_gamestate():

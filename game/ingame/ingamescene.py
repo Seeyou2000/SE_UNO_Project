@@ -6,6 +6,8 @@ from engine.button import Button
 from engine.event import Event
 from engine.scene import Scene
 from engine.world import World
+from game.constant import NAME
+from game.gameplay.card import Card
 from game.gameplay.flow.abilitycard import AbilityCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
 from game.gameplay.flow.gameflowmachine import (
@@ -16,16 +18,14 @@ from game.gameplay.flow.gameflowmachine import (
 from game.gameplay.flow.gamestart import GameStartFlowNode
 from game.gameplay.flow.numbercard import NumberCardFlowNode
 from game.gameplay.gamestate import GameState
-from game.scene.card import Card
-from game.scene.constant import NAME
-from game.scene.player import Player
+from game.gameplay.player import Player
 
 
 class InGameScene(Scene):
     def __init__(self, world: World, player_count: int) -> None:
         super().__init__(world)
 
-        from game.scene.menu import MenuScene
+        from game.menu.menuscene import MenuScene
 
         self.player_count = player_count
         self.name = NAME
