@@ -1,5 +1,3 @@
-from enum import Enum
-
 import pygame
 
 from engine.gameobject import GameObject

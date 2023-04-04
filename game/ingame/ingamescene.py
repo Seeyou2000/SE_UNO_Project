@@ -1,5 +1,3 @@
-from typing import Callable
-
 import pygame
 
 from engine.button import Button

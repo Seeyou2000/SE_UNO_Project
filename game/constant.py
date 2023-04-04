@@ -1,7 +1,5 @@
 from enum import Enum, auto
 
-import pygame
-
 
 class ColorableAbilityType(Enum):
     GIVE_TWO_CARDS = 1

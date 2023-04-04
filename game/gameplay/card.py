@@ -1,6 +1,5 @@
 import pygame
 
-from engine.button import Button
 from engine.gameobjectcontainer import GameObjectContainer
 from game.constant import UI_FONT_BOLD_PATH, AbilityType
 

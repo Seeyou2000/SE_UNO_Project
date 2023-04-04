@@ -9,7 +9,7 @@ from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
 
 
-def test_abilitycard():
+def test_abilitycard() -> None:
     pygame.font.init()
     player_count = 2
     game_state = GameState()

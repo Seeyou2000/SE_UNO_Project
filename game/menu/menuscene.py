@@ -2,12 +2,10 @@ import sys
 
 import pygame
 
-from engine.button import Button
 from engine.layout import Layout
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
-from game.constant import UI_FONT_BOLD_PATH
 from game.menu.menubutton import MenuButton
 from game.select.selectscene import SelectScene
 

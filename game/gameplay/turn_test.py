@@ -1,7 +1,7 @@
 from game.gameplay.turn import Turn
 
 
-def test_turn():
+def test_turn() -> None:
     player_count = 2
     turn = Turn(player_count)
     assert turn.current == 0
