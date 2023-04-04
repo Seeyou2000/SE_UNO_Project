@@ -37,7 +37,24 @@ class Layout:
         self._children[child] = LayoutConstraint(anchor, margin)
 
     def remove(self, child: GameObject) -> None:
-        del self._children[child]
+        if child in self._children:
+            del self._children[child]
+
+    def get_constraint(self, child: GameObject) -> LayoutConstraint | None:
+        return self._children[child]
+
+    def update_constraint(
+        self,
+        child: GameObject,
+        anchor: pygame.Vector2 | None = None,
+        margin: pygame.Vector2 | None = None,
+    ) -> None:
+        if child not in self._children:
+            return
+        if anchor is not None:
+            self._children[child].anchor = anchor
+        if margin is not None:
+            self._children[child].margin = margin
 
     def update(self, dt: float) -> None:
         for child, constraint in self._children.items():

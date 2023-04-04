@@ -14,10 +14,12 @@ class GameObjectContainer(GameObject, abc.ABC):
         self._children = []
 
     def update(self, dt: float) -> None:
+        super().update(dt)
         for child in self._children:
             child.update(dt)
 
     def render(self, surface: pygame.Surface) -> None:
+        super().render(surface)
         for child in self._children:
             child.render(surface)
 

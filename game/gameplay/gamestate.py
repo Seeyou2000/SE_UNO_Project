@@ -1,6 +1,6 @@
 import random
 
-from engine.event import EventEmitter
+from engine.event import Event, EventEmitter
 from game.constant import COLORS, ColorableAbilityType, NonColorableAbilityType
 from game.gameplay.card import Card
 from game.gameplay.deck import Deck
@@ -52,3 +52,6 @@ class GameState(EventEmitter):
         self.drawn_deck.cards.append(card)
         self.now_color = card.color
         self.get_current_player().cards.remove(card)
+        self.emit(
+            "card_played", Event({"card": card, "player": self.get_current_player()})
+        )

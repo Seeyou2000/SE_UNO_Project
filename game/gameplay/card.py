@@ -5,6 +5,9 @@ from game.constant import UI_FONT_BOLD_PATH, AbilityType
 
 
 class Card(GameObjectContainer):
+    WIDTH = 60
+    HEIGHT = 100
+
     def __init__(
         self, color: str, number: int = None, ability: AbilityType = None
     ) -> None:  # 일반 숫자 카드
@@ -13,7 +16,7 @@ class Card(GameObjectContainer):
         self.number = number
         self.ability = ability
         self.font = pygame.font.Font(UI_FONT_BOLD_PATH, 20)
-        self.rect = pygame.Rect(0, 0, 30, 50)
+        self.rect = pygame.Rect(0, 0, Card.WIDTH, Card.HEIGHT)
         self.card_number = self.font.render(f"{number}", True, pygame.Color("black"))
 
     def render(self, surface: pygame.Surface) -> None:
@@ -23,3 +26,6 @@ class Card(GameObjectContainer):
             self.card_number,
             self.card_number.get_rect(center=self.absolute_rect.center),
         )
+
+    def update(self, dt: float) -> None:
+        super().update(dt)
