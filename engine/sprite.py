@@ -13,4 +13,4 @@ class Sprite(GameObject):
 
     def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
-        surface.blit(self.image, self.rect)
+        surface.blit(self.image, self.absolute_rect)

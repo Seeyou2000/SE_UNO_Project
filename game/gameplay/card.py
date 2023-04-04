@@ -18,7 +18,8 @@ class Card(GameObjectContainer):
 
     def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
-        pygame.draw.rect(surface, pygame.Color(self.color), self.rect)
+        pygame.draw.rect(surface, pygame.Color(self.color), self.absolute_rect)
         surface.blit(
-            self.card_number, self.card_number.get_rect(center=self.rect.center)
+            self.card_number,
+            self.card_number.get_rect(center=self.absolute_rect.center),
         )

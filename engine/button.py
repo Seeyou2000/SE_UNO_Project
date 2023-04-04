@@ -43,7 +43,7 @@ class BaseButton(GameObject):
         elif self._is_hovered:
             button_surface = self.surfaces.hover
 
-        surface.blit(button_surface, self.rect)
+        surface.blit(button_surface, self.absolute_rect)
 
 
 class Button(BaseButton):
@@ -77,5 +77,6 @@ class Button(BaseButton):
     def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
         surface.blit(
-            self._rendered_text, self._rendered_text.get_rect(center=self.rect.center)
+            self._rendered_text,
+            self._rendered_text.get_rect(center=self.absolute_rect.center),
         )

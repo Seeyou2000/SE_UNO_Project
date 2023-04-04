@@ -46,7 +46,8 @@ class MenuButton(BaseButton):
     def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
         surface.blit(
-            self._rendered_text, self._rendered_text.get_rect(center=self.rect.center)
+            self._rendered_text,
+            self._rendered_text.get_rect(center=self.absolute_rect.center),
         )
 
     def update(self, dt: float) -> None:

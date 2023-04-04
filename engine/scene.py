@@ -17,8 +17,8 @@ class Scene(GameObjectContainer):
         self.on("resize", lambda _: self.layout.rect.update(self.world.get_rect()))
 
     def update(self, dt: float) -> None:
-        super().update(dt)
         self.layout.update(dt)
+        super().update(dt)
 
 
 class SceneDirector:

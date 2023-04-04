@@ -7,12 +7,16 @@ from engine.event import Event, EventEmitter
 
 class GameObject(EventEmitter, abc.ABC):
     rect: pygame.Rect
+    parent: "GameObject"
+    absolute_rect: pygame.Rect
     _is_hovered: bool
     _is_pressed: bool
 
     def __init__(self) -> None:
         super().__init__()
         self.rect = pygame.Rect(0, 0, 0, 0)
+        self.absolute_rect = self.rect.copy()
+
         self._is_hovered = False
         self._is_pressed = False
 
@@ -22,19 +26,22 @@ class GameObject(EventEmitter, abc.ABC):
         self.on("front_object_entered", self.handle_front_object_entered)
 
     def update(self, dt: float) -> None:
-        pass
+        if self.parent is not None:
+            self.absolute_rect = self.rect.move(self.parent.rect.topleft)
+        else:
+            self.absolute_rect = self.rect.copy()
 
     def render(self, surface: pygame.Surface) -> None:
         pass
 
     def handle_global_mouse_down(self, event: Event) -> None:
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
+        if self.absolute_rect.collidepoint(pygame.mouse.get_pos()):
             self.emit("mouse_down", event)
             event.stop_propagation()
             self._is_pressed = True
 
     def handle_global_mouse_up(self, event: Event) -> None:
-        if self.rect.collidepoint(pygame.mouse.get_pos()) and self._is_pressed:
+        if self.absolute_rect.collidepoint(pygame.mouse.get_pos()) and self._is_pressed:
             self.emit("click", event)
             event.stop_propagation()
         self._is_pressed = False
@@ -46,7 +53,7 @@ class GameObject(EventEmitter, abc.ABC):
         is_first_enter = False
         is_first_exit = False
         if "pos" in event.data:
-            is_mouse_collided = self.rect.collidepoint(event.data.get("pos"))
+            is_mouse_collided = self.absolute_rect.collidepoint(event.data.get("pos"))
             is_first_enter = (not self._is_hovered) and is_mouse_collided
             is_first_exit = self._is_hovered and (not is_mouse_collided)
             self._is_hovered = is_mouse_collided

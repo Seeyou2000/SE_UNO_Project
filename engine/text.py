@@ -23,7 +23,7 @@ class Text(GameObject):
         self.set_text(text)
 
     def render(self, surface: pygame.Surface) -> None:
-        surface.blit(self._rendered_text, self.rect.topleft)
+        surface.blit(self._rendered_text, self.absolute_rect.topleft)
 
     def set_text(self, text: str) -> None:
         self._rendered_text = self.font.render(text, True, self.color)
