@@ -1,6 +1,7 @@
 import sys
 
 import pygame
+import tween
 
 from engine.event import Event
 from engine.scene import SceneDirector
@@ -41,6 +42,7 @@ class World:
         self.handle_event()
         dt = self.clock.tick(self.target_fps) / 1000.0
         self.director.get_current().update(dt)
+        tween.update(dt)
 
     def render(self) -> None:
         self.screen.fill(pygame.Color("white"))

@@ -8,6 +8,7 @@ from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
 from game.constant import UI_FONT_BOLD_PATH
+from game.menu.menubutton import MenuButton
 from game.select.selectscene import SelectScene
 
 
@@ -17,31 +18,25 @@ class MenuScene(Scene):
 
         from game.settings.settingscene import SettingScene
 
-        font = pygame.font.Font(UI_FONT_BOLD_PATH, 20)
-        button_rect = pygame.Rect(0, 0, 200, 80)
+        button_size = pygame.Vector2(200, 80)
 
-        sprite = Sprite(
-            pygame.transform.scale(pygame.image.load("resources/uno.jpg"), [500, 600])
-        )
+        sprite = Sprite(pygame.image.load("resources/uno.jpg"))
 
         button_list = [
-            Button(
+            MenuButton(
                 "Start",
-                button_rect.copy(),
-                font,
+                button_size,
                 lambda _: world.director.change_scene(SelectScene(world)),
             ),
-            Button(
+            MenuButton(
                 "Settings",
-                button_rect.copy(),
-                font,
+                button_size,
                 lambda _: world.director.change_scene(SettingScene(world)),
             ),
-            Button(
+            MenuButton(
                 "Exit",
-                button_rect.copy(),
-                font,
-                on_click=lambda _: sys.exit(),
+                button_size,
+                lambda _: sys.exit(),
             ),
         ]
 
@@ -51,8 +46,10 @@ class MenuScene(Scene):
         self.layout.add(sprite, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, -130))
 
         for i, item in enumerate(button_list):
-            self.layout.add(item, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, 90 * i))
-        self.layout.update()
+            self.layout.add(
+                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, 80 * i + 80)
+            )
+        self.layout.update(0)
 
         self.add_children([sprite] + button_list)
 
