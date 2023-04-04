@@ -41,7 +41,7 @@ class Layout:
     def remove(self, child: GameObject) -> None:
         del self._children[child]
 
-    def update(self) -> None:
+    def update(self, dt: float) -> None:
         for child, constraint in self._children.items():
             anchor = constraint.anchor
             margin = constraint.margin

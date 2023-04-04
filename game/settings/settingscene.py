@@ -114,9 +114,9 @@ class SettingScene(Scene):
         )
         self.add_child(reset_button)
 
-    def update(self) -> None:
-        super().update()
-        self.layout.update()
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        self.layout.update(dt)
 
 
 def snake_key_to_name(str: str) -> None:

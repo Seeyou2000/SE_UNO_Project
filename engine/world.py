@@ -39,8 +39,8 @@ class World:
 
     def update(self) -> None:
         self.handle_event()
-        self.director.get_current().update()
-        self.clock.tick(self.target_fps)
+        dt = self.clock.tick(self.target_fps) / 1000.0
+        self.director.get_current().update(dt)
 
     def render(self) -> None:
         self.screen.fill(pygame.Color("white"))

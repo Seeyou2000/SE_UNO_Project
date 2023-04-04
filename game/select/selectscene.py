@@ -71,8 +71,8 @@ class SelectScene(Scene):
             ]
         )
 
-    def update(self) -> None:
-        super().update()
+    def update(self, dt: float) -> None:
+        super().update(dt)
 
     def select_player_num(self, number: int) -> None:
         self.player_index = number

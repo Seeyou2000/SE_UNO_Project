@@ -12,7 +12,7 @@ class FlowNode:
     def enter(self) -> None:
         pass
 
-    def update(self) -> None:
+    def update(self, dt: float) -> None:
         pass
 
     def exit(self) -> None:
@@ -30,7 +30,7 @@ class FlowMachine:
     def __init__(self) -> None:
         self._current_node = None
 
-    def update(self) -> None:
+    def update(self, dt: float) -> None:
         self._current_node.update()
 
     def transition_to(self, new_node: FlowNode) -> None:

@@ -73,8 +73,8 @@ class InGameScene(Scene):
             )
         )
 
-    def update(self) -> None:
-        super().update()
+    def update(self, dt: float) -> None:
+        super().update(dt)
 
     def render(self, surface: pygame.Surface) -> None:
         pygame.draw.rect(surface, (80, 188, 223, 0), self.hand)

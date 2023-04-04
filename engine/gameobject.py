@@ -21,7 +21,7 @@ class GameObject(EventEmitter, abc.ABC):
         self.on("global_mouse_move", self.handle_global_mouse_move)
         self.on("mouse_out", self.handle_mouse_out)
 
-    def update(self) -> None:
+    def update(self, dt: float) -> None:
         pass
 
     def render(self, surface: pygame.Surface) -> None:

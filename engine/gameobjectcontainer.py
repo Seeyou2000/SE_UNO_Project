@@ -13,9 +13,9 @@ class GameObjectContainer(GameObject, abc.ABC):
         super().__init__()
         self._children = []
 
-    def update(self) -> None:
+    def update(self, dt: float) -> None:
         for child in self._children:
-            child.update()
+            child.update(dt)
 
     def render(self, surface: pygame.Surface) -> None:
         for child in self._children:

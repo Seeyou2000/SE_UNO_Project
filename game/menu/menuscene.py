@@ -56,6 +56,6 @@ class MenuScene(Scene):
 
         self.add_children([sprite] + button_list)
 
-    def update(self) -> None:
-        super().update()
-        self.layout.update()
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        self.layout.update(dt)
