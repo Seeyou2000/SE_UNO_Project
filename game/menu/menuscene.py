@@ -38,19 +38,11 @@ class MenuScene(Scene):
             ),
         ]
 
-        self.layout = Layout(world.get_rect())
-        self.on("resize", lambda _: self.layout.rect.update(self.world.get_rect()))
-
         self.layout.add(sprite, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, -130))
 
         for i, item in enumerate(button_list):
             self.layout.add(
                 item, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, 80 * i + 80)
             )
-        self.layout.update(0)
 
         self.add_children([sprite] + button_list)
-
-    def update(self, dt: float) -> None:
-        super().update(dt)
-        self.layout.update(dt)

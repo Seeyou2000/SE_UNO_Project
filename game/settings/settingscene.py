@@ -16,8 +16,6 @@ class SettingScene(Scene):
         super().__init__(world)
 
         self.font = pygame.font.Font(UI_FONT_BOLD_PATH, 20)
-        self.layout = Layout(world.get_rect())
-        self.on("resize", lambda _: self.layout.rect.update(self.world.get_rect()))
 
         self.place_screen_size_buttons()
         self.place_colorblind_button()
@@ -29,7 +27,7 @@ class SettingScene(Scene):
         screen_size_buttons = [
             Button(
                 f"{width} * {height}",
-                pygame.Rect(0, 0, 100, BUTTON_HEIGHT),
+                pygame.Rect(0, 0, 200, BUTTON_HEIGHT),
                 self.font,
                 lambda _, width=width, height=height: self.world.settings.set_values(
                     width, height
@@ -50,7 +48,7 @@ class SettingScene(Scene):
     def place_colorblind_button(self) -> None:
         colorblind_button = Button(
             "Colorblind mode [on/off]",
-            pygame.Rect(0, 0, 200, BUTTON_HEIGHT),
+            pygame.Rect(0, 0, 300, BUTTON_HEIGHT),
             self.font,
             lambda _: self.world.settings.toggle_colorblind(),
         )
@@ -113,10 +111,6 @@ class SettingScene(Scene):
             reset_button, LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-170, -50)
         )
         self.add_child(reset_button)
-
-    def update(self, dt: float) -> None:
-        super().update(dt)
-        self.layout.update(dt)
 
 
 def snake_key_to_name(str: str) -> None:
