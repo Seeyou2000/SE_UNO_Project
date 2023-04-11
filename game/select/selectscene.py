@@ -4,14 +4,14 @@ from engine.button import Button
 from engine.layout import LayoutAnchor
 from engine.scene import Scene
 from engine.world import World
-from game.constant import UI_FONT_BOLD_PATH
+from game.font import FontType, get_font
 
 
 class SelectScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
 
-        font = pygame.font.Font(UI_FONT_BOLD_PATH, 20)
+        font = get_font(FontType.UI_BOLD, 20)
 
         for i in range(2, 7):
             button = Button(

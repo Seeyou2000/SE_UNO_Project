@@ -3,8 +3,8 @@ import pygame
 from engine.gameobjectcontainer import GameObjectContainer
 from engine.sprite import Sprite
 from engine.text import Text
-from game.constant import UI_FONT_BOLD_PATH
 from game.gameplay.card import Card
+from game.font import FontType, get_font
 from game.gameplay.player import Player
 
 CARD_SIZE_UNIT = 14
@@ -22,7 +22,7 @@ class OtherPlayerEntry(GameObjectContainer):
         self.player = player
         self.rect = pygame.Rect(0, 0, size.x, size.y)
 
-        name_font = pygame.font.Font(UI_FONT_BOLD_PATH, 20)
+        name_font = get_font(FontType.UI_BOLD, 20)
 
         self.add_child(
             Text(player.name, pygame.Vector2(10, 10), name_font, pygame.Color("black"))

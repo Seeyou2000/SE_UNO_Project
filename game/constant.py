@@ -20,6 +20,3 @@ AbilityType = ColorableAbilityType | NonColorableAbilityType
 
 COLORS = ["red", "yellow", "green", "blue"]
 NAME = ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX"]
-
-UI_FONT_BOLD_PATH = "resources/fonts/GmarketSansTTFBold.ttf"
-UI_FONT_NORMAL_PATH = "resources/fonts/GmarketSansTTFMedium.ttf"

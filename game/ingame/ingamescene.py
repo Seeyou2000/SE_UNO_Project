@@ -5,7 +5,8 @@ from engine.event import Event
 from engine.layout import LayoutAnchor
 from engine.scene import Scene
 from engine.world import World
-from game.constant import NAME, UI_FONT_BOLD_PATH
+from game.constant import NAME
+from game.font import FontType, get_font
 from game.gameplay.card import Card
 from game.gameplay.flow.abilitycard import AbilityCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
@@ -33,7 +34,7 @@ class InGameScene(Scene):
         self.self_player_index = self_player_index
         self.name = NAME
 
-        self.font = pygame.font.Font(UI_FONT_BOLD_PATH, 20)
+        self.font = get_font(FontType.UI_BOLD, 20)
 
         menu_button = Button(
             "Back to menu",

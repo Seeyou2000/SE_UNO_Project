@@ -3,7 +3,7 @@ import tween
 
 from engine.button import BaseButton, ButtonSurfaces
 from engine.event import Event, EventHandler
-from game.constant import UI_FONT_BOLD_PATH
+from game.font import FontType, get_font
 
 
 class MenuButton(BaseButton):
@@ -33,7 +33,7 @@ class MenuButton(BaseButton):
             on_click,
         )
 
-        self.font = pygame.font.Font(UI_FONT_BOLD_PATH, 30)
+        self.font = get_font(FontType.UI_BOLD, 20)
         self.set_text(text)
 
         self.on("mouse_enter", self.handle_mouse_enter)

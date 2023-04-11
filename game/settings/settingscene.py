@@ -1,11 +1,11 @@
 import pygame
 
 from engine.button import Button
-from engine.layout import Layout, LayoutAnchor
+from engine.layout import LayoutAnchor
 from engine.scene import Scene
 from engine.text import Text
 from engine.world import World
-from game.constant import UI_FONT_BOLD_PATH
+from game.font import FontType, get_font
 from game.settings.settings import POSSIBLE_SCREEN_SIZES
 
 BUTTON_HEIGHT = 60
@@ -15,7 +15,7 @@ class SettingScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
 
-        self.font = pygame.font.Font(UI_FONT_BOLD_PATH, 20)
+        self.font = get_font(FontType.UI_BOLD, 20)
 
         self.place_screen_size_buttons()
         self.place_colorblind_button()
