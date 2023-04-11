@@ -41,7 +41,10 @@ class Layout:
             del self._children[child]
 
     def get_constraint(self, child: GameObject) -> LayoutConstraint | None:
-        return self._children[child]
+        if child in self._children:
+            return self._children[child]
+        else:
+            return None
 
     def update_constraint(
         self,

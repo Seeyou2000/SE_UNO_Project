@@ -1,10 +1,10 @@
 import pygame
 
+from engine.event import Event
 from engine.gameobjectcontainer import GameObjectContainer
-from engine.sprite import Sprite
 from engine.text import Text
-from game.gameplay.card import Card
 from game.font import FontType, get_font
+from game.gameplay.card import Card, create_card_sprite
 from game.gameplay.player import Player
 
 CARD_SIZE_UNIT = 14
@@ -20,6 +20,7 @@ class OtherPlayerEntry(GameObjectContainer):
         super().__init__()
 
         self.player = player
+        self.player.on("card_earned", self.handle_card_earned)
         self.rect = pygame.Rect(0, 0, size.x, size.y)
 
         name_font = get_font(FontType.UI_BOLD, 20)
@@ -35,7 +36,6 @@ class OtherPlayerEntry(GameObjectContainer):
 
     def update(self, dt: float) -> None:
         super().update(dt)
-        self.create_or_remove_cards_if_needed()
         self.update_cards_position()
 
     def create_or_remove_cards_if_needed(self) -> None:
@@ -54,23 +54,10 @@ class OtherPlayerEntry(GameObjectContainer):
             card.rect.x = i * (CARD_BACK_WIDTH - 10)
 
     def create_card_sprite(self) -> None:
-        card_back_surface = pygame.Surface(
-            (CARD_BACK_WIDTH, CARD_BACK_HEIGHT), pygame.SRCALPHA
-        )
-        pygame.draw.rect(
-            card_back_surface,
-            pygame.Color("black"),
-            card_back_surface.get_rect(),
-            border_radius=CARD_BACK_BORDER_RADIUS,
-        )
-        pygame.draw.rect(
-            card_back_surface,
-            pygame.Color("white"),
-            card_back_surface.get_rect(),
-            border_radius=CARD_BACK_BORDER_RADIUS,
-            width=1,
-        )
-        card_back_sprite = Sprite(card_back_surface)
+        card_back_sprite = create_card_sprite("black", True)
         card_back_sprite.rect.y = 50
         self.add_child(card_back_sprite)
         self.card_sprites.append(card_back_sprite)
+
+    def handle_card_earned(self, event: Event) -> None:
+        self.create_or_remove_cards_if_needed()

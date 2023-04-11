@@ -24,14 +24,14 @@ from game.ingame.otherplayerentry import OtherPlayerEntry
 
 class InGameScene(Scene):
     def __init__(
-        self, world: World, player_count: int, self_player_index: int = 0
+        self, world: World, player_count: int, my_player_index: int = 0
     ) -> None:
         super().__init__(world)
 
         from game.menu.menuscene import MenuScene
 
         self.player_count = player_count
-        self.self_player_index = self_player_index
+        self.my_player_index = my_player_index
         self.name = NAME
 
         self.font = get_font(FontType.UI_BOLD, 20)
@@ -60,14 +60,28 @@ class InGameScene(Scene):
     def update(self, dt: float) -> None:
         super().update(dt)
 
-        my_cards = self.game_state.players[self.self_player_index].cards
+        my_cards = self.get_me().cards
         # print(len(cards))
         for i, card in enumerate(my_cards):
             # 일단 트윈 대신 감속 공식으로 애니메이션 구현
-            existing_margin = self.layout.get_constraint(card).margin
-            target = pygame.Vector2(
-                (i - len(my_cards) / 2 + 1) * 600 / len(my_cards), -10
+            constraint = self.layout.get_constraint(card)
+            if constraint is None:
+                continue
+            existing_margin = constraint.margin
+            cards_len = len(my_cards)
+            x = (
+                (i - cards_len / 2.0) * 600 / cards_len
+                if cards_len > 10
+                else (i - cards_len / 2.0) * (Card.WIDTH - 20)
             )
+            y = (
+                -15
+                if self.is_my_turn() and card.is_hovered
+                else -5
+                if self.is_my_turn()
+                else 10
+            )
+            target = pygame.Vector2(x, y)
             self.layout.update_constraint(
                 card,
                 margin=existing_margin + (target - existing_margin) * dt * 10,
@@ -79,17 +93,15 @@ class InGameScene(Scene):
     def handle_flow(self, event: TransitionEvent) -> None:
         match event.transition_from, event.transition_to:
             case "GameStartFlowNode", "TurnStartFlowNode":  # 맨 처음
-                turn = self.game_state.turn
                 players = self.game_state.players
 
                 self.place_decks()
 
-                print(f"턴 시작: {turn.current}")
-
                 # 모든 플레이어의 카드를 scene에 추가
 
                 # 현재 플레이어
-                me = players[self.self_player_index]
+                me = self.get_me()
+                me.on("card_earned", self.handle_me_card_earned)
                 cards = me.cards
                 for card in cards:
                     card.on("click", self.create_card_click_handler(card))
@@ -118,8 +130,8 @@ class InGameScene(Scene):
                 ]
 
                 other_players = (
-                    players[: self.self_player_index]
-                    + players[self.self_player_index + 1 :]
+                    players[: self.my_player_index]
+                    + players[self.my_player_index + 1 :]
                 )
 
                 for i, player in enumerate(other_players):
@@ -130,14 +142,15 @@ class InGameScene(Scene):
                     self.layout.add(entry, layout_info[0], layout_info[1])
 
             case _, "TurnStartFlowNode":
-                if self.self_player_index == self.game_state.turn.current:
+                print(f"턴 시작: {self.game_state.turn.current}")
+                if self.is_my_turn():
                     me = self.game_state.get_current_player()
                     cards = me.cards
                     for card in cards:
                         card.on("click", self.create_card_click_handler(card))
 
             case "TurnStartFlowNode", _:  # 플레이어가 동작을 한 후
-                for card in self.game_state.players[self.self_player_index].cards:
+                for card in self.get_me().cards:
                     card.off("click")
 
             case "NumberCardFlowNode" | "AbilityCardFlowNode", _:  # 구조 바꾸면 바뀌어야 함
@@ -167,6 +180,7 @@ class InGameScene(Scene):
         self.layout.add(
             deck_button, LayoutAnchor.CENTER, pygame.Vector2(-Card.WIDTH, 0)
         )
+        self.deck_button = deck_button
 
         # 덱에서 한 장 열어놓기
         last_drawn_card = self.game_state.drawn_deck.get_last()
@@ -179,3 +193,23 @@ class InGameScene(Scene):
         card: Card = event.data["card"]
         self.remove_child(card)
         self.layout.remove(card)
+
+    def handle_me_card_earned(self, event: Event) -> None:
+        card: Card = event.data["card"]
+        self.add_child(card)
+        deck_margin = self.layout.get_constraint(self.deck_button).margin
+        self.layout.add(
+            card,
+            LayoutAnchor.BOTTOM_CENTER,
+            pygame.Vector2(
+                deck_margin.x,
+                -self.deck_button.absolute_rect.centery + deck_margin.y,
+            ),
+        )
+
+    # utils
+    def get_me(self) -> Player:
+        return self.game_state.players[self.my_player_index]
+
+    def is_my_turn(self) -> bool:
+        return self.game_state.get_current_player() == self.get_me()

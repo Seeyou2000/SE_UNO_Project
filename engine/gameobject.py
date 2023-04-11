@@ -25,6 +25,10 @@ class GameObject(EventEmitter, abc.ABC):
         self.on("global_mouse_move", self.handle_global_mouse_move)
         self.on("front_object_entered", self.handle_front_object_entered)
 
+    @property
+    def is_hovered(self) -> bool:
+        return self._is_hovered
+
     def update(self, dt: float) -> None:
         if self.parent is not None:
             self.absolute_rect = self.rect.move(self.parent.rect.topleft)
