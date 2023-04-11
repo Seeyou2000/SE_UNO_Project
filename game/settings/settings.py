@@ -6,7 +6,7 @@ import pygame
 from engine.event import Event, EventEmitter
 
 SETTINGS_FILE_PATH = "settings.json"
-POSSIBLE_SCREEN_SIZES: list[tuple[int, int]] = [(800, 600), (1280, 720), (1920, 1080)]
+POSSIBLE_SCREEN_SIZES: list[tuple[int, int]] = [(1280, 720), (1600, 900), (1920, 1080)]
 KEYS = [
     "draw_card",
     "play_card",

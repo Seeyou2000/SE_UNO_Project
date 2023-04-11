@@ -70,8 +70,8 @@ class World:
                 case pygame.WINDOWRESIZED:
                     event_width = event.dict["x"]
                     event_height = event.dict["y"]
-                    clipped_width = max(800, event_width)
-                    clipped_height = max(600, event_height)
+                    clipped_width = max(1280, event_width)
+                    clipped_height = max(720, event_height)
                     self.set_size((clipped_width, clipped_height))
 
     def handle_settings_change(self, _: Event) -> None:
