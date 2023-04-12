@@ -72,13 +72,71 @@ class SettingScene(Scene):
         self.add_child(colorblind_button)
 
     def place_sound_buttons(self) -> None:
-        pass
+        button_width = 80
+        button_rect = pygame.Rect(
+            0,
+            0,
+            button_width,
+            BUTTON_HEIGHT,
+        )
+        gap = 10
+        description_text = Text(
+            "BGM Volume",
+            pygame.Vector2(0, 0),
+            self.font,
+            pygame.Color("black"),
+        )
+        self.add_child(description_text)
+        self.layout.add(
+            description_text, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 250 + 15)
+        )
+        for i, volume_value in enumerate(range(0, 100 + 1, 25)):
+            bgm_volume_button = Button(
+                f"{volume_value}%",
+                button_rect.copy(),
+                self.font,
+                lambda _, volume_value=volume_value: self.world.settings.set_values(
+                    bgm_volume=volume_value
+                ),
+            )
+            self.add_child(bgm_volume_button)
+            self.layout.add(
+                bgm_volume_button,
+                LayoutAnchor.TOP_LEFT,
+                pygame.Vector2((button_width + gap) * i + 250, 250),
+            )
+
+        description_text = Text(
+            "Effect Volume",
+            pygame.Vector2(0, 0),
+            self.font,
+            pygame.Color("black"),
+        )
+        self.add_child(description_text)
+        self.layout.add(
+            description_text, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 320 + 15)
+        )
+        for i, volume_value in enumerate(range(0, 100 + 1, 25)):
+            effect_volume_button = Button(
+                f"{volume_value}%",
+                button_rect.copy(),
+                self.font,
+                lambda _, volume_value=volume_value: self.world.settings.set_values(
+                    effect_volume=volume_value
+                ),
+            )
+            self.add_child(effect_volume_button)
+            self.layout.add(
+                effect_volume_button,
+                LayoutAnchor.TOP_LEFT,
+                pygame.Vector2((button_width + gap) * i + 250, 320),
+            )
 
     def place_keyboard_options(self) -> None:
         for i, (dict_key, keyboard_key) in enumerate(
             self.world.settings.keymap.items()
         ):
-            y = 250 + i * (BUTTON_HEIGHT + 20)
+            y = 430 + i * (BUTTON_HEIGHT + 20)
 
             description_text = Text(
                 snake_key_to_name(dict_key),

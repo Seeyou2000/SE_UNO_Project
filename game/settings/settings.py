@@ -23,6 +23,8 @@ DEFAULT_SETTINGS = {
     "height": 720,
     "is_colorblind": False,
     "keymap": DEFAULT_KEYMAP,
+    "bgm_volume": 100,
+    "effect_volume": 100,
 }
 
 
@@ -31,6 +33,8 @@ class Settings(EventEmitter):
     _height: int
     _is_colorblind: bool
     _keymap: KeyMap
+    _bgm_volume: int
+    _effect_volume: int
 
     def __init__(self) -> None:
         super().__init__()
@@ -44,6 +48,8 @@ class Settings(EventEmitter):
                     "height": self.height,
                     "is_colorblind": self.is_colorblind,
                     "keymap": self.keymap,
+                    "bgm_volume": self.bgm_volume,
+                    "effect_volume": self.effect_volume,
                 },
                 f,
             )
@@ -63,6 +69,8 @@ class Settings(EventEmitter):
                 height=value["height"],
                 is_colorblind=value["is_colorblind"],
                 keymap=value["keymap"],
+                bgm_volume=value["bgm_volume"],
+                effect_volume=value["effect_volume"],
             )
 
         except AttributeError:
@@ -88,6 +96,14 @@ class Settings(EventEmitter):
     def keymap(self) -> KeyMap:
         return self._keymap
 
+    @property
+    def bgm_volume(self) -> int:
+        return self._bgm_volume
+
+    @property
+    def effect_volume(self) -> int:
+        return self._effect_volume
+
     # property helper
     @property
     def window_size(self) -> tuple[int, int]:
@@ -99,6 +115,8 @@ class Settings(EventEmitter):
         height: int | None = None,
         is_colorblind: bool | None = None,
         keymap: KeyMap | None = None,
+        bgm_volume: int | None = None,
+        effect_volume: int | None = None,
     ) -> None:
         self._width = width if width is not None else self._width
         self._height = height if height is not None else self._height
@@ -106,6 +124,10 @@ class Settings(EventEmitter):
             is_colorblind if is_colorblind is not None else self._is_colorblind
         )
         self._keymap = keymap if keymap is not None else self._keymap
+        self._bgm_volume = bgm_volume if bgm_volume is not None else self._bgm_volume
+        self._effect_volume = (
+            effect_volume if effect_volume is not None else self._effect_volume
+        )
 
         self.save()
         self.emit("change", Event(None))
