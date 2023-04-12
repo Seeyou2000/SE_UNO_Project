@@ -4,8 +4,8 @@ from game.menu.menuscene import MenuScene
 
 def main() -> None:
     world = World((800, 600), 60)
-    world.director.change_scene(MenuScene(world))
     world.settings.load()
+    world.director.change_scene(MenuScene(world))
 
     world.loop()
 

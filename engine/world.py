@@ -50,23 +50,20 @@ class World:
         pygame.display.flip()
 
     def handle_event(self) -> None:
+        current_scene = self.director.get_current()
         for event in pygame.event.get():
             match event.type:
                 case pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 case pygame.MOUSEBUTTONDOWN:
-                    self.director.get_current().emit(
-                        "global_mouse_down", Event(event.dict)
-                    )
+                    current_scene.emit("global_mouse_down", Event(event.dict))
                 case pygame.MOUSEBUTTONUP:
-                    self.director.get_current().emit(
-                        "global_mouse_up", Event(event.dict)
-                    )
+                    current_scene.emit("global_mouse_up", Event(event.dict))
                 case pygame.MOUSEMOTION:
-                    self.director.get_current().emit(
-                        "global_mouse_move", Event(event.dict)
-                    )
+                    current_scene.emit("global_mouse_move", Event(event.dict))
+                case pygame.KEYDOWN:
+                    current_scene.emit("keydown", Event(event.dict))
                 case pygame.WINDOWRESIZED:
                     event_width = event.dict["x"]
                     event_height = event.dict["y"]
