@@ -34,7 +34,6 @@ class Settings(EventEmitter):
 
     def __init__(self) -> None:
         super().__init__()
-        self.load_dict(DEFAULT_SETTINGS)
         pass
 
     def save(self) -> None:
@@ -54,6 +53,7 @@ class Settings(EventEmitter):
             with open(SETTINGS_FILE_PATH) as f:
                 self.load_dict(json.load(f))
         except FileNotFoundError:
+            print("기존 설정 파일을 찾지 못했습니다. 새 설정 파일을 만듭니다.")
             self.reset()
 
     def load_dict(self, value: dict[str, Any]) -> None:
