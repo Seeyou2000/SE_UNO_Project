@@ -1,10 +1,10 @@
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.flow.gameend import GameEndFlowNode
-from game.gameplay.flow.turnstart import TurnStartFlowNode
+from game.gameplay.flow.startturn import StartTurnFlowNode
 from game.gameplay.gamestate import GameState
 
 
-class TurnNextFlowNode(AbstractGameFlowNode):
+class EndTurnFlowNode(AbstractGameFlowNode):
     def __init__(self, game_state: GameState) -> None:
         super().__init__(game_state)
 
@@ -16,4 +16,4 @@ class TurnNextFlowNode(AbstractGameFlowNode):
             self.machine.transition_to(GameEndFlowNode(self.game_state))
         else:
             self.game_state.turn.next()
-            self.machine.transition_to(TurnStartFlowNode(self.game_state))
+            self.machine.transition_to(StartTurnFlowNode(self.game_state))

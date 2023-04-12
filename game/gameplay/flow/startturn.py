@@ -3,7 +3,7 @@ from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.gamestate import GameState
 
 
-class TurnStartFlowNode(AbstractGameFlowNode):
+class StartTurnFlowNode(AbstractGameFlowNode):
     def __init__(self, gamestate: GameState) -> None:
         super().__init__(gamestate)
 
@@ -18,3 +18,6 @@ class TurnStartFlowNode(AbstractGameFlowNode):
                     card.ability != ColorableAbilityType.GIVE_TWO_CARDS
                 ):
                     player.cards += self.game_state.flush_attack_cards()
+
+    def update(self, dt: float) -> None:
+        super().update(dt)

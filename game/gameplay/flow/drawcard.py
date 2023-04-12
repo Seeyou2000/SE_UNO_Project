@@ -1,5 +1,5 @@
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
-from game.gameplay.flow.turnnext import TurnNextFlowNode
+from game.gameplay.flow.endturn import EndTurnFlowNode
 from game.gameplay.gamestate import GameState
 
 
@@ -10,4 +10,4 @@ class DrawCardFlowNode(AbstractGameFlowNode):
     def enter(self) -> None:
         super().enter()
         self.game_state.get_current_player().draw_card(self.game_state.game_deck)
-        self.machine.transition_to(TurnNextFlowNode(self.game_state))
+        self.machine.transition_to(EndTurnFlowNode(self.game_state))

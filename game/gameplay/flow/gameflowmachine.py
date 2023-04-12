@@ -1,21 +1,27 @@
 from enum import Enum
 
 from engine.event import Event, EventEmitter
-from engine.fsm import FlowMachine, FlowNode
+from engine.fsm import FlowMachine
+from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 
 
 class GameFlowMachineEventType(Enum):
     TRANSITION = "transition"
+    CARD_PLAYED = "card_played"
 
 
 class TransitionEvent(Event):
-    transition_from: str
-    transition_to: str
+    before: AbstractGameFlowNode
+    after: AbstractGameFlowNode
 
-    def __init__(self, transition_from: str, transition_to: str) -> None:
+    def __init__(
+        self,
+        transition_from: AbstractGameFlowNode,
+        transition_to: AbstractGameFlowNode,
+    ) -> None:
         super().__init__(None)
-        self.transition_from = transition_from
-        self.transition_to = transition_to
+        self.before = transition_from
+        self.after = transition_to
 
 
 class GameFlowMachine(FlowMachine, EventEmitter):
@@ -25,11 +31,9 @@ class GameFlowMachine(FlowMachine, EventEmitter):
         super().__init__()
         self.events = EventEmitter()
 
-    def transition_to(self, new_node: FlowNode) -> None:
+    def transition_to(self, new_node: AbstractGameFlowNode) -> None:
         self.events.emit(
             GameFlowMachineEventType.TRANSITION,
-            TransitionEvent(
-                self._current_node.__class__.__name__, new_node.__class__.__name__
-            ),
+            TransitionEvent(self._current_node, new_node),
         )
-        return super().transition_to(new_node)
+        super().transition_to(new_node)

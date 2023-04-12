@@ -32,13 +32,22 @@ class EventEmitter:
         self.event_map = {}
         self.parent = parent
 
-    def on(self, event_name: str, handler: EventHandler) -> None:
+    def on(
+        self, event_name: str, handler: EventHandler | list[EventHandler] | None
+    ) -> None:
         if handler is None:
             return
         if event_name in self.event_map:
-            self.event_map[event_name].append(handler)
+            target = self.event_map[event_name]
+            if type(handler) is list:
+                target += handler
+            else:
+                target.append(handler)
         else:
-            self.event_map[event_name] = [handler]
+            if type(handler) is list:
+                self.event_map[event_name] = handler
+            else:
+                self.event_map[event_name] = [handler]
 
     def off(self, event_name: str) -> None:
         self.event_map[event_name] = []

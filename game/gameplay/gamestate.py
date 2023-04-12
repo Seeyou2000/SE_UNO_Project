@@ -1,6 +1,5 @@
 import random
 
-from engine.event import Event, EventEmitter
 from game.constant import COLORS, ColorableAbilityType, NonColorableAbilityType
 from game.gameplay.card import Card
 from game.gameplay.deck import Deck
@@ -8,7 +7,7 @@ from game.gameplay.player import Player
 from game.gameplay.turn import Turn
 
 
-class GameState(EventEmitter):
+class GameState:
     """
     게임 진행과 관련된 데이터를 모두 담아놓는 클래스.
     함수는 데이터 조작과 관련된 것만 있어야 합니다.
@@ -21,7 +20,7 @@ class GameState(EventEmitter):
     def __init__(self) -> None:
         super().__init__()
         self.game_deck = Deck(self.create_full_deck_cards())
-        self.drawn_deck = Deck([])
+        self.discard_pile = Deck([])
         self.attack_cards = []
         self.now_color = "red"
 
@@ -48,10 +47,7 @@ class GameState(EventEmitter):
     def get_current_player(self) -> Player:
         return self.players[self.turn.current]
 
-    def to_drawn_deck(self, card: Card) -> None:
-        self.drawn_deck.cards.append(card)
+    def discard(self, card: Card) -> None:
+        self.discard_pile.cards.append(card)
         self.now_color = card.color
         self.get_current_player().cards.remove(card)
-        self.emit(
-            "card_played", Event({"card": card, "player": self.get_current_player()})
-        )

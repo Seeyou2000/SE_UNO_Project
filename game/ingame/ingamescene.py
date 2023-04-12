@@ -1,22 +1,24 @@
 import pygame
 
 from engine.button import Button
-from engine.event import Event
+from engine.event import Event, EventHandler
 from engine.layout import LayoutAnchor
 from engine.scene import Scene
 from engine.world import World
 from game.constant import NAME
 from game.font import FontType, get_font
 from game.gameplay.card import Card
-from game.gameplay.flow.abilitycard import AbilityCardFlowNode
+from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
+from game.gameplay.flow.discardcard import DiscardCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
 from game.gameplay.flow.gameflowmachine import (
     GameFlowMachine,
     GameFlowMachineEventType,
     TransitionEvent,
 )
-from game.gameplay.flow.gamestart import GameStartFlowNode
-from game.gameplay.flow.numbercard import NumberCardFlowNode
+from game.gameplay.flow.prepare import PrepareFlowNode
+from game.gameplay.flow.startturn import StartTurnFlowNode
+from game.gameplay.flow.validatecard import ValidateCardFlowNode
 from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
 from game.ingame.otherplayerentry import OtherPlayerEntry
@@ -47,12 +49,29 @@ class InGameScene(Scene):
         self.other_player_entries = []
 
         self.game_state = GameState()
-        self.on("card_played", self.handle_card_played)
 
         self.flow = GameFlowMachine()
-        self.flow.events.on(GameFlowMachineEventType.TRANSITION, self.handle_flow)
+        transition_handlers = [
+            lambda event: print(
+                f"\nFLOW: {type(event.before).__name__} -> {type(event.after).__name__}"  # noqa: E501
+            ),
+            self.on_transition(PrepareFlowNode, None, self.setup_board),
+            self.on_transition(None, StartTurnFlowNode, self.activate_my_card_handlers),
+            self.on_transition(
+                None,
+                StartTurnFlowNode,
+                lambda event: print(
+                    f"턴 시작: {self.game_state.get_current_player().name}"
+                ),
+            ),
+            self.on_transition(DiscardCardFlowNode, None, self.remove_discarded_card),
+        ]
+        self.flow.events.on(GameFlowMachineEventType.TRANSITION, transition_handlers)
+        self.flow.events.on(
+            GameFlowMachineEventType.CARD_PLAYED, self.handle_card_played
+        )
         self.flow.transition_to(
-            GameStartFlowNode(
+            PrepareFlowNode(
                 self.game_state, [Player(name) for name in NAME[:player_count]]
             )
         )
@@ -90,84 +109,73 @@ class InGameScene(Scene):
     def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
 
-    def handle_flow(self, event: TransitionEvent) -> None:
-        match event.transition_from, event.transition_to:
-            case "GameStartFlowNode", "TurnStartFlowNode":  # 맨 처음
-                players = self.game_state.players
+    def on_transition(
+        self,
+        before: type[AbstractGameFlowNode] | None,
+        after: type[AbstractGameFlowNode] | None,
+        handler: EventHandler,
+    ) -> EventHandler:
+        def transition_handler(event: TransitionEvent) -> None:
+            satisfies_before = before is None or isinstance(event.before, before)
+            satisfies_after = after is None or isinstance(event.after, after)
+            if satisfies_before and satisfies_after:
+                handler(event)
 
-                self.place_decks()
+        return transition_handler
 
-                # 모든 플레이어의 카드를 scene에 추가
-
-                # 현재 플레이어
-                me = self.get_me()
-                me.on("card_earned", self.handle_me_card_earned)
-                cards = me.cards
-                for card in cards:
-                    card.on("click", self.create_card_click_handler(card))
-                    self.layout.add(
-                        card,
-                        LayoutAnchor.BOTTOM_CENTER,
-                        pygame.Vector2(0, 0),
-                    )
-
-                    self.add_child(card)
-
-                # 다른 플레이어
-                layout_infos = [  # 플레이어 위치에서 시계방향으로
-                    (LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(0, 70)),
-                    (LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(0, -70)),
-                    (LayoutAnchor.TOP_CENTER, pygame.Vector2(0, 10)),
-                    (LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(0, -70)),
-                    (LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(0, 70)),
-                ]
-                fill_order = [  # 적 1명에서 5명까지
-                    [2],
-                    [1, 3],
-                    [1, 2, 3],
-                    [0, 1, 2, 3],
-                    [0, 1, 2, 3, 4],
-                ]
-
-                other_players = (
-                    players[: self.my_player_index]
-                    + players[self.my_player_index + 1 :]
-                )
-
-                for i, player in enumerate(other_players):
-                    entry = OtherPlayerEntry(pygame.Vector2(250, 150), player)
-                    self.other_player_entries.append(entry)
-                    self.add_child(entry)
-                    layout_info = layout_infos[fill_order[len(other_players) - 1][i]]
-                    self.layout.add(entry, layout_info[0], layout_info[1])
-
-            case _, "TurnStartFlowNode":
-                print(f"턴 시작: {self.game_state.turn.current}")
-                if self.is_my_turn():
-                    me = self.game_state.get_current_player()
-                    cards = me.cards
-                    for card in cards:
-                        card.on("click", self.create_card_click_handler(card))
-
-            case "TurnStartFlowNode", _:  # 플레이어가 동작을 한 후
-                for card in self.get_me().cards:
-                    card.off("click")
-
-            case "NumberCardFlowNode" | "AbilityCardFlowNode", _:  # 구조 바꾸면 바뀌어야 함
-                last_drawn_card = self.game_state.drawn_deck.get_last()
-                self.add_child(last_drawn_card)
-                self.layout.add(
-                    last_drawn_card, LayoutAnchor.CENTER, pygame.Vector2(Card.WIDTH, 0)
-                )
-
-    def create_card_click_handler(self, card: Card) -> None:
+    def create_card_click_handler(self, card: Card) -> EventHandler:
         def handler(event: Event) -> None:
-            if card.ability is None:
-                self.flow.transition_to(NumberCardFlowNode(self.game_state, card))
-            else:
-                self.flow.transition_to(AbilityCardFlowNode(self.game_state, card))
+            print(f"ACTION: Use card {card}")
+            self.flow.transition_to(ValidateCardFlowNode(self.game_state, card))
 
         return handler
+
+    def setup_board(self, event: TransitionEvent) -> None:
+        players = self.game_state.players
+
+        self.place_decks()
+
+        # 모든 플레이어의 카드를 scene에 추가
+
+        # 현재 플레이어
+        me = self.get_me()
+        me.on("card_earned", self.handle_me_card_earned)
+        cards = me.cards
+        for card in cards:
+            self.layout.add(
+                card,
+                LayoutAnchor.BOTTOM_CENTER,
+                pygame.Vector2(0, 0),
+            )
+
+            self.add_child(card)
+
+        # 다른 플레이어
+        layout_infos = [  # 플레이어 위치에서 시계방향으로
+            (LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(0, 70)),
+            (LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(0, -70)),
+            (LayoutAnchor.TOP_CENTER, pygame.Vector2(0, 10)),
+            (LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(0, -70)),
+            (LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(0, 70)),
+        ]
+        fill_order = [  # 적 1명에서 5명까지
+            [2],
+            [1, 3],
+            [1, 2, 3],
+            [0, 1, 2, 3],
+            [0, 1, 2, 3, 4],
+        ]
+
+        other_players = (
+            players[: self.my_player_index] + players[self.my_player_index + 1 :]
+        )
+
+        for i, player in enumerate(other_players):
+            entry = OtherPlayerEntry(pygame.Vector2(250, 150), player)
+            self.other_player_entries.append(entry)
+            self.add_child(entry)
+            layout_info = layout_infos[fill_order[len(other_players) - 1][i]]
+            self.layout.add(entry, layout_info[0], layout_info[1])
 
     def place_decks(self) -> None:
         deck_button = Button(
@@ -183,10 +191,25 @@ class InGameScene(Scene):
         self.deck_button = deck_button
 
         # 덱에서 한 장 열어놓기
-        last_drawn_card = self.game_state.drawn_deck.get_last()
+        last_drawn_card = self.game_state.discard_pile.get_last()
         self.add_child(last_drawn_card)
         self.layout.add(
             last_drawn_card, LayoutAnchor.CENTER, pygame.Vector2(Card.WIDTH, 0)
+        )
+
+    def activate_my_card_handlers(self, event: TransitionEvent) -> None:
+        if self.is_my_turn():
+            me = self.game_state.get_current_player()
+            cards = me.cards
+            for card in cards:
+                card.off("click")
+                card.on("click", self.create_card_click_handler(card))
+
+    def remove_discarded_card(self, event: TransitionEvent) -> None:
+        discarded_card = self.game_state.discard_pile.get_last()
+        self.add_child(discarded_card)
+        self.layout.add(
+            discarded_card, LayoutAnchor.CENTER, pygame.Vector2(Card.WIDTH, 0)
         )
 
     def handle_card_played(self, event: Event) -> None:

@@ -46,9 +46,9 @@ class GameObject(EventEmitter, abc.ABC):
 
     def handle_global_mouse_up(self, event: Event) -> None:
         if self.absolute_rect.collidepoint(pygame.mouse.get_pos()) and self._is_pressed:
+            self._is_pressed = False
             self.emit("click", event)
             event.stop_propagation()
-        self._is_pressed = False
 
     def handle_global_mouse_move(self, event: Event) -> None:
         # 매 프레임 실행된다.
