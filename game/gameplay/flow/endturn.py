@@ -10,6 +10,10 @@ class EndTurnFlowNode(AbstractGameFlowNode):
 
     def enter(self) -> None:
         super().enter()
+
+        # 스킵 처리
+        self.game_state.flush_skip()
+
         if len(self.game_state.get_current_player().cards) == 1:
             pass  # UNO 판별 필요
         elif len(self.game_state.get_current_player().cards) == 0:

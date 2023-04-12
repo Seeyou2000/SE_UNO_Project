@@ -14,35 +14,19 @@ class UseAbilityFlowNode(AbstractGameFlowNode):
         super().enter()
 
         if ColorableAbilityType.GIVE_TWO_CARDS == self.card.ability:
-            self.give_two_cards()
+            self.game_state.attack_cards(2)
         elif ColorableAbilityType.GIVE_FOUR_CARDS == self.card.ability:
-            self.give_four_cards()
+            self.game_state.attack_cards(4)
         elif ColorableAbilityType.SKIP_ORDER == self.card.ability:
-            self.skip_order()
+            self.game_state.reserve_skip(1)
         elif ColorableAbilityType.REVERSE_ORDER == self.card.ability:
-            self.reverse_order()
+            self.game_state.turn.reverse()
         elif NonColorableAbilityType.CHANGE_CARD_COLOR == self.card.ability:
-            self.change_card_color()
+            pass
+            # self.change_card_color()
 
         from game.gameplay.flow.endability import EndAbilityFlowNode
 
         self.machine.transition_to(
             EndAbilityFlowNode(self.game_state, self.card, self.is_prepare)
         )
-
-    def give_two_cards(self) -> None:
-        for _ in range(0, 2):
-            self.game_state.attack_cards.append(self.game_state.game_deck.draw())
-
-    def give_four_cards(self) -> None:
-        for _ in range(0, 4):
-            self.game_state.attack_cards.append(self.game_state.game_deck.draw())
-
-    def skip_order(self) -> None:
-        self.game_state.turn.next()
-
-    def reverse_order(self) -> None:
-        self.game_state.turn.reverse()
-
-    def change_card_color(self) -> None:
-        pass

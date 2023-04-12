@@ -125,8 +125,9 @@ class InGameScene(Scene):
 
     def create_card_click_handler(self, card: Card) -> EventHandler:
         def handler(event: Event) -> None:
-            print(f"ACTION: Use card {card}")
-            self.flow.transition_to(ValidateCardFlowNode(self.game_state, card))
+            if self.get_me() is self.game_state.get_current_player():
+                print(f"ACTION: Use card {card}")
+                self.flow.transition_to(ValidateCardFlowNode(self.game_state, card))
 
         return handler
 

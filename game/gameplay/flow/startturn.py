@@ -11,13 +11,15 @@ class StartTurnFlowNode(AbstractGameFlowNode):
         super().enter()
         player = self.game_state.get_current_player()
 
-        if len(self.game_state.attack_cards) != 0:
+        if self.game_state.is_attacked():
             for card in player.cards:
                 # 공격 카드
                 if (card.ability != ColorableAbilityType.GIVE_FOUR_CARDS) or (
                     card.ability != ColorableAbilityType.GIVE_TWO_CARDS
                 ):
-                    player.cards += self.game_state.flush_attack_cards()
+                    self.game_state.flush_attack_cards(
+                        self.game_state.get_current_player()
+                    )
 
     def update(self, dt: float) -> None:
         super().update(dt)
