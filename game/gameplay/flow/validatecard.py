@@ -27,6 +27,9 @@ class ValidateCardFlowNode(AbstractGameFlowNode):
             else self.card.ability == last_card.ability
         )
 
+        # 디버그용
+        is_card_color_valid = True
+
         if is_card_color_valid or is_card_content_valid:
             if is_number_card:
                 from game.gameplay.flow.discardcard import DiscardCardFlowNode

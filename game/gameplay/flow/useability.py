@@ -20,7 +20,7 @@ class UseAbilityFlowNode(AbstractGameFlowNode):
         elif ColorableAbilityType.SKIP_ORDER == self.card.ability:
             self.game_state.reserve_skip(1)
         elif ColorableAbilityType.REVERSE_ORDER == self.card.ability:
-            self.game_state.turn.reverse()
+            self.game_state.reverse_turn_direction()
         elif NonColorableAbilityType.CHANGE_CARD_COLOR == self.card.ability:
             pass
             # self.change_card_color()

@@ -1,5 +1,7 @@
 import random
+from enum import Enum
 
+from engine.event import Event, EventEmitter
 from game.constant import COLORS, ColorableAbilityType, NonColorableAbilityType
 from game.gameplay.card import Card
 from game.gameplay.deck import Deck
@@ -7,7 +9,13 @@ from game.gameplay.player import Player
 from game.gameplay.turn import Turn
 
 
-class GameState:
+class GameStateEventType(Enum):
+    PLAYER_EARNED_CARD = "player_earned_card"
+    TURN_DIRECTION_REVERSE = "turn_direction_reverse"
+    TURN_NEXT = "next_turn"
+
+
+class GameState(EventEmitter):
     """
     게임 진행과 관련된 데이터를 모두 담아놓는 클래스.
     함수는 데이터 조작과 관련된 것만 있어야 합니다.
@@ -47,6 +55,14 @@ class GameState:
     def get_current_player(self) -> Player:
         return self.players[self.turn.current]
 
+    def draw_card(self, player: Player) -> None:
+        drawn_card = self.game_deck.draw()
+        player.cards.append(drawn_card)
+        self.emit(
+            GameStateEventType.PLAYER_EARNED_CARD,
+            Event({"player": player, "card": drawn_card}),
+        )
+
     def discard(self, card: Card) -> None:
         self.discard_pile.cards.append(card)
         self.now_color = card.color
@@ -60,7 +76,7 @@ class GameState:
 
     def flush_attack_cards(self, player: Player) -> None:
         for _ in range(0, self._cards_to_attack):
-            player.draw_card(self.game_deck)
+            self.draw_card(player)
         self._cards_to_attack = 0
 
     def reserve_skip(self, n: int) -> None:
@@ -69,3 +85,24 @@ class GameState:
     def flush_skip(self) -> None:
         self.turn.skip(self._turn_to_add)
         self._turn_to_add = 0
+
+    def go_next_turn(self) -> None:
+        self.flush_skip()
+        self.turn.next()
+        self.emit(GameStateEventType.TURN_NEXT, Event(None))
+
+    def reverse_turn_direction(self) -> None:
+        self.turn.reverse()
+        self.emit(GameStateEventType.TURN_DIRECTION_REVERSE, Event(None))
+
+    def is_player_next_turn(self, player: Player) -> bool:
+        is_clockwise = self.turn.is_clockwise
+        target_turn_diff = -1 if is_clockwise else 1
+
+        player_index = self.players.index(player)
+        current_index = self.turn.current
+        diff = current_index - player_index
+        reverse_diff = (
+            diff - len(self.players) if is_clockwise else diff + len(self.players)
+        )
+        return (diff == target_turn_diff) or (reverse_diff == target_turn_diff)

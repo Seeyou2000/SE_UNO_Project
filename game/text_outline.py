@@ -35,7 +35,7 @@ def render(
     text_surface = font.render(text, True, text_color).convert_alpha()
 
     w = text_surface.get_width() + 2 * outline_px
-    h = font.get_linesize() + 2 * outline_px
+    h = font.get_linesize() + 4 * outline_px
     outline_surface = pygame.Surface((w, h)).convert_alpha()
     outline_surface.fill((0, 0, 0, 0))
 

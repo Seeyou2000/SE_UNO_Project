@@ -33,4 +33,4 @@ class PrepareFlowNode(AbstractGameFlowNode):
     def give_players_initial_cards(self) -> None:
         for player in self.players:
             for _ in range(0, 7):
-                player.draw_card(self.game_state.game_deck)
+                self.game_state.draw_card(player)

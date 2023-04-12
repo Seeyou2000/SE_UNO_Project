@@ -45,7 +45,7 @@ class World:
         tween.update(dt)
 
     def render(self) -> None:
-        self.screen.fill(pygame.Color("white"))
+        self.screen.fill(pygame.Color("#FFF6EF"))
         self.director.get_current().render(self.screen)
         pygame.display.flip()
 

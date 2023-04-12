@@ -80,3 +80,10 @@ class Button(BaseButton):
             self._rendered_text,
             self._rendered_text.get_rect(center=self.absolute_rect.center),
         )
+
+
+class SpriteButton(BaseButton):
+    def __init__(
+        self: Self, surfaces: ButtonSurfaces, on_click: EventHandler | None = None
+    ) -> None:
+        super().__init__(surfaces.normal.get_rect(), surfaces, on_click)

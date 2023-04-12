@@ -6,13 +6,13 @@ from game import text_outline
 from game.constant import AbilityType, ColorableAbilityType, NonColorableAbilityType
 from game.font import FontType, get_font
 
-CARD_SIZE_UNIT = 25
+CARD_SIZE_UNIT = 32
 CARD_BACK_SIZE_UNIT = CARD_SIZE_UNIT * 0.7
 
 CARD_WIDTH_MULTIPLIER = 3.2
 CARD_HEIGHT_MULTIPLIER = 4.5
 
-CARD_BORDER_RADIUS = 5
+CARD_BORDER_RADIUS = 8
 
 
 class Card(GameObjectContainer):
@@ -33,11 +33,6 @@ class Card(GameObjectContainer):
 
     def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
-        # pygame.draw.rect(surface, pygame.Color(self.color), self.absolute_rect)
-        # surface.blit(
-        #     self.card_number,
-        #     self.card_number.get_rect(center=self.absolute_rect.center),
-        # )
 
     def update(self, dt: float) -> None:
         super().update(dt)
@@ -68,12 +63,29 @@ def create_card_sprite(
     card_rect = card_surface.get_rect()
 
     if is_back:
+        # 두꺼운 테두리용
         pygame.draw.rect(
             card_surface,
-            card_color,
+            pygame.Color("#525252"),
             card_rect,
             border_radius=CARD_BORDER_RADIUS,
         )
+        # 색 배경
+        pygame.draw.rect(
+            card_surface,
+            pygame.Color("#262626"),
+            card_rect.inflate(-12, -12),
+            border_radius=CARD_BORDER_RADIUS - 4,
+        )
+
+        # 큰 느낌표
+        text_surface = get_font(FontType.YANGJIN, 42).render(
+            "!",
+            True,
+            pygame.Color("#525252"),
+        )
+        text_surface_rect = text_surface.get_rect(center=card_rect.center)
+        card_surface.blit(text_surface, text_surface_rect)
     else:
         # 두꺼운 테두리용
         pygame.draw.rect(
@@ -86,7 +98,7 @@ def create_card_sprite(
         pygame.draw.rect(
             card_surface,
             card_color,
-            card_rect.inflate(-8, -8),
+            card_rect.inflate(-12, -12),
             border_radius=CARD_BORDER_RADIUS - 3,
         )
 
@@ -114,15 +126,15 @@ def draw_number(surface: pygame.Surface, number: int) -> None:
 
     # 큰 텍스트
     text_surface = text_outline.render(
-        str(number), get_font(FontType.YANGJIN, 32), pygame.Color("black")
+        str(number), get_font(FontType.YANGJIN, 42), pygame.Color("black"), outline_px=4
     )
     text_surface_rect = text_surface.get_rect(center=container_rect.center)
     surface.blit(text_surface, text_surface_rect)
 
     # 작은 텍스트
-    small_text_margin = 10
+    small_text_margin = 14
     small_text_surface = text_outline.render(
-        str(number), get_font(FontType.YANGJIN, 10), pygame.Color("black")
+        str(number), get_font(FontType.YANGJIN, 12), pygame.Color("black")
     )
     small_text_rect = small_text_surface.get_rect()
     surface.blit(
@@ -157,16 +169,19 @@ def draw_ability(surface: pygame.Surface, ability: AbilityType) -> None:
             ability_text = "역"
 
     text_surface = text_outline.render(
-        ability_text, get_font(FontType.YANGJIN, 32), pygame.Color("black")
+        ability_text,
+        get_font(FontType.YANGJIN, 40),
+        pygame.Color("black"),
+        outline_px=4,
     )
     text_surface_rect = text_surface.get_rect(center=surface.get_rect().center)
     surface.blit(text_surface, text_surface_rect)
 
     # 작은 텍스트
-    small_text_margin = 10
+    small_text_margin = 14
     small_text_surface = text_outline.render(
         ability_text,
-        get_font(FontType.YANGJIN, 10),
+        get_font(FontType.YANGJIN, 12),
         pygame.Color("black"),
     )
     small_text_rect = small_text_surface.get_rect()

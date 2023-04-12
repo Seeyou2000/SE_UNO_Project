@@ -28,3 +28,7 @@ class Turn:
     @property
     def current(self) -> int:
         return self._index
+
+    @property
+    def is_clockwise(self) -> bool:
+        return self._is_clockwise
