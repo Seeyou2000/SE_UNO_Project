@@ -51,11 +51,18 @@ class SettingScene(Scene):
         self.add_children(screen_size_buttons)
 
     def place_colorblind_button(self) -> None:
+        def handle_colorblind_change(event: Event) -> None:
+            self.world.settings.toggle_colorblind()
+            button: Button = event.target
+            button.set_text(
+                f"Colorblind Mode: {'ON' if self.world.settings.is_colorblind else 'OFF'}"
+            )
+
         colorblind_button = Button(
-            "Colorblind mode [on/off]",
+            f"Colorblind Mode: {'ON' if self.world.settings.is_colorblind else 'OFF'}",
             pygame.Rect(0, 0, 300, BUTTON_HEIGHT),
             self.font,
-            lambda _: self.world.settings.toggle_colorblind(),
+            handle_colorblind_change,
         )
 
         self.layout.add(

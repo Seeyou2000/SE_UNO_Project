@@ -66,6 +66,8 @@ class InGameScene(Scene):
             )
         )
 
+        self.world.settings.on("change", lambda _: self.update_cards_colorblind)
+
     def update(self, dt: float) -> None:
         super().update(dt)
 
@@ -184,6 +186,8 @@ class InGameScene(Scene):
 
             self.add_child(card)
 
+        self.update_cards_colorblind()
+
         # 다른 플레이어
         layout_infos = [  # 플레이어 위치에서 시계방향으로
             (LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(0, 80)),
@@ -272,6 +276,7 @@ class InGameScene(Scene):
             return
 
         self.add_child(card)
+        card.set_colorblind(self.world.settings.is_colorblind)
         deck_margin = self.layout.get_constraint(self.deck_button).margin
         self.layout.add(
             card,
@@ -281,6 +286,11 @@ class InGameScene(Scene):
                 -self.deck_button.absolute_rect.centery + deck_margin.y,
             ),
         )
+
+    def update_cards_colorblind(self) -> None:
+        for child in self._children:
+            if isinstance(child, Card):
+                child.set_colorblind(self.world.settings.is_colorblind)
 
     # utils
     def get_me(self) -> Player:

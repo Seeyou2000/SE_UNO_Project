@@ -20,7 +20,10 @@ class Card(GameObjectContainer):
     HEIGHT = CARD_SIZE_UNIT * CARD_HEIGHT_MULTIPLIER
 
     def __init__(
-        self, color: str, number: int | None = None, ability: AbilityType | None = None
+        self,
+        color: str,
+        number: int | None = None,
+        ability: AbilityType | None = None,
     ) -> None:  # 일반 숫자 카드
         super().__init__()
         self.color = color
@@ -28,14 +31,21 @@ class Card(GameObjectContainer):
         self.ability = ability
         self.rect = pygame.Rect(0, 0, Card.WIDTH, Card.HEIGHT)
 
-        sprite = create_card_sprite(color, False, number, ability)
-        self.add_child(sprite)
+        self._is_colorblind = False
+        self.sprite = create_card_sprite(
+            color, False, self._is_colorblind, number, ability
+        )
+        self.add_child(self.sprite)
 
-    def render(self, surface: pygame.Surface) -> None:
-        super().render(surface)
-
-    def update(self, dt: float) -> None:
-        super().update(dt)
+    def set_colorblind(self, is_colorblind: bool) -> None:
+        if self._is_colorblind == is_colorblind:
+            return
+        self.remove_child(self.sprite)
+        self.sprite = create_card_sprite(
+            self.color, False, is_colorblind, self.number, self.ability
+        )
+        self.add_child(self.sprite)
+        self._is_colorblind = is_colorblind
 
 
 COLORS = {
@@ -46,10 +56,19 @@ COLORS = {
     "blue": pygame.Color("#419AFF"),
 }
 
+COLORBLIND_COLORS = {
+    "black": pygame.Color("black"),
+    "red": pygame.Color("#D41159"),
+    "yellow": pygame.Color("#FEFE62"),
+    "green": pygame.Color("#1AFF1A"),
+    "blue": pygame.Color("#1A85FF"),
+}
+
 
 def create_card_sprite(
     color: str,
     is_back: bool,
+    is_colorblind: bool,
     number: int | None = None,
     ability: AbilityType | None = AbilityType,
 ) -> Sprite:
@@ -57,7 +76,7 @@ def create_card_sprite(
     height = (
         CARD_BACK_SIZE_UNIT if is_back else CARD_SIZE_UNIT
     ) * CARD_HEIGHT_MULTIPLIER
-    card_color = COLORS[color]
+    card_color = COLORBLIND_COLORS[color] if is_colorblind else COLORS[color]
 
     card_surface = pygame.Surface((width, height), pygame.SRCALPHA)
     card_rect = card_surface.get_rect()

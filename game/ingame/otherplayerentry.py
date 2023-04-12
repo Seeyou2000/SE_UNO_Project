@@ -90,7 +90,7 @@ class OtherPlayerEntry(GameObjectContainer):
                 )
 
     def create_card_sprite(self) -> None:
-        card_back_sprite = create_card_sprite("black", True)
+        card_back_sprite = create_card_sprite("black", True, False)
         card_back_sprite.rect.y = 50
         self.add_child(card_back_sprite)
         self.card_sprites.append(card_back_sprite)
