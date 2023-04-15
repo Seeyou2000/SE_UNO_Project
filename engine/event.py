@@ -7,6 +7,7 @@ EventData = dict[str, Any] | None
 
 
 class Event:
+    name: str
     data: EventData
     is_propagation_stopped: bool
     target: EventEmitter | None
@@ -56,6 +57,7 @@ class EventEmitter:
         self.event_map[event_name].remove(handler)
 
     def emit(self, event_name: str, event: Event, is_target_self: bool = True) -> None:
+        event.name = event_name
         if is_target_self:
             event.target = self
         if event.is_propagation_stopped:

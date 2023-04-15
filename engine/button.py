@@ -3,7 +3,7 @@ from typing import Self
 import pygame
 from attr import dataclass
 
-from engine.event import EventHandler
+from engine.event import Event, EventHandler
 from engine.gameobject import GameObject
 
 
@@ -19,6 +19,7 @@ class BaseButton(GameObject):
     on_click: EventHandler | None
 
     surfaces: ButtonSurfaces
+    _override_surface: pygame.Surface
 
     def __init__(
         self: Self,
@@ -30,6 +31,7 @@ class BaseButton(GameObject):
 
         self.rect = rect
         self.surfaces = surfaces
+        self._override_surface = None
 
         if on_click is not None:
             self.on("click", on_click)
@@ -37,39 +39,77 @@ class BaseButton(GameObject):
     def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
 
-        button_surface = self.surfaces.normal
-        if self._is_pressed:
-            button_surface = self.surfaces.pressed
-        elif self._is_hovered:
-            button_surface = self.surfaces.hover
+        button_surface = None
+        if self._override_surface is not None:
+            button_surface = self._override_surface
+        else:
+            button_surface = self.surfaces.normal
+            if self._is_pressed:
+                button_surface = self.surfaces.pressed
+            elif self._is_hovered:
+                button_surface = self.surfaces.hover
 
-        surface.blit(button_surface, self.absolute_rect)
+        surface.blit(
+            button_surface, button_surface.get_rect(center=self.absolute_rect.center)
+        )
 
 
 class Button(BaseButton):
+    has_focus: bool
+
     def __init__(
-        self: Self,
+        self,
         text: str,
         rect: pygame.Rect,
         font: pygame.font.Font,
         on_click: EventHandler | None = None,
     ) -> None:
-        normal_surface = pygame.Surface(rect.size)
-        normal_surface.fill(pygame.Color("#fff1e7"))
+        self.has_focus = False
+        border_radius = 10
+        normal_rect = rect.inflate(-4, -4)
+        normal_surface = pygame.Surface(normal_rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(
+            normal_surface,
+            pygame.Color("#fff1e7"),
+            normal_rect,
+            border_radius=border_radius,
+        )
 
         hover_surface = normal_surface.copy()
-        hover_surface.fill(pygame.Color("#ffe8d7"))
+        pygame.draw.rect(
+            hover_surface,
+            pygame.Color("#ffe8d7"),
+            normal_rect,
+            border_radius=border_radius,
+        )
 
         pressed_surface = normal_surface.copy()
-        pressed_surface.fill(pygame.Color("#ffdcc3"))
+        pygame.draw.rect(
+            pressed_surface,
+            pygame.Color("#ffdcc3"),
+            normal_rect,
+            border_radius=border_radius,
+        )
         super().__init__(
             rect,
             ButtonSurfaces(normal_surface, hover_surface, pressed_surface),
             on_click,
         )
 
+        focus_ring_rect = rect.copy()
+        self.focus_ring_surface = pygame.Surface(focus_ring_rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(
+            self.focus_ring_surface,
+            pygame.Color("#ffdcc3"),
+            focus_ring_rect,
+            width=2,
+            border_radius=border_radius + 4,
+        )
+
         self.font = font
         self.set_text(text)
+
+        self.on("keydown", self.handle_keydown)
 
     def set_text(self, text: str) -> None:
         self._rendered_text = self.font.render(text, True, pygame.Color("#451e11"))
@@ -80,6 +120,16 @@ class Button(BaseButton):
             self._rendered_text,
             self._rendered_text.get_rect(center=self.absolute_rect.center),
         )
+        if self.has_focus:
+            surface.blit(
+                self.focus_ring_surface,
+                self.focus_ring_surface.get_rect(center=self.absolute_rect.center),
+            )
+
+    def handle_keydown(self, event: Event) -> None:
+        pressed_key: int = event.data["key"]
+        if self.has_focus and pressed_key == pygame.K_RETURN:
+            self.emit("click", Event(None))
 
 
 class SpriteButton(BaseButton):

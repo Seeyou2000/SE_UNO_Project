@@ -2,6 +2,7 @@ import sys
 
 import pygame
 
+from engine.event import Event
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
@@ -43,5 +44,6 @@ class MenuScene(Scene):
             self.layout.add(
                 item, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, 80 * i + 80)
             )
+            self.focus_controller.add(item)
 
         self.add_children([sprite] + button_list)

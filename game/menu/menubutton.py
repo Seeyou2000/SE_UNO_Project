@@ -3,10 +3,11 @@ import tween
 
 from engine.button import BaseButton, ButtonSurfaces
 from engine.event import Event, EventHandler
+from engine.focus import Focusable
 from game.font import FontType, get_font
 
 
-class MenuButton(BaseButton):
+class MenuButton(BaseButton, Focusable):
     def __init__(
         self,
         text: str,
@@ -25,7 +26,12 @@ class MenuButton(BaseButton):
         )
 
         pressed_surface = normal_surface.copy()
-        pressed_surface.fill(pygame.Color("#ffdcc3"))
+        pygame.draw.rect(
+            pressed_surface,
+            pygame.Color("#ffdcc3"),
+            rect.inflate(0, -60),
+            border_radius=20,
+        )
 
         super().__init__(
             rect,
@@ -38,6 +44,8 @@ class MenuButton(BaseButton):
 
         self.on("mouse_enter", self.handle_mouse_enter)
         self.on("mouse_out", self.handle_mouse_out)
+        self.on("focus", self.handle_mouse_enter)
+        self.on("unfocus", self.handle_mouse_out)
         self.hover_alpha = 0
 
     def set_text(self, text: str) -> None:
@@ -54,8 +62,13 @@ class MenuButton(BaseButton):
         super().update(dt)
 
     def handle_mouse_enter(self, event: Event) -> None:
+        self._override_surface = self.surfaces.hover
         t = tween.to(self, "hover_alpha", 255, 0.3)
-        t.on_update(lambda: self.surfaces.hover.set_alpha(self.hover_alpha))
+        t.on_update(self.update_hover_alpha)
 
     def handle_mouse_out(self, event: Event) -> None:
+        self._override_surface = None
         self.hover_alpha = 0
+
+    def update_hover_alpha(self) -> None:
+        self.surfaces.hover.set_alpha(self.hover_alpha)
