@@ -55,7 +55,7 @@ class SettingScene(Scene):
             self.world.settings.toggle_colorblind()
             button: Button = event.target
             button.set_text(
-                f"Colorblind Mode: {'ON' if self.world.settings.is_colorblind else 'OFF'}"
+                f"Colorblind Mode: {'ON' if self.world.settings.is_colorblind else 'OFF'}"  # noqa: E501
             )
 
         colorblind_button = Button(

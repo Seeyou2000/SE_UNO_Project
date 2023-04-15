@@ -2,7 +2,6 @@ import sys
 
 import pygame
 
-from engine.event import Event
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
