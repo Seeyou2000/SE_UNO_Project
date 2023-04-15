@@ -1,11 +1,18 @@
 import random
+from enum import Enum
 
-from engine.event import EventEmitter
+from engine.event import Event, EventEmitter
+from game.constant import COLORS, ColorableAbilityType, NonColorableAbilityType
+from game.gameplay.card import Card
+from game.gameplay.deck import Deck
+from game.gameplay.player import Player
 from game.gameplay.turn import Turn
-from game.scene.card import Card
-from game.scene.constant import COLORS, ColorableAbilityType, NonColorableAbilityType
-from game.scene.deck import Deck
-from game.scene.player import Player
+
+
+class GameStateEventType(Enum):
+    PLAYER_EARNED_CARD = "player_earned_card"
+    TURN_DIRECTION_REVERSE = "turn_direction_reverse"
+    TURN_NEXT = "next_turn"
 
 
 class GameState(EventEmitter):
@@ -15,14 +22,15 @@ class GameState(EventEmitter):
     게임의 실제 로직 관련된 부분은 game.gameplay.state 모듈에 작성해 주세요.
     """
 
+    game_deck: Deck
     players: list[Player]
     turn: Turn
 
+    _turn_to_add: int
+    _cards_to_attack: int
+
     def __init__(self) -> None:
         super().__init__()
-        self.game_deck = Deck(self.create_full_deck_cards())
-        self.drawn_deck = Deck([])
-        self.attack_cards = []
         self.now_color = "red"
 
     def create_full_deck_cards(self) -> list[Card]:
@@ -36,19 +44,65 @@ class GameState(EventEmitter):
         random.shuffle(cards)
         return cards
 
-    def flush_attack_cards(self) -> list[Card]:
-        cards = self.attack_cards.copy()
-        self.attack_cards.clear()
-        return cards
-
     def reset(self, players: list[Player]) -> None:
+        self.game_deck = Deck(self.create_full_deck_cards())
+        self.discard_pile = Deck([])
         self.players = players
         self.turn = Turn(len(players))
+        self._turn_to_add = 0
+        self._cards_to_attack = 0
 
     def get_current_player(self) -> Player:
         return self.players[self.turn.current]
 
-    def to_drawn_deck(self, card: Card) -> None:
-        self.drawn_deck.cards.append(card)
+    def draw_card(self, player: Player) -> None:
+        drawn_card = self.game_deck.draw()
+        player.cards.append(drawn_card)
+        self.emit(
+            GameStateEventType.PLAYER_EARNED_CARD,
+            Event({"player": player, "card": drawn_card}),
+        )
+
+    def discard(self, card: Card) -> None:
+        self.discard_pile.cards.append(card)
         self.now_color = card.color
         self.get_current_player().cards.remove(card)
+
+    def attack_cards(self, n: int) -> None:
+        self._cards_to_attack += n
+
+    def is_attacked(self) -> bool:
+        return self._cards_to_attack > 0
+
+    def flush_attack_cards(self, player: Player) -> None:
+        for _ in range(0, self._cards_to_attack):
+            self.draw_card(player)
+        self._cards_to_attack = 0
+
+    def reserve_skip(self, n: int) -> None:
+        self._turn_to_add += n
+
+    def flush_skip(self) -> None:
+        self.turn.skip(self._turn_to_add)
+        self._turn_to_add = 0
+
+    def go_next_turn(self) -> None:
+        self.flush_skip()
+        self.turn.next()
+        self.emit(GameStateEventType.TURN_NEXT, Event(None))
+
+    def reverse_turn_direction(self) -> None:
+        self.turn.reverse()
+        self.emit(GameStateEventType.TURN_DIRECTION_REVERSE, Event(None))
+
+    def is_player_next_turn(self, player: Player) -> bool:
+        is_clockwise = self.turn.is_clockwise
+        target_turn_diff = -1 if is_clockwise else 1
+
+        player_index = self.players.index(player)
+        current_index = self.turn.current
+        diff = current_index - player_index
+        reverse_diff = (
+            diff - len(self.players) if is_clockwise else diff + len(self.players)
+        )
+        return (diff == target_turn_diff) or (reverse_diff == target_turn_diff)

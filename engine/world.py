@@ -1,6 +1,7 @@
 import sys
 
 import pygame
+import tween
 
 from engine.event import Event
 from engine.scene import SceneDirector
@@ -39,37 +40,35 @@ class World:
 
     def update(self) -> None:
         self.handle_event()
-        self.director.get_current().update()
-        self.clock.tick(self.target_fps)
+        dt = self.clock.tick(self.target_fps) / 1000.0
+        self.director.get_current().update(dt)
+        tween.update(dt)
 
     def render(self) -> None:
-        self.screen.fill(pygame.Color("white"))
+        self.screen.fill(pygame.Color("#FFF6EF"))
         self.director.get_current().render(self.screen)
         pygame.display.flip()
 
     def handle_event(self) -> None:
+        current_scene = self.director.get_current()
         for event in pygame.event.get():
             match event.type:
                 case pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 case pygame.MOUSEBUTTONDOWN:
-                    self.director.get_current().emit(
-                        "global_mouse_down", Event(event.dict)
-                    )
+                    current_scene.emit("global_mouse_down", Event(event.dict))
                 case pygame.MOUSEBUTTONUP:
-                    self.director.get_current().emit(
-                        "global_mouse_up", Event(event.dict)
-                    )
+                    current_scene.emit("global_mouse_up", Event(event.dict))
                 case pygame.MOUSEMOTION:
-                    self.director.get_current().emit(
-                        "global_mouse_move", Event(event.dict)
-                    )
+                    current_scene.emit("global_mouse_move", Event(event.dict))
+                case pygame.KEYDOWN:
+                    current_scene.emit("keydown", Event(event.dict))
                 case pygame.WINDOWRESIZED:
                     event_width = event.dict["x"]
                     event_height = event.dict["y"]
-                    clipped_width = max(800, event_width)
-                    clipped_height = max(600, event_height)
+                    clipped_width = max(1280, event_width)
+                    clipped_height = max(720, event_height)
                     self.set_size((clipped_width, clipped_height))
 
     def handle_settings_change(self, _: Event) -> None:

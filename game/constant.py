@@ -20,4 +20,3 @@ AbilityType = ColorableAbilityType | NonColorableAbilityType
 
 COLORS = ["red", "yellow", "green", "blue"]
 NAME = ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX"]
-NAME = ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX"]

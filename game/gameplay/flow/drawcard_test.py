@@ -1,20 +1,20 @@
 import pygame
 
+from game.constant import NAME
 from game.gameplay.flow.drawcard import DrawCardFlowNode
-from game.gameplay.flow.gameflowmachine import GameFlowMachine, GameFlowMachineEventType
-from game.gameplay.flow.gamestart import GameStartFlowNode
+from game.gameplay.flow.gameflowmachine import GameFlowMachine
+from game.gameplay.flow.prepare import PrepareFlowNode
 from game.gameplay.gamestate import GameState
-from game.scene.constant import NAME
-from game.scene.player import Player
+from game.gameplay.player import Player
 
 
-def test_draw_card():
+def test_draw_card() -> None:
     pygame.font.init()
     player_count = 2
     game_state = GameState()
     flow = GameFlowMachine()
     flow.transition_to(
-        GameStartFlowNode(game_state, [Player(name) for name in NAME[:player_count]])
+        PrepareFlowNode(game_state, [Player(name) for name in NAME[:player_count]])
     )
     before_cards = len(game_state.players[0].cards)
     flow.transition_to(DrawCardFlowNode(game_state))

@@ -1,4 +1,4 @@
-from game.scene.card import Card
+from game.gameplay.card import Card
 
 
 class Deck:

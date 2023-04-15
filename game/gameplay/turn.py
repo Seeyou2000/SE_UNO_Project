@@ -21,6 +21,14 @@ class Turn:
     def reverse(self) -> None:
         self._is_clockwise = not self._is_clockwise
 
+    def skip(self, n: int) -> None:
+        for _ in range(0, n):
+            self.next()
+
     @property
     def current(self) -> int:
         return self._index
+
+    @property
+    def is_clockwise(self) -> bool:
+        return self._is_clockwise

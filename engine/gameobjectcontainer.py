@@ -13,11 +13,13 @@ class GameObjectContainer(GameObject, abc.ABC):
         super().__init__()
         self._children = []
 
-    def update(self) -> None:
+    def update(self, dt: float) -> None:
+        super().update(dt)
         for child in self._children:
-            child.update()
+            child.update(dt)
 
     def render(self, surface: pygame.Surface) -> None:
+        super().render(surface)
         for child in self._children:
             child.render(surface)
 
@@ -32,6 +34,9 @@ class GameObjectContainer(GameObject, abc.ABC):
     def remove_child(self, child: GameObject) -> None:
         self._children.remove(child)
         child.parent = None
+
+    def has_child(self, child: GameObject) -> None:
+        return child in self._children
 
     def emit(self, event_name: str, event: Event, is_target_self: bool = True) -> None:
         super().emit(event_name, event, is_target_self)

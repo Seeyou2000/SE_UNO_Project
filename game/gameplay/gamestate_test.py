@@ -1,11 +1,11 @@
 import pygame
 
+from game.constant import NAME
 from game.gameplay.gamestate import GameState
-from game.scene.constant import NAME
-from game.scene.player import Player
+from game.gameplay.player import Player
 
 
-def test_gamestate():
+def test_gamestate() -> None:
     pygame.font.init()
     player_count = 2
     game_state = GameState()
