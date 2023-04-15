@@ -199,11 +199,10 @@ class SettingScene(Scene):
         changing_button: Button = self.changing_key[1]
         pressed_key = event.data["key"]
 
-        if pressed_key == pygame.K_ESCAPE:
-            changing_button.set_text(self.get_display_keyname(changing_dict_key))
-            return
-
         if changing_dict_key is not None:
+            if pressed_key == pygame.K_ESCAPE:
+                changing_button.set_text(self.get_display_keyname(changing_dict_key))
+                return
             new_keymap = settings.keymap.copy()
             new_keymap[changing_dict_key] = pressed_key
             settings.set_values(keymap=new_keymap)
