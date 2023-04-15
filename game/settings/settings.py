@@ -73,7 +73,7 @@ class Settings(EventEmitter):
                 effect_volume=value["effect_volume"],
             )
 
-        except AttributeError:
+        except (AttributeError, KeyError):
             if value is DEFAULT_SETTINGS:
                 print("기본 설정값을 불러오는 데 문제가 있습니다. 키값을 점검하세요.")
             else:
