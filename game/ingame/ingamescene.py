@@ -224,7 +224,12 @@ class InGameScene(Scene):
         for i, player in enumerate(other_players):
             layout_info = layout_infos[fill_order[len(other_players) - 1][i]]
 
-            entry = OtherPlayerEntry(pygame.Vector2(250, 150), player, layout_info[0])
+            entry = OtherPlayerEntry(
+                pygame.Vector2(250, 150),
+                player,
+                layout_info[0],
+                self.game_state.turn_timer,
+            )
             self.other_player_entries.append(entry)
             self.game_state.on(
                 GameStateEventType.PLAYER_EARNED_CARD, entry.handle_card_earned

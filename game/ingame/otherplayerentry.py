@@ -7,6 +7,7 @@ from game.font import FontType, get_font
 from game.gameplay.card import Card, create_card_sprite
 from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
+from game.gameplay.timer import Timer
 from game.ingame.timerindicator import TimerIndicator
 
 CARD_SIZE_UNIT = 14
@@ -19,7 +20,7 @@ class OtherPlayerEntry(GameObjectContainer):
     card_sprites: list[Card]
 
     def __init__(
-        self, size: pygame.Vector2, player: Player, anchor: pygame.Vector2
+        self, size: pygame.Vector2, player: Player, anchor: pygame.Vector2, timer: Timer
     ) -> None:
         super().__init__()
 
@@ -37,7 +38,7 @@ class OtherPlayerEntry(GameObjectContainer):
             "NEXT", pygame.Vector2(100, 10), name_font, pygame.Color("#FF9549")
         )
 
-        self.timer_display = TimerIndicator(pygame.Rect(0, 0, 20, 20))
+        self.timer_display = TimerIndicator(pygame.Rect(0, 0, 20, 20), timer)
         self.add_child(self.timer_display)
 
         if anchor.x < 0.5:
