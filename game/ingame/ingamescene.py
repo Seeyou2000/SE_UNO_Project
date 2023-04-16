@@ -163,6 +163,18 @@ class InGameScene(Scene):
         self.layout.add(
             self.turn_direction_indicator, LayoutAnchor.CENTER, pygame.Vector2(0, -150)
         )
+        """self.leftcards = len(self.game_state.game_deck.cards)
+        text_surface = get_font(FontType.YANGJIN, 42).render(
+            str(len(self.leftcards)),
+            True,
+            pygame.Color("#525252"),
+        )
+        # self.add_child(text_surface)
+        self.layout.add(
+            text_surface,
+            LayoutAnchor.CENTER,
+            pygame.Vector2(Card.WIDTH + 20, -Card.HEIGHT - 40),
+        )"""
 
     def setup_players(self, event: TransitionEvent) -> None:
         players = self.game_state.players
