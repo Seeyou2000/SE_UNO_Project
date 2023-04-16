@@ -10,7 +10,6 @@ class EndTurnFlowNode(AbstractGameFlowNode):
 
     def enter(self) -> None:
         super().enter()
-
         if len(self.game_state.get_current_player().cards) == 1:
             pass  # UNO 판별 필요
         elif len(self.game_state.get_current_player().cards) == 0:
@@ -18,3 +17,4 @@ class EndTurnFlowNode(AbstractGameFlowNode):
         else:
             self.game_state.go_next_turn()
             self.machine.transition_to(StartTurnFlowNode(self.game_state))
+        self.game_state.turn_timer.reset()

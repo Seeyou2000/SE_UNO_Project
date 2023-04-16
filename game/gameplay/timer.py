@@ -16,7 +16,7 @@ class Timer(EventEmitter):
     def update(self, dt: float) -> None:
         self._time += dt
         if self._time >= self._duration:
-            self.reset()
+            # self.reset()
             self.emit("tick", Event({}))
 
     def reset(self) -> None:
