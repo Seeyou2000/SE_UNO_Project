@@ -6,6 +6,7 @@ import tween
 from engine.event import Event
 from engine.scene import SceneDirector
 from game.settings.settings import Settings
+from game.audio_player import AudioPlayer
 
 
 class World:
@@ -23,6 +24,8 @@ class World:
         self.target_fps = target_fps
         self.settings = Settings()
         self.settings.on("change", self.handle_settings_change)
+        self.audio_player = AudioPlayer(self.settings)
+        self.audio_player.play_bg_music()
 
     def set_size(self, size: tuple[float, float]) -> None:
         self.screen = pygame.display.set_mode(size, pygame.RESIZABLE)
