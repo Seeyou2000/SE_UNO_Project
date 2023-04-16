@@ -4,7 +4,7 @@ from engine.event import Event
 from engine.gameobjectcontainer import GameObjectContainer
 from engine.text import Text
 from game.font import FontType, get_font
-from game.gameplay.card import Card, create_card_sprite
+from game.gameplay.cardentitiy import CardEntity, create_card_sprite
 from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
 from game.gameplay.timer import Timer
@@ -17,7 +17,7 @@ CARD_BACK_BORDER_RADIUS = 5
 
 
 class OtherPlayerEntry(GameObjectContainer):
-    card_sprites: list[Card]
+    card_sprites: list[CardEntity]
 
     def __init__(
         self, size: pygame.Vector2, player: Player, anchor: pygame.Vector2, timer: Timer
