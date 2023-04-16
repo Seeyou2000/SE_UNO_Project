@@ -70,6 +70,7 @@ class InGameScene(Scene):
 
     def update(self, dt: float) -> None:
         super().update(dt)
+        self.game_state.turn_timer.update(dt)
 
         my_cards = self.get_me().cards
         # print(len(cards))

@@ -6,6 +6,7 @@ from game.constant import COLORS, ColorableAbilityType, NonColorableAbilityType
 from game.gameplay.card import Card
 from game.gameplay.deck import Deck
 from game.gameplay.player import Player
+from game.gameplay.timer import Timer
 from game.gameplay.turn import Turn
 
 
@@ -25,6 +26,7 @@ class GameState(EventEmitter):
     game_deck: Deck
     players: list[Player]
     turn: Turn
+    turn_timer: Timer
 
     _turn_to_add: int
     _cards_to_attack: int
@@ -32,6 +34,7 @@ class GameState(EventEmitter):
     def __init__(self) -> None:
         super().__init__()
         self.now_color = "red"
+        self.turn_timer = Timer(10)
 
     def create_full_deck_cards(self) -> list[Card]:
         cards = [Card(color, number) for number in (range(1, 10)) for color in COLORS]
@@ -51,6 +54,7 @@ class GameState(EventEmitter):
         self.turn = Turn(len(players))
         self._turn_to_add = 0
         self._cards_to_attack = 0
+        self.turn_timer.reset()
 
     def get_current_player(self) -> Player:
         return self.players[self.turn.current]
