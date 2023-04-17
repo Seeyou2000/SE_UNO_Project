@@ -1,5 +1,6 @@
 import pygame
 
+from engine.focus import Focusable
 from engine.gameobjectcontainer import GameObjectContainer
 from engine.sprite import Sprite
 from game import text_outline
@@ -32,9 +33,11 @@ COLORBLIND_COLORS = {
 }
 
 
-class CardEntity(GameObjectContainer):
+class CardEntity(GameObjectContainer, Focusable):
     WIDTH = CARD_SIZE_UNIT * CARD_WIDTH_MULTIPLIER
     HEIGHT = CARD_SIZE_UNIT * CARD_HEIGHT_MULTIPLIER
+
+    is_outline_enabled: bool
 
     def __init__(self, card: Card) -> None:
         super().__init__()
@@ -59,6 +62,18 @@ class CardEntity(GameObjectContainer):
         )
         self.add_child(self.sprite)
         self._is_colorblind = is_colorblind
+
+    def render(self, surface: pygame.Surface) -> None:
+        super().render(surface)
+
+        if self.has_focus:
+            pygame.draw.rect(
+                surface,
+                pygame.Color("red"),
+                self.absolute_rect,
+                2,
+                border_radius=CARD_BORDER_RADIUS,
+            )
 
 
 def create_card_sprite(

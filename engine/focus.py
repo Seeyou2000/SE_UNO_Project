@@ -64,6 +64,12 @@ class FocusController:
         self._targets[target] = {}
         target.controller = self
 
+    def remove(self, target: Focusable) -> None:
+        targets = list(self._targets.keys())
+        self._current_focus = targets[targets.index(target) - 1]
+        del self._targets[target]
+        target.controller = None
+
     def set_siblings(self, target: Focusable, siblings: FocusSiblings) -> None:
         """
         방향별 sibling을 직접 지정하고 싶을 때 사용합니다. 지정하지 않으면 포커스를 옮길 때 자동으로 거리 기반으로 찾습니다.

@@ -99,16 +99,24 @@ class InGameScene(Scene):
 
         self.world.settings.on("change", lambda _: self.update_cards_colorblind)
 
-        self.on("keydown", self.handle_color_keyboard)
+        self.on("keydown", self.handle_keydown)
 
-    def handle_color_keyboard(self, event: Event) -> None:
+    def handle_keydown(self, event: Event) -> None:
+        key: int = event.data["key"]
+        # 우노
+        if key == self.world.settings.keymap.get("draw_card"):
+            self.try_draw()
+        elif key == self.world.settings.keymap.get("uno"):
+            self.flow.is_uno(self.game_state, self.get_me())
+
+        # 색 선택
         from game.gameplay.flow.endability import EndAbilityFlowNode
 
         if self.change_color_modal is None:
             return
         if self.has_child(self.change_color_modal):
             card: Card = self.flow._current_node.card  # noqa: SLF001
-            match event.data["key"]:
+            match key:
                 case pygame.K_1:
                     self.game_state.change_card_color("red")
                     self.flow.transition_to(
@@ -171,7 +179,8 @@ class InGameScene(Scene):
             )
             y = (
                 -30
-                if self.is_my_turn() and card_entity.is_hovered
+                if self.is_my_turn()
+                and (card_entity.is_hovered or card_entity.has_focus)
                 else -4
                 if self.is_my_turn()
                 else 12
@@ -368,7 +377,7 @@ class InGameScene(Scene):
             "",
             pygame.Rect(0, 0, CardEntity.WIDTH, CardEntity.HEIGHT),
             self.font,
-            lambda _: self.flow.transition_to(DrawCardFlowNode(self.game_state)),
+            lambda _: self.try_draw,
         )
         self.add_child(deck_button)
         self.layout.add(
@@ -475,6 +484,10 @@ class InGameScene(Scene):
             if isinstance(child, CardEntity):
                 child.set_colorblind(self.world.settings.is_colorblind)
 
+    def try_draw(self) -> None:
+        if self.is_my_turn() and isinstance(self.flow.current_node, StartTurnFlowNode):
+            self.flow.transition_to(DrawCardFlowNode(self.game_state))
+
     def end_game(self, event: Event) -> None:
         if len(self.get_me().cards) == 0:
             self.game_result = "Win"
@@ -528,6 +541,7 @@ class InGameScene(Scene):
             self.my_card_entities.append(card_entity)
             card_entity.on("click", self.create_card_click_handler(card))
             card_entity.set_colorblind(self.world.settings.is_colorblind)
+            self.focus_controller.add(card_entity)
 
         if layout_constaint is not None:
             self.layout.add(
@@ -542,4 +556,5 @@ class InGameScene(Scene):
                 self.remove_child(child)
                 if child in self.my_card_entities:
                     self.my_card_entities.remove(child)
+                    self.focus_controller.remove(child)
                 break
