@@ -25,6 +25,7 @@ class Focusable(EventEmitter, abc.ABC):
     def __init__(self) -> None:
         super().__init__()
         self.has_focus = False
+        self.controller = None
         self.on("keydown", self.emit_click)
         self.on("mouse_enter", self.focus_on_hover)
 
@@ -41,6 +42,10 @@ class Focusable(EventEmitter, abc.ABC):
             self.emit("click", Event(None))
 
     def focus_on_hover(self, event: Event) -> None:
+        if self.controller is None:
+            return
+        if event.target is not self:
+            return
         self.controller.focus_target(self)
 
 
@@ -120,11 +125,15 @@ class FocusController:
             reverse=farthest,
         )
 
+        # print("dist", distance_sorted)
+
         angle_filtered = [
             other
             for other in distance_sorted
             if is_on_direction_vector(target, other, direction_vector)
         ]
+
+        # print("angle", angle_filtered)
 
         if len(angle_filtered) > 0:
             return angle_filtered[0]
@@ -132,12 +141,27 @@ class FocusController:
         return None
 
 
-def is_on_direction_vector(
+def get_angle(
     target: Focusable, other: Focusable, direction_vector: pygame.Vector2
-) -> None:
+) -> float:
     target_center = pygame.Vector2(target.rect.center)
     other_center = pygame.Vector2(other.rect.center)
     diff = other_center - target_center
 
+    angle = diff.angle_to(direction_vector)
+    # -360이 뜨는 경우가 있어 보정
+    if angle < -359:
+        angle += 360
+
+    print(target.text, other.text, angle)
+
+    return angle
+
+
+def is_on_direction_vector(
+    target: Focusable, other: Focusable, direction_vector: pygame.Vector2
+) -> None:
+    angle = get_angle(target, other, direction_vector)
+
     # +45나 -45 안이면 해당 방향에 있는 것으로 간주
-    return abs(diff.angle_to(direction_vector)) < 45
+    return abs(angle) < 45

@@ -1,6 +1,7 @@
 import pygame
 
 from engine.button import Button
+from engine.focus import FocusMoveDirection
 from engine.layout import LayoutAnchor
 from engine.scene import Scene
 from engine.world import World
@@ -13,6 +14,7 @@ class SelectScene(Scene):
 
         font = get_font(FontType.UI_BOLD, 20)
 
+        player_count_buttons = []
         for i in range(2, 7):
             button = Button(
                 str(i),
@@ -23,7 +25,10 @@ class SelectScene(Scene):
             self.layout.add(
                 button, LayoutAnchor.CENTER, pygame.Vector2((i - 4) * 500 / 5, 0)
             )
+            self.focus_controller.add(button)
+            button.on("focus", lambda _, button=button: print(button))
             self.add_child(button)
+            player_count_buttons.append(button)
 
         from game.menu.menuscene import MenuScene
 
@@ -37,6 +42,13 @@ class SelectScene(Scene):
             menu_button, LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-50, -50)
         )
         self.add_child(menu_button)
+
+        self.focus_controller.set_siblings(
+            player_count_buttons[-1], {FocusMoveDirection.RIGHT: menu_button}
+        )
+        self.focus_controller.set_siblings(
+            menu_button, {FocusMoveDirection.LEFT: player_count_buttons[-1]}
+        )
 
     def update(self, dt: float) -> None:
         super().update(dt)
