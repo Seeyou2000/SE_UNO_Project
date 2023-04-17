@@ -23,7 +23,9 @@ from game.gameplay.flow.startturn import StartTurnFlowNode
 from game.gameplay.flow.validatecard import ValidateCardFlowNode
 from game.gameplay.gamestate import GameState, GameStateEventType
 from game.gameplay.player import Player
+from game.gameplay.timer import Timer
 from game.ingame.otherplayerentry import OtherPlayerEntry
+from game.ingame.timerindicator import TimerIndicator
 from game.ingame.turndirectionindicator import TurnDirectionIndicator
 
 
@@ -39,6 +41,7 @@ class InGameScene(Scene):
         self.other_player_entries = []
         self.my_card_entities = []
         self.game_state = GameState()
+        self.screen_size = self.world.get_rect()
 
         self.setup_base()
 
@@ -169,18 +172,6 @@ class InGameScene(Scene):
         self.layout.add(
             self.turn_direction_indicator, LayoutAnchor.CENTER, pygame.Vector2(0, -150)
         )
-        """leftcards = self.game_state.game_deck.get_card_amount # game_state.game_deck 해결 방법? 인식안됨
-        text_surface = get_font(FontType.YANGJIN, 42).render(
-            str(leftcards),
-            True,
-            pygame.Color("#525252"),
-        )
-        # self.add_child(text_surface)
-        self.layout.add(
-            text_surface,
-            LayoutAnchor.CENTER,
-            pygame.Vector2(Card.WIDTH + 20, -Card.HEIGHT - 40),
-        )"""
 
     def setup_players(self, event: TransitionEvent) -> None:
         players = self.game_state.players
@@ -253,6 +244,11 @@ class InGameScene(Scene):
             self.add_child(entry)
             self.layout.add(entry, layout_info[0], layout_info[1])
 
+    def cards_amount(self) -> None:
+        self.leftcards = self.game_state.game_deck.get_card_amount()
+        print(self.leftcards)
+        # 화면에 출력 필요
+
     def place_decks(self) -> None:
         self.discard_position = pygame.Vector2(16, 0)
 
@@ -279,6 +275,16 @@ class InGameScene(Scene):
 
     def activate_my_card_handlers(self, event: TransitionEvent) -> None:
         if self.is_my_turn():
+            self.mytimer_display = TimerIndicator(
+                pygame.Rect(
+                    self.screen_size.centerx,
+                    self.screen_size.centery * 1.3 + 40,
+                    20,
+                    20,
+                ),
+                self.game_state.turn_timer,  # 좌표값 플레이어에 맞게 옮기기 필요
+            )
+            self.add_child(self.mytimer_display)
             me = self.game_state.get_current_player()
             cards = me.cards
             for card in cards:
@@ -286,6 +292,11 @@ class InGameScene(Scene):
                     if isinstance(child, CardEntity) and child.card is card:
                         child.off("click")
                         child.on("click", self.create_card_click_handler(card))
+        else:
+            if self.has_child(self.mytimer_display):
+                self.remove_child(self.mytimer_display)
+
+        self.cards_amount()
 
     def place_discarded_card(self, event: TransitionEvent) -> None:
         discarded_card_entity = CardEntity(self.game_state.discard_pile.get_last())
