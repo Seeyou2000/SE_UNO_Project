@@ -9,6 +9,7 @@ from engine.text import Text
 from engine.world import World
 from game.constant import NAME, ColorableAbilityType
 from game.font import FontType, get_font
+from game.gameplay.aiplayer import AIPlayer
 from game.gameplay.card import Card
 from game.gameplay.cardentitiy import CardEntity
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
@@ -82,6 +83,8 @@ class InGameScene(Scene):
     def update(self, dt: float) -> None:
         super().update(dt)
         self.game_state.turn_timer.update(dt)
+        for ai in self.ai:
+            ai.update(dt)
         if self.show_time is not None:
             self.show_time.update(dt)
             self._time, self._duration = self.show_time.get_time()
@@ -196,6 +199,12 @@ class InGameScene(Scene):
 
         # 현재 플레이어
         me = self.get_me()
+
+        self.ai = [
+            AIPlayer(player, self.flow, self.game_state)
+            for player in filter(lambda x: x is not me, players)
+        ]
+
         self.game_state.on(
             GameStateEventType.PLAYER_EARNED_CARD, self.handle_me_card_earned
         )
