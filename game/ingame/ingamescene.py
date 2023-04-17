@@ -377,7 +377,7 @@ class InGameScene(Scene):
             "",
             pygame.Rect(0, 0, CardEntity.WIDTH, CardEntity.HEIGHT),
             self.font,
-            lambda _: self.try_draw,
+            lambda _: self.try_draw(),
         )
         self.add_child(deck_button)
         self.layout.add(
