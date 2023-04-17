@@ -50,8 +50,12 @@ class InGameScene(Scene):
         self.game_state = GameState()
         self.screen_size = self.world.get_rect()
         self.mytimer_display = None
-        self.show_time = None
-        self.text_ability = None
+        self.card_effect_timer = Timer(2)
+        self.text_ability = Text(
+            "", pygame.Vector2(), get_font(FontType.UI_BOLD, 25), pygame.Color("black")
+        )
+        self.card_effect_timer.on("tick", self.hide_text_ability)
+        self.layout.add(self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115))
         self.change_color_modal = None
 
         self.setup_base()
@@ -72,7 +76,7 @@ class InGameScene(Scene):
                 EndAbilityFlowNode,
                 self.remove_change_color_modal,
             ),
-            on_transition(None, StartTurnFlowNode, self.activate_my_card_handlers),
+            on_transition(None, StartTurnFlowNode, self.handle_start_turn),
             on_transition(
                 None,
                 StartTurnFlowNode,
@@ -147,14 +151,9 @@ class InGameScene(Scene):
         self.game_state.turn_timer.update(dt)
         for ai in self.ai:
             ai.update(dt)
-        if self.show_time is not None:
-            self.show_time.update(dt)
-            self._time, self._duration = self.show_time.get_time()
-            if self._time >= self._duration:
-                if self.text_ability is not None and self.has_child(self.text_ability):
-                    self.remove_child(self.text_ability)
 
-        my_cards = self.get_me().cards
+        self.card_effect_timer.update(dt)
+
         # print(len(cards))
         for i, card in enumerate(my_cards):
             # 일단 트윈 대신 감속 공식으로 애니메이션 구현
@@ -364,7 +363,7 @@ class InGameScene(Scene):
         )
         self.add_child(self.text_cardnum)
 
-    def activate_my_card_handlers(self, event: TransitionEvent) -> None:
+    def handle_start_turn(self, event: TransitionEvent) -> None:
         if self.is_my_turn():
             if self.mytimer_display is not None and self.has_child(
                 self.mytimer_display
@@ -408,62 +407,28 @@ class InGameScene(Scene):
 
     def handle_card_played(self, event: Event) -> None:
         card: Card = event.data["card"]
-        # 능력카드 발생시 이벤트 추가
-        match card.ability:
-            case AbilityType.GIVE_TWO_CARDS:
-                self.text_ability = Text(
-                    "Give Two cards",
-                    pygame.Vector2(),
-                    get_font(FontType.UI_BOLD, 25),
-                    "black",
-                )
+        player: Player = event.data["player"]
+        self.remove_card_entity(card)
+        # 능력카드 발생시 화면에 띄우기
+        if card.ability is not None:
+            match card.ability:
+                case AbilityType.GIVE_TWO_CARDS:
+                    self.text_ability.set_text(f"GIVE TWO CARDS by {player.name}")
+                case AbilityType.GIVE_FOUR_CARDS:
+                    self.text_ability.set_text(f"GIVE FOUR CARDS by {player.name}")
+                case AbilityType.ABSOULTE_ATTACK:
+                    self.text_ability.set_text(f"ABSOLUTE ATTACK by {player.name}")
+                case AbilityType.ABSOULTE_PROTECT:
+                    self.text_ability.set_text(f"ABSOLUTE PROTECT by {player.name}")
+                case AbilityType.SKIP_ORDER:
+                    self.text_ability.set_text(f"SKIP by {player.name}")
+                case AbilityType.REVERSE_ORDER:
+                    self.text_ability.set_text(f"REVERSE by {player.name}")
+                case AbilityType.CHANGE_CARD_COLOR:
+                    self.text_ability.set_text(f"CARD COLOR CHANGE by {player.name}")
+            if not self.has_child(self.text_ability):
                 self.add_child(self.text_ability)
-                self.layout.add(
-                    self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115)
-                )
-                self.show_time = Timer(2)
-            case AbilityType.GIVE_FOUR_CARDS:
-                self.text_ability = Text(
-                    "Give Four cards",
-                    pygame.Vector2(),
-                    get_font(FontType.UI_BOLD, 25),
-                    "black",
-                )
-                self.add_child(self.text_ability)
-                self.layout.add(
-                    self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115)
-                )
-                self.show_time = Timer(2)
-            case AbilityType.SKIP_ORDER:
-                self.text_ability = Text(
-                    "Skip",
-                    pygame.Vector2(),
-                    get_font(FontType.UI_BOLD, 25),
-                    "black",
-                )
-                self.add_child(self.text_ability)
-                self.layout.add(
-                    self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115)
-                )
-                self.show_time = Timer(2)
-            case AbilityType.REVERSE_ORDER:
-                self.text_ability = Text(
-                    "Reverse",
-                    pygame.Vector2(),
-                    get_font(FontType.UI_BOLD, 25),
-                    "black",
-                )
-                self.add_child(self.text_ability)
-                self.layout.add(
-                    self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115)
-                )
-                self.show_time = Timer(2)
-        for child in self._children:
-            if isinstance(child, CardEntity) and child.card is card:
-                self.remove_child(child)
-                self.layout.remove(child)
-                if child in self.my_card_entities:
-                    self.my_card_entities.remove(child)
+            self.card_effect_timer.reset()
 
     def handle_me_card_earned(self, event: Event) -> None:
         card: Card = event.data["card"]
@@ -510,6 +475,10 @@ class InGameScene(Scene):
             LayoutAnchor.CENTER,
             pygame.Vector2(),
         )
+
+    def hide_text_ability(self, event: Event) -> None:
+        if self.has_child(self.text_ability):
+            self.remove_child(self.text_ability)
 
     # utils
     def get_me(self) -> Player:

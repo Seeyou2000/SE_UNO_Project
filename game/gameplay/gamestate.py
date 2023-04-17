@@ -34,7 +34,7 @@ class GameState(EventEmitter):
     def __init__(self) -> None:
         super().__init__()
         self.now_color = "red"
-        self.turn_timer = Timer(5)
+        self.turn_timer = Timer(5, -1)
 
     def create_full_deck_cards(self) -> list[Card]:
         cards = [Card(color, number) for number in (range(1, 10)) for color in COLORS]
