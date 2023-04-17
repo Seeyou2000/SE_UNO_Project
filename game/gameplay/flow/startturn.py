@@ -23,6 +23,9 @@ class StartTurnFlowNode(AbstractGameFlowNode):
                     )
         self.game_state.turn_timer.on("tick", self.transition_to_draw_card)
 
+        if len(player.cards) == 1 and player.is_unobutton_clicked is not True:
+            self.game_state.draw_card(player)
+
     def transition_to_draw_card(self, event: Event) -> None:
         from game.gameplay.flow.drawcard import DrawCardFlowNode
 

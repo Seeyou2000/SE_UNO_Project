@@ -37,3 +37,29 @@ class GameFlowMachine(FlowMachine, EventEmitter):
             TransitionEvent(self._current_node, new_node),
         )
         super().transition_to(new_node)
+
+    def is_uno(self, game_state, pressed_player) -> None:
+        # 우노판별
+        current_player = game_state.get_current_player()
+        self.condition = False
+        if current_player is pressed_player:
+            if len(current_player.cards) == 2:
+                current_player.is_unobutton_clicked = True
+                self.condition = True
+            elif (
+                len(current_player.cards) == 1 and pressed_player is not current_player
+            ):
+                current_player.is_unobutton_clicked = True
+                self.condition = True
+        else:
+            for player in game_state.players:
+                if player is not pressed_player:
+                    if len(player.cards) == 1 and player.is_unobutton_cliked == False:
+                        game_state.draw_card(player)
+                    else:
+                        self.condition = False
+            if len(pressed_player.cards) == 1:
+                pressed_player.is_unobutton_clicked = True
+                self.condition = True
+        if self.condition is not True:
+            game_state.draw_card(pressed_player)
