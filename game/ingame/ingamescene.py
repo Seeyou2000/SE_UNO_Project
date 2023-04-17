@@ -5,6 +5,7 @@ from engine.event import Event, EventHandler
 from engine.layout import LayoutAnchor
 from engine.scene import Scene
 from engine.sprite import Sprite
+from engine.text import Text
 from engine.world import World
 from game.constant import NAME
 from game.font import FontType, get_font
@@ -13,6 +14,7 @@ from game.gameplay.cardentitiy import CardEntity
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.flow.discardcard import DiscardCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
+from game.gameplay.flow.gameend import GameEndFlowNode
 from game.gameplay.flow.gameflowmachine import (
     GameFlowMachine,
     GameFlowMachineEventType,
@@ -42,6 +44,7 @@ class InGameScene(Scene):
         self.my_card_entities = []
         self.game_state = GameState()
         self.screen_size = self.world.get_rect()
+        self.mytimer_display = None
 
         self.setup_base()
 
@@ -60,6 +63,7 @@ class InGameScene(Scene):
                 ),
             ),
             self.on_transition(DiscardCardFlowNode, None, self.place_discarded_card),
+            self.on_transition(None, GameEndFlowNode, self.end_game),
         ]
         self.flow.events.on(GameFlowMachineEventType.TRANSITION, transition_handlers)
         self.flow.events.on(
@@ -245,9 +249,7 @@ class InGameScene(Scene):
             self.layout.add(entry, layout_info[0], layout_info[1])
 
     def cards_amount(self) -> None:
-        self.leftcards = self.game_state.game_deck.get_card_amount()
-        print(self.leftcards)
-        # 화면에 출력 필요
+        print(self.leftcards)  # 화면에 출력 필요
 
     def place_decks(self) -> None:
         self.discard_position = pygame.Vector2(16, 0)
@@ -273,16 +275,38 @@ class InGameScene(Scene):
             last_drawn_card_entity, LayoutAnchor.CENTER, self.discard_position
         )
 
+        self.text_cardnum = Text(
+            str(self.game_state.game_deck.get_card_amount()),
+            pygame.Vector2(),
+            get_font(FontType.UI_BOLD, 23),
+            pygame.Color("black"),
+        )
+        self.layout.add(
+            self.text_cardnum,
+            LayoutAnchor.CENTER,
+            self.discard_position - pygame.Vector2(CardEntity.WIDTH + 20, 50),
+        )
+        self.add_child(self.text_cardnum)
+
     def activate_my_card_handlers(self, event: TransitionEvent) -> None:
         if self.is_my_turn():
+            if self.mytimer_display is not None and self.has_child(
+                self.mytimer_display
+            ):
+                self.remove_child(self.mytimer_display)
             self.mytimer_display = TimerIndicator(
                 pygame.Rect(
-                    self.screen_size.centerx,
-                    self.screen_size.centery * 1.3 + 40,
+                    0,
+                    0,
                     20,
                     20,
                 ),
                 self.game_state.turn_timer,  # 좌표값 플레이어에 맞게 옮기기 필요
+            )
+            self.layout.add(
+                self.mytimer_display,
+                LayoutAnchor.BOTTOM_CENTER,
+                pygame.Vector2(0, -180),
             )
             self.add_child(self.mytimer_display)
             me = self.game_state.get_current_player()
@@ -296,7 +320,7 @@ class InGameScene(Scene):
             if self.has_child(self.mytimer_display):
                 self.remove_child(self.mytimer_display)
 
-        self.cards_amount()
+        self.text_cardnum.set_text(str(self.game_state.game_deck.get_card_amount()))
 
     def place_discarded_card(self, event: TransitionEvent) -> None:
         discarded_card_entity = CardEntity(self.game_state.discard_pile.get_last())
@@ -318,6 +342,7 @@ class InGameScene(Scene):
         player: Player = event.data["player"]
         card_entity = CardEntity(card)
 
+        self.text_cardnum.set_text(str(self.game_state.game_deck.get_card_amount()))
         if player is not self.get_me():
             return
 
@@ -338,6 +363,25 @@ class InGameScene(Scene):
         for child in self._children:
             if isinstance(child, CardEntity):
                 child.set_colorblind(self.world.settings.is_colorblind)
+
+    def end_game(self, event: Event) -> None:
+        if len(self.get_me().cards) == 0:
+            self.game_result = "Win"
+        else:
+            self.game_result = "Lose"
+
+        self.text_gameend = Text(
+            self.game_result,
+            pygame.Vector2(),
+            get_font(FontType.YANGJIN, 50),
+            pygame.Color("black"),
+        )
+        self.add_child(self.text_gameend)
+        self.layout.add(
+            self.text_gameend,
+            LayoutAnchor.CENTER,
+            pygame.Vector2(),
+        )
 
     # utils
     def get_me(self) -> Player:
