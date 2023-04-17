@@ -153,8 +153,6 @@ def get_angle(
     if angle < -359:
         angle += 360
 
-    print(target.text, other.text, angle)
-
     return angle
 
 

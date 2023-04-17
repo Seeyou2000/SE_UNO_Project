@@ -52,6 +52,7 @@ class InGameScene(Scene):
         self.mytimer_display = None
         self.show_time = None
         self.text_ability = None
+        self.change_color_modal = None
 
         self.setup_base()
 
@@ -99,6 +100,8 @@ class InGameScene(Scene):
     def handle_color_keyboard(self, event: Event) -> None:
         from game.gameplay.flow.endability import EndAbilityFlowNode
 
+        if self.change_color_modal is None:
+            return
         if self.has_child(self.change_color_modal):
             card: Card = self.flow._current_node.card  # noqa: SLF001
             match event.data["key"]:
