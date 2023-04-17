@@ -10,9 +10,10 @@ class EndTurnFlowNode(AbstractGameFlowNode):
 
     def enter(self) -> None:
         super().enter()
-        if len(self.game_state.get_current_player().cards) == 1:
-            pass  # UNO 판별 필요
-        elif len(self.game_state.get_current_player().cards) == 0:
+        if (
+            len(self.game_state.get_current_player().cards) == 0
+            and self.game_state.get_current_player().is_unobutton_clicked is True
+        ):
             self.machine.transition_to(GameEndFlowNode(self.game_state))
         else:
             self.game_state.go_next_turn()

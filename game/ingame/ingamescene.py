@@ -168,7 +168,9 @@ class InGameScene(Scene):
                 pygame.image.load("resources/images/uno-button-normal.png"),
                 pygame.image.load("resources/images/uno-button-hover.png"),
                 pygame.image.load("resources/images/uno-button-pressed.png"),
-            )
+            ),
+            lambda _: self.flow.is_uno(self.game_state, self.get_me())
+            # gameflowmachine의 우노 판별 함수 호출
         )
         self.add_child(uno_button)
         self.layout.add(uno_button, LayoutAnchor.CENTER, pygame.Vector2(191, 90))
