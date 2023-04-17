@@ -48,6 +48,7 @@ class GameFlowMachine(FlowMachine, EventEmitter):
     def is_uno(self, game_state: GameState, pressed_player: Player) -> None:
         # 우노판별
         current_player = game_state.get_current_player()
+        print(pressed_player.name + "가 눌렀습니다!!!!!!!!!!!!!!!!!!!!!!!")
         self.condition = False
         if current_player is pressed_player:
             if len(current_player.cards) == 2:
@@ -61,15 +62,15 @@ class GameFlowMachine(FlowMachine, EventEmitter):
         else:
             for player in game_state.players:
                 if player is not pressed_player:
-                    if len(player.cards) == 1 and player.is_unobutton_cliked is False:
+                    if len(player.cards) == 1 and player.is_unobutton_clicked is False:
                         game_state.draw_card(player)
                     else:
                         self.condition = False
             if len(pressed_player.cards) == 1:
                 pressed_player.is_unobutton_clicked = True
                 self.condition = True
-        if self.condition is not True:
-            game_state.draw_card(pressed_player)
+        # if self.condition is not True:
+        # game_state.draw_card(pressed_player)
 
 
 def on_transition(

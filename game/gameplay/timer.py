@@ -19,5 +19,8 @@ class Timer(EventEmitter):
     def get_time(self) -> float:  # 화면에 남은 시간 오브젝트 띄울때 사용될 남은시간, 총 시간 리턴하는 함수입니다.
         return self._time, self._duration
 
+    def set_duration(self, duration: float) -> None:
+        self._duration = duration
+
     def reset(self) -> None:
         self._time = 0

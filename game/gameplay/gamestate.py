@@ -60,6 +60,15 @@ class GameState(EventEmitter):
         return self.players[self.turn.current]
 
     def draw_card(self, player: Player) -> None:
+        if self.game_deck.get_card_amount() == 0:
+            last_card = self.discard_pile.cards[-1]
+            self.game_deck.cards += self.discard_pile.cards[:-1]
+            random.shuffle(self.game_deck.cards)
+            self.discard_pile.cards.clear()
+            self.discard_pile.cards.append(last_card)
+
+            if self.game_deck.get_card_amount() == 0:
+                return
         drawn_card = self.game_deck.draw()
         player.cards.append(drawn_card)
         self.emit(
@@ -91,8 +100,8 @@ class GameState(EventEmitter):
                 or card.ability == AbilityType.ABSOULTE_ATTACK
                 or card.ability == AbilityType.ABSOULTE_PROTECT
             ):
-                return False
-        return True
+                return True
+        return False
 
     def flush_attack_cards(self, player: Player) -> None:
         for _ in range(0, self._cards_to_attack):
@@ -129,10 +138,12 @@ class GameState(EventEmitter):
 
     def change_card_color(self, color: str) -> None:
         self.now_color = color
-        print(self.now_color)
 
     def is_absolute_attack(self) -> None:
-        return self._cards_to_attack > 0 and self.now_color == "black"
+        return (
+            self._cards_to_attack > 0
+            and self.discard_pile.get_last().ability == AbilityType.ABSOULTE_ATTACK
+        )
 
     def absoulte_protect_cards(self) -> None:
         self._cards_to_attack = 0

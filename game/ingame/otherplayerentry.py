@@ -109,6 +109,9 @@ class OtherPlayerEntry(GameObjectContainer):
     def handle_card_earned(self, event: Event) -> None:
         self.create_or_remove_cards_if_needed()
 
+    def handle_card_played(self, event: Event) -> None:
+        self.create_or_remove_cards_if_needed()
+
     def handle_turn_direction_reverse(self, event: Event) -> None:
         self.show_or_hide_indicators(event.target)
 

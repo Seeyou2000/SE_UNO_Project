@@ -15,7 +15,7 @@ class StartTurnFlowNode(AbstractGameFlowNode):
         if self.game_state.is_absolute_attack():
             self.game_state.flush_attack_cards(self.game_state.get_current_player())
         if self.game_state.is_attacked():
-            if self.game_state.have_attack_card_or_protect_card():
+            if not self.game_state.have_attack_card_or_protect_card():
                 self.game_state.flush_attack_cards(self.game_state.get_current_player())
         self.game_state.turn_timer.on("tick", self.transition_to_draw_card)
 
@@ -23,6 +23,8 @@ class StartTurnFlowNode(AbstractGameFlowNode):
             self.game_state.draw_card(player)
 
     def transition_to_draw_card(self, event: Event) -> None:
+        if self.game_state.is_attacked():
+            self.game_state.flush_attack_cards(self.game_state.get_current_player())
         from game.gameplay.flow.drawcard import DrawCardFlowNode
 
         self.machine.transition_to(DrawCardFlowNode(self.game_state))

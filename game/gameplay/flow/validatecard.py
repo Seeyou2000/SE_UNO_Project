@@ -34,6 +34,17 @@ class ValidateCardFlowNode(AbstractGameFlowNode):
             or last_card.ability == AbilityType.GIVE_FOUR_CARDS
         )
 
+        if self.game_state.is_attacked() and not (
+            self.card.ability == AbilityType.GIVE_FOUR_CARDS
+            or self.card.ability == AbilityType.GIVE_TWO_CARDS
+            or self.card.ability == AbilityType.ABSOULTE_ATTACK
+            or self.card.ability == AbilityType.ABSOULTE_PROTECT
+        ):
+            from game.gameplay.flow.startturn import StartTurnFlowNode
+
+            self.machine.transition_to(StartTurnFlowNode(self.game_state))
+            return
+
         if is_card_color_valid or is_card_content_valid or is_attack_valid:
             if is_number_card:
                 from game.gameplay.flow.discardcard import DiscardCardFlowNode

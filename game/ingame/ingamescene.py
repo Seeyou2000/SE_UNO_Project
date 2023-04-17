@@ -105,22 +105,38 @@ class InGameScene(Scene):
                 case pygame.K_1:
                     self.game_state.change_card_color("red")
                     self.flow.transition_to(
-                        EndAbilityFlowNode(self.game_state, card, False)
+                        EndAbilityFlowNode(
+                            self.game_state,
+                            card,
+                            self.flow._current_node.is_prepare,  # noqa: SLF001
+                        )
                     )
                 case pygame.K_2:
                     self.game_state.change_card_color("yellow")
                     self.flow.transition_to(
-                        EndAbilityFlowNode(self.game_state, card, False)
+                        EndAbilityFlowNode(
+                            self.game_state,
+                            card,
+                            self.flow._current_node.is_prepare,  # noqa: SLF001
+                        )
                     )
                 case pygame.K_3:
                     self.game_state.change_card_color("blue")
                     self.flow.transition_to(
-                        EndAbilityFlowNode(self.game_state, card, False)
+                        EndAbilityFlowNode(
+                            self.game_state,
+                            card,
+                            self.flow._current_node.is_prepare,  # noqa: SLF001
+                        )
                     )
                 case pygame.K_4:
                     self.game_state.change_card_color("green")
                     self.flow.transition_to(
-                        EndAbilityFlowNode(self.game_state, self.card, self.is_prepare)
+                        EndAbilityFlowNode(
+                            self.game_state,
+                            card,
+                            self.flow._current_node.is_prepare,  # noqa: SLF001
+                        )
                     )
 
     def update(self, dt: float) -> None:
@@ -289,6 +305,9 @@ class InGameScene(Scene):
             self.other_player_entries.append(entry)
             self.game_state.on(
                 GameStateEventType.PLAYER_EARNED_CARD, entry.handle_card_earned
+            )
+            self.flow.events.on(
+                GameFlowMachineEventType.CARD_PLAYED, entry.handle_card_played
             )
             self.game_state.on(
                 GameStateEventType.TURN_DIRECTION_REVERSE,
