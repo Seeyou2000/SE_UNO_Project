@@ -1,7 +1,13 @@
 import pygame
 
 from engine.event import Event
+from engine.gameobject import GameObject
 from engine.gameobjectcontainer import GameObjectContainer
+from engine.layout import (
+    Layout,
+    LayoutAnchor,
+    update_horizontal_linear_overlapping_layout,
+)
 from engine.text import Text
 from game.font import FontType, get_font
 from game.gameplay.cardentitiy import CardEntity, create_card_sprite
@@ -27,6 +33,7 @@ class OtherPlayerEntry(GameObjectContainer):
         anchor: pygame.Vector2,
         timer: Timer,
         flow: GameFlowMachine,
+        deck_button: GameObject,
     ) -> None:
         super().__init__()
 
@@ -34,6 +41,8 @@ class OtherPlayerEntry(GameObjectContainer):
         self.rect = pygame.Rect(0, 0, size.x, size.y)
         self.anchor = anchor
         self.flow = flow
+        self.layout = Layout(self.rect.copy())
+        self.deck_button = deck_button
 
         name_font = get_font(FontType.UI_BOLD, 20)
         name_text = Text(
@@ -75,9 +84,28 @@ class OtherPlayerEntry(GameObjectContainer):
         for _ in range(0, len(player.cards)):
             self.create_card_sprite()
 
+    def render(self, surface: pygame.Surface) -> None:
+        pygame.draw.rect(surface, pygame.Color("gray"), self.absolute_rect)
+        super().render(surface)
+
     def update(self, dt: float) -> None:
         super().update(dt)
-        self.update_cards_position()
+        update_horizontal_linear_overlapping_layout(
+            objects=self.card_sprites,
+            layout=self.layout,
+            dt=dt,
+            max_width=self.rect.width,
+            gap=20,
+            offset_retriever=lambda obj, total_width: pygame.Vector2(
+                -(self.rect.width - total_width) / 2
+                if self.anchor.x < 0.5
+                else (self.rect.width - total_width) / 2
+                if self.anchor.x > 0.5
+                else 0,
+                0,
+            ),
+        )
+        self.layout.update(dt)
 
     def create_or_remove_cards_if_needed(self) -> None:
         displaying_card_count = len(self.card_sprites)
@@ -89,27 +117,19 @@ class OtherPlayerEntry(GameObjectContainer):
             for _ in range(0, displaying_card_count - player_card_count):
                 removed = self.card_sprites.pop()
                 self.remove_child(removed)
-
-    def update_cards_position(self) -> None:
-        gap = 20
-        delta = CARD_BACK_WIDTH - gap
-        for i, card in enumerate(self.card_sprites):
-            if self.anchor.x < 0.5:
-                card.rect.left = i * delta
-            elif self.anchor.x > 0.5:
-                card.rect.right = self.rect.width - i * delta
-            else:
-                card.rect.left = (
-                    i * delta
-                    + ((self.rect.width - len(self.card_sprites) * delta) / 2.0)
-                    - gap
-                )
+                self.layout.remove(removed)
 
     def create_card_sprite(self) -> None:
         card_back_sprite = create_card_sprite("black", True, False)
         card_back_sprite.rect.y = 50
         self.add_child(card_back_sprite)
         self.card_sprites.append(card_back_sprite)
+        self.layout.add(
+            card_back_sprite,
+            LayoutAnchor.BOTTOM_CENTER,
+            pygame.Vector2(self.deck_button.absolute_rect.center)
+            - pygame.Vector2(self.absolute_rect.center),
+        )
 
     def show_or_hide_indicators(self, game_state: GameState) -> None:
         if self.has_child(self.next_text):

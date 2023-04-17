@@ -2,7 +2,11 @@ import pygame
 
 from engine.button import Button, ButtonSurfaces, SpriteButton
 from engine.event import Event, EventHandler
-from engine.layout import LayoutAnchor, LayoutConstraint
+from engine.layout import (
+    LayoutAnchor,
+    LayoutConstraint,
+    update_horizontal_linear_overlapping_layout,
+)
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.text import Text
@@ -38,6 +42,8 @@ from game.ingame.turndirectionindicator import TurnDirectionIndicator
 
 
 class InGameScene(Scene):
+    discarding_card_entities: list[CardEntity]
+
     def __init__(
         self, world: World, player_count: int, my_player_index: int = 0
     ) -> None:
@@ -47,6 +53,7 @@ class InGameScene(Scene):
         self.font = get_font(FontType.UI_BOLD, 20)
         self.other_player_entries = []
         self.my_card_entities = []
+        self.discarding_card_entities = []
         self.game_state = GameState()
         self.screen_size = self.world.get_rect()
         self.mytimer_display = None
@@ -162,37 +169,35 @@ class InGameScene(Scene):
 
         self.card_effect_timer.update(dt)
 
-        # print(len(cards))
-        for i, card_entity in enumerate(self.my_card_entities):
-            # 일단 트윈 대신 감속 공식으로 애니메이션 구현
-            constraint = self.layout.get_constraint(card_entity)
-            if constraint is None:
-                continue
-            existing_margin = constraint.margin
-            cards_len = len(self.my_card_entities)
-            gap = 24
-            delta = CardEntity.WIDTH - gap
-            x = (
-                (i - cards_len / 2.0) * 800 / cards_len + gap
-                if cards_len > 10
-                else (i - 1 - cards_len / 2.0) * delta + CardEntity.WIDTH + gap / 2
-            )
-            y = (
+        update_horizontal_linear_overlapping_layout(
+            objects=self.my_card_entities,
+            layout=self.layout,
+            dt=dt,
+            max_width=800,
+            gap=24,
+            offset_retriever=lambda obj, _: pygame.Vector2(
+                0,
                 -30
-                if self.is_my_turn()
-                and (card_entity.is_hovered or card_entity.has_focus)
+                if self.is_my_turn() and (obj.is_hovered or obj.has_focus)
                 else -4
                 if self.is_my_turn()
-                else 12
-            )
-            target = pygame.Vector2(x, y)
-            self.layout.update_constraint(
-                card_entity,
-                margin=existing_margin + (target - existing_margin) * dt * 10,
-            )
+                else 12,
+            ),
+        )
+        self.update_discarding_card_animation(dt)
 
     def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
+
+    def update_discarding_card_animation(self, dt: float) -> None:
+        screen_center = pygame.Vector2(self.screen_size.size) / 2
+        for card_entity in self.discarding_card_entities:
+            target_pos = screen_center + self.discard_position
+            card_center = pygame.Vector2(card_entity.rect.center)
+            card_entity.rect.center = card_center + (target_pos - card_center) * dt * 10
+            if card_center.distance_to(target_pos) < 10:
+                self.discarding_card_entities.remove(card_entity)
+                self.remove_child(card_entity)
 
     def create_card_click_handler(self, card: Card) -> EventHandler:
         def handler(event: Event) -> None:
@@ -342,11 +347,12 @@ class InGameScene(Scene):
             layout_info = layout_infos[fill_order[len(other_players) - 1][i]]
 
             entry = OtherPlayerEntry(
-                pygame.Vector2(250, 150),
+                pygame.Vector2(300, 150),
                 player,
                 layout_info[0],
                 self.game_state.turn_timer,
                 self.flow,
+                self.deck_button,
             )
             self.other_player_entries.append(entry)
             self.game_state.on(
@@ -423,6 +429,7 @@ class InGameScene(Scene):
         self.text_cardnum.set_text(str(self.game_state.game_deck.get_card_amount()))
 
     def place_discarded_card(self, event: TransitionEvent) -> None:
+        self.remove_card_entity(self.game_state.discard_pile.cards[-2])
         self.add_card_entity(
             self.game_state.discard_pile.get_last(),
             is_mine=False,
@@ -434,7 +441,24 @@ class InGameScene(Scene):
     def handle_card_played(self, event: Event) -> None:
         card: Card = event.data["card"]
         player: Player = event.data["player"]
-        self.remove_card_entity(card)
+
+        removed = self.remove_card_entity(card)
+        start_position: tuple[float, float]
+        if removed is not None:
+            start_position = removed.absolute_rect.center
+        else:
+            other_player_entry = self.other_player_entries[0]
+            for entry in self.other_player_entries:
+                if entry.player is player:
+                    other_player_entry = entry
+                    break
+            start_position = other_player_entry.card_sprites[-1].absolute_rect.center
+
+        animating_card_entity = CardEntity(card)
+        animating_card_entity.rect.center = start_position
+        self.discarding_card_entities.append(animating_card_entity)
+        self.add_child(animating_card_entity)
+
         # 능력카드 발생시 화면에 띄우기
         if card.ability is not None:
             match card.ability:
@@ -485,6 +509,7 @@ class InGameScene(Scene):
                 child.set_colorblind(self.world.settings.is_colorblind)
 
     def try_draw(self) -> None:
+        print(self.is_my_turn(), isinstance(self.flow.current_node, StartTurnFlowNode))
         if self.is_my_turn() and isinstance(self.flow.current_node, StartTurnFlowNode):
             self.flow.transition_to(DrawCardFlowNode(self.game_state))
 
@@ -542,6 +567,8 @@ class InGameScene(Scene):
             card_entity.on("click", self.create_card_click_handler(card))
             card_entity.set_colorblind(self.world.settings.is_colorblind)
             self.focus_controller.add(card_entity)
+        else:
+            self.set_order(card_entity, 4)
 
         if layout_constaint is not None:
             self.layout.add(
@@ -550,11 +577,12 @@ class InGameScene(Scene):
 
         return card_entity
 
-    def remove_card_entity(self, card: Card) -> None:
+    def remove_card_entity(self, card: Card) -> CardEntity | None:
         for child in self._children:
             if isinstance(child, CardEntity) and child.card is card:
                 self.remove_child(child)
                 if child in self.my_card_entities:
                     self.my_card_entities.remove(child)
                     self.focus_controller.remove(child)
-                break
+                return child
+        return None
