@@ -9,6 +9,7 @@ from engine.world import World
 from game.constant import NAME
 from game.font import FontType, get_font
 from game.gameplay.card import Card
+from game.gameplay.cardentitiy import CardEntity
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.flow.discardcard import DiscardCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
@@ -36,6 +37,7 @@ class InGameScene(Scene):
 
         self.font = get_font(FontType.UI_BOLD, 20)
         self.other_player_entries = []
+        self.my_card_entities = []
         self.game_state = GameState()
 
         self.setup_base()
@@ -76,28 +78,31 @@ class InGameScene(Scene):
         # print(len(cards))
         for i, card in enumerate(my_cards):
             # 일단 트윈 대신 감속 공식으로 애니메이션 구현
-            constraint = self.layout.get_constraint(card)
+            card_entity = next(
+                filter(lambda ce: ce.card is card, self.my_card_entities)
+            )
+            constraint = self.layout.get_constraint(card_entity)
             if constraint is None:
                 continue
             existing_margin = constraint.margin
             cards_len = len(my_cards)
             gap = 24
-            delta = Card.WIDTH - gap
+            delta = CardEntity.WIDTH - gap
             x = (
                 (i - cards_len / 2.0) * 800 / cards_len + gap
                 if cards_len > 10
-                else (i - 1 - cards_len / 2.0) * delta + Card.WIDTH + gap / 2
+                else (i - 1 - cards_len / 2.0) * delta + CardEntity.WIDTH + gap / 2
             )
             y = (
                 -30
-                if self.is_my_turn() and card.is_hovered
+                if self.is_my_turn() and card_entity.is_hovered
                 else -4
                 if self.is_my_turn()
                 else 12
             )
             target = pygame.Vector2(x, y)
             self.layout.update_constraint(
-                card,
+                card_entity,
                 margin=existing_margin + (target - existing_margin) * dt * 10,
             )
 
@@ -164,9 +169,9 @@ class InGameScene(Scene):
         self.layout.add(
             self.turn_direction_indicator, LayoutAnchor.CENTER, pygame.Vector2(0, -150)
         )
-        """self.leftcards = len(self.game_state.game_deck.cards)
+        """leftcards = self.game_state.game_deck.get_card_amount # game_state.game_deck 해결 방법? 인식안됨
         text_surface = get_font(FontType.YANGJIN, 42).render(
-            str(len(self.leftcards)),
+            str(leftcards),
             True,
             pygame.Color("#525252"),
         )
@@ -191,13 +196,15 @@ class InGameScene(Scene):
         )
         cards = me.cards
         for card in cards:
+            card_entity = CardEntity(card)
             self.layout.add(
-                card,
+                card_entity,
                 LayoutAnchor.BOTTOM_CENTER,
                 pygame.Vector2(0, 0),
             )
 
-            self.add_child(card)
+            self.add_child(card_entity)
+            self.my_card_entities.append(card_entity)
 
         self.update_cards_colorblind()
 
@@ -251,7 +258,7 @@ class InGameScene(Scene):
 
         deck_button = Button(
             "",
-            pygame.Rect(0, 0, Card.WIDTH, Card.HEIGHT),
+            pygame.Rect(0, 0, CardEntity.WIDTH, CardEntity.HEIGHT),
             self.font,
             lambda _: self.flow.transition_to(DrawCardFlowNode(self.game_state)),
         )
@@ -259,55 +266,66 @@ class InGameScene(Scene):
         self.layout.add(
             deck_button,
             LayoutAnchor.CENTER,
-            self.discard_position - pygame.Vector2(Card.WIDTH + 20, 0),
+            self.discard_position - pygame.Vector2(CardEntity.WIDTH + 20, 0),
         )
         self.deck_button = deck_button
 
         # 덱에서 한 장 열어놓기
-        last_drawn_card = self.game_state.discard_pile.get_last()
-        self.add_child(last_drawn_card)
-        self.layout.add(last_drawn_card, LayoutAnchor.CENTER, self.discard_position)
+        last_drawn_card_entity = CardEntity(self.game_state.discard_pile.get_last())
+        self.add_child(last_drawn_card_entity)
+        self.layout.add(
+            last_drawn_card_entity, LayoutAnchor.CENTER, self.discard_position
+        )
 
     def activate_my_card_handlers(self, event: TransitionEvent) -> None:
         if self.is_my_turn():
             me = self.game_state.get_current_player()
             cards = me.cards
             for card in cards:
-                card.off("click")
-                card.on("click", self.create_card_click_handler(card))
+                for child in self._children:
+                    if isinstance(child, CardEntity) and child.card is card:
+                        child.off("click")
+                        child.on("click", self.create_card_click_handler(card))
 
     def place_discarded_card(self, event: TransitionEvent) -> None:
-        discarded_card = self.game_state.discard_pile.get_last()
-        self.add_child(discarded_card)
-        self.layout.add(discarded_card, LayoutAnchor.CENTER, self.discard_position)
+        discarded_card_entity = CardEntity(self.game_state.discard_pile.get_last())
+        self.add_child(discarded_card_entity)
+        self.layout.add(
+            discarded_card_entity, LayoutAnchor.CENTER, self.discard_position
+        )
 
     def handle_card_played(self, event: Event) -> None:
         card: Card = event.data["card"]
-        self.remove_child(card)
-        self.layout.remove(card)
+        for child in self._children:
+            if isinstance(child, CardEntity) and child.card is card:
+                self.remove_child(child)
+                self.layout.remove(child)
+                self.my_card_entities.remove(child)
 
     def handle_me_card_earned(self, event: Event) -> None:
         card: Card = event.data["card"]
         player: Player = event.data["player"]
+        card_entity = CardEntity(card)
 
         if player is not self.get_me():
             return
 
-        self.add_child(card)
-        card.set_colorblind(self.world.settings.is_colorblind)
+        self.add_child(card_entity)
+        card_entity.set_colorblind(self.world.settings.is_colorblind)
         deck_margin = self.layout.get_constraint(self.deck_button).margin
         self.layout.add(
-            card,
+            card_entity,
             LayoutAnchor.BOTTOM_CENTER,
             pygame.Vector2(
                 deck_margin.x,
                 -self.deck_button.absolute_rect.centery + deck_margin.y,
             ),
         )
+        self.my_card_entities.append(card_entity)
 
     def update_cards_colorblind(self) -> None:
         for child in self._children:
-            if isinstance(child, Card):
+            if isinstance(child, CardEntity):
                 child.set_colorblind(self.world.settings.is_colorblind)
 
     # utils
