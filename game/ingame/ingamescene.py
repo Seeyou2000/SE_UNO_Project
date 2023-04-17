@@ -244,38 +244,73 @@ class InGameScene(Scene):
         )
 
     def setup_players(self, event: TransitionEvent) -> None:
-        players = self.game_state.players
-
         self.place_decks()
+        self.setup_me()
+        self.setup_other_players()
 
-        # 모든 플레이어의 카드를 scene에 추가
-
-        # 현재 플레이어
+    def setup_me(self) -> None:
         me = self.get_me()
-
-        self.ai = [
-            AIPlayer(player, self.flow, self.game_state)
-            for player in filter(lambda x: x is not me, players)
-        ]
 
         self.game_state.on(
             GameStateEventType.PLAYER_EARNED_CARD, self.handle_me_card_earned
         )
-        cards = me.cards
-        for card in cards:
-            card_entity = CardEntity(card)
-            self.layout.add(
-                card_entity,
-                LayoutAnchor.BOTTOM_CENTER,
-                pygame.Vector2(0, 0),
+
+        # 카드
+        for card in me.cards:
+            self.add_card_entity(
+                card,
+                is_mine=True,
+                layout_constaint=LayoutConstraint(
+                    LayoutAnchor.BOTTOM_CENTER, pygame.Vector2(0, 0)
+                ),
             )
 
-            self.add_child(card_entity)
-            self.my_card_entities.append(card_entity)
+        # 타이머
+        self.mytimer_display = TimerIndicator(
+            pygame.Rect(
+                0,
+                0,
+                20,
+                20,
+            ),
+            self.game_state.turn_timer,
+        )
+        self.layout.add(
+            self.mytimer_display,
+            LayoutAnchor.BOTTOM_LEFT,
+            pygame.Vector2(160, -50),
+        )
 
-        self.update_cards_colorblind()
+        # 우노
+        self.my_uno_text = Text(
+            "UNO",
+            pygame.Vector2(50, 10),
+            get_font(FontType.UI_BOLD, 20),
+            pygame.Color("gray"),
+        )
+        self.add_child(self.my_uno_text)
+        self.layout.add(
+            self.my_uno_text, LayoutAnchor.BOTTOM_LEFT, pygame.Vector2(50, -50)
+        )
 
-        # 다른 플레이어
+        def update_uno_text(event: Event) -> None:
+            self.my_uno_text.set_color(
+                pygame.Color("blue")
+                if self.get_me().is_unobutton_clicked
+                else pygame.Color("red")
+            )
+
+        self.game_state.on(
+            GameStateEventType.PLAYER_UNO_STATUS_CHANGED, update_uno_text
+        )
+
+    def setup_other_players(self) -> None:
+        players = self.game_state.players
+        me = self.get_me()
+        self.ai = [
+            AIPlayer(player, self.flow, self.game_state)
+            for player in filter(lambda x: x is not me, players)
+        ]
         layout_infos = [  # 플레이어 위치에서 시계방향으로
             (LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(0, 80)),
             (LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(0, -80)),
@@ -303,10 +338,14 @@ class InGameScene(Scene):
                 player,
                 layout_info[0],
                 self.game_state.turn_timer,
+                self.flow,
             )
             self.other_player_entries.append(entry)
             self.game_state.on(
                 GameStateEventType.PLAYER_EARNED_CARD, entry.handle_card_earned
+            )
+            self.game_state.on(
+                GameStateEventType.PLAYER_UNO_STATUS_CHANGED, entry.handle_uno_clicked
             )
             self.flow.events.on(
                 GameFlowMachineEventType.CARD_PLAYED, entry.handle_card_played
@@ -322,9 +361,6 @@ class InGameScene(Scene):
             entry.show_or_hide_indicators(self.game_state)
             self.add_child(entry)
             self.layout.add(entry, layout_info[0], layout_info[1])
-
-    def cards_amount(self) -> None:
-        print(self.leftcards)  # 화면에 출력 필요
 
     def place_decks(self) -> None:
         self.discard_position = pygame.Vector2(16, 0)
@@ -369,28 +405,7 @@ class InGameScene(Scene):
                 self.mytimer_display
             ):
                 self.remove_child(self.mytimer_display)
-            self.mytimer_display = TimerIndicator(
-                pygame.Rect(
-                    0,
-                    0,
-                    20,
-                    20,
-                ),
-                self.game_state.turn_timer,
-            )
-            self.layout.add(
-                self.mytimer_display,
-                LayoutAnchor.BOTTOM_CENTER,
-                pygame.Vector2(0, -180),
-            )
             self.add_child(self.mytimer_display)
-            me = self.game_state.get_current_player()
-            cards = me.cards
-            for card in cards:
-                for child in self._children:
-                    if isinstance(child, CardEntity) and child.card is card:
-                        child.off("click")
-                        child.on("click", self.create_card_click_handler(card))
         else:
             if self.has_child(self.mytimer_display):
                 self.remove_child(self.mytimer_display)

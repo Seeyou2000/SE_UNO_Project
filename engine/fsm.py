@@ -33,6 +33,10 @@ class FlowMachine:
     def update(self, dt: float) -> None:
         self._current_node.update()
 
+    @property
+    def current_node(self) -> FlowNode:
+        return self._current_node
+
     def transition_to(self, new_node: FlowNode) -> None:
         if self._current_node is not None:
             self._current_node.exit()

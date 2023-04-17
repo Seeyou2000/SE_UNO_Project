@@ -12,6 +12,7 @@ from game.gameplay.turn import Turn
 
 class GameStateEventType(Enum):
     PLAYER_EARNED_CARD = "player_earned_card"
+    PLAYER_UNO_STATUS_CHANGED = "player_uno_status_changed"
     TURN_DIRECTION_REVERSE = "turn_direction_reverse"
     TURN_NEXT = "next_turn"
 
@@ -147,3 +148,17 @@ class GameState(EventEmitter):
 
     def absoulte_protect_cards(self) -> None:
         self._cards_to_attack = 0
+
+    def set_uno_clicked(self, player: Player) -> None:
+        player.is_unobutton_clicked = True
+        self.emit(
+            GameStateEventType.PLAYER_UNO_STATUS_CHANGED,
+            Event({"player": player, "status": player.is_unobutton_clicked}),
+        )
+
+    def unset_uno_clicked(self, player: Player) -> None:
+        player.is_unobutton_clicked = False
+        self.emit(
+            GameStateEventType.PLAYER_UNO_STATUS_CHANGED,
+            Event({"player": player, "status": player.is_unobutton_clicked}),
+        )

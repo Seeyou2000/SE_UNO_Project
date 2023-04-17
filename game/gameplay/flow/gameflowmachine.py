@@ -52,12 +52,12 @@ class GameFlowMachine(FlowMachine, EventEmitter):
         self.condition = False
         if current_player is pressed_player:
             if len(current_player.cards) == 2:
-                current_player.is_unobutton_clicked = True
+                game_state.set_uno_clicked(current_player)
                 self.condition = True
             elif (
                 len(current_player.cards) == 1 and pressed_player is not current_player
             ):
-                current_player.is_unobutton_clicked = True
+                game_state.set_uno_clicked(current_player)
                 self.condition = True
         else:
             for player in game_state.players:
@@ -67,7 +67,7 @@ class GameFlowMachine(FlowMachine, EventEmitter):
                     else:
                         self.condition = False
             if len(pressed_player.cards) == 1:
-                pressed_player.is_unobutton_clicked = True
+                game_state.set_uno_clicked(pressed_player)
                 self.condition = True
         # if self.condition is not True:
         # game_state.draw_card(pressed_player)

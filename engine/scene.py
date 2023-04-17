@@ -50,5 +50,5 @@ class SceneDirector:
     def change_scene(self, scene: Scene) -> None:
         self._current_scene = scene
 
-    def get_current(self) -> None:
+    def get_current(self) -> Scene:
         return self._current_scene

@@ -5,6 +5,7 @@ from engine.gameobjectcontainer import GameObjectContainer
 from engine.text import Text
 from game.font import FontType, get_font
 from game.gameplay.cardentitiy import CardEntity, create_card_sprite
+from game.gameplay.flow.gameflowmachine import GameFlowMachine
 from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
 from game.gameplay.timer import Timer
@@ -20,13 +21,19 @@ class OtherPlayerEntry(GameObjectContainer):
     card_sprites: list[CardEntity]
 
     def __init__(
-        self, size: pygame.Vector2, player: Player, anchor: pygame.Vector2, timer: Timer
+        self,
+        size: pygame.Vector2,
+        player: Player,
+        anchor: pygame.Vector2,
+        timer: Timer,
+        flow: GameFlowMachine,
     ) -> None:
         super().__init__()
 
         self.player = player
         self.rect = pygame.Rect(0, 0, size.x, size.y)
         self.anchor = anchor
+        self.flow = flow
 
         name_font = get_font(FontType.UI_BOLD, 20)
         name_text = Text(
@@ -38,6 +45,11 @@ class OtherPlayerEntry(GameObjectContainer):
             "NEXT", pygame.Vector2(100, 10), name_font, pygame.Color("#FF9549")
         )
 
+        self.uno_text = Text(
+            "UNO", pygame.Vector2(50, 10), name_font, pygame.Color("gray")
+        )
+        self.add_child(self.uno_text)
+
         self.timer_display = TimerIndicator(pygame.Rect(0, 0, 20, 20), timer)
         self.add_child(self.timer_display)
 
@@ -45,15 +57,18 @@ class OtherPlayerEntry(GameObjectContainer):
             name_text.rect.topleft = (10, 10)
             self.next_text.rect.topright = (size.x - 10, 10)
             self.timer_display.rect.topright = (size.x - 10, 10)
+            self.uno_text.rect.topright = (self.next_text.rect.left - 20, 10)
         elif anchor.x > 0.5:
             name_text.rect.topright = (size.x - 10, 10)
             self.next_text.rect.topleft = (10, 10)
             self.timer_display.rect.topright = (10, 10)
+            self.uno_text.rect.topright = (self.next_text.rect.right + 20, 10)
         else:
             name_text.rect.top = 10
             name_text.rect.centerx = (size / 2).x
             self.next_text.rect.topleft = (name_text.rect.right + 20, 10)
             self.timer_display.rect.topleft = (name_text.rect.right + 20, 10)
+            self.uno_text.rect.topright = (name_text.rect.left - 20, 10)
 
         self.card_sprites = []
 
@@ -105,6 +120,13 @@ class OtherPlayerEntry(GameObjectContainer):
             self.add_child(self.next_text)
         if game_state.get_current_player() is self.player:
             self.add_child(self.timer_display)
+
+    def handle_uno_clicked(self, event: Event) -> None:
+        self.uno_text.set_color(
+            pygame.Color("blue")
+            if self.player.is_unobutton_clicked
+            else pygame.Color("red")
+        )
 
     def handle_card_earned(self, event: Event) -> None:
         self.create_or_remove_cards_if_needed()

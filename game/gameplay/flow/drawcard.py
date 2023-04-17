@@ -10,5 +10,5 @@ class DrawCardFlowNode(AbstractGameFlowNode):
     def enter(self) -> None:
         super().enter()
         self.game_state.draw_card(self.game_state.get_current_player())
-        self.game_state.get_current_player().is_unobutton_clicked = False
+        self.game_state.unset_uno_clicked(self.game_state.get_current_player())
         self.machine.transition_to(EndTurnFlowNode(self.game_state))
