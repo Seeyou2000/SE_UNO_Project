@@ -13,8 +13,10 @@ from game.gameplay.aiplayer import AIPlayer
 from game.gameplay.card import Card
 from game.gameplay.cardentitiy import CardEntity
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
+from game.gameplay.flow.changefieldcolor import ChangeFieldColorFlowNode
 from game.gameplay.flow.discardcard import DiscardCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
+from game.gameplay.flow.endability import EndAbilityFlowNode
 from game.gameplay.flow.gameend import GameEndFlowNode
 from game.gameplay.flow.gameflowmachine import (
     GameFlowMachine,
@@ -27,6 +29,7 @@ from game.gameplay.flow.validatecard import ValidateCardFlowNode
 from game.gameplay.gamestate import GameState, GameStateEventType
 from game.gameplay.player import Player
 from game.gameplay.timer import Timer
+from game.ingame.changecolormodal import ChangeColorModal
 from game.ingame.otherplayerentry import OtherPlayerEntry
 from game.ingame.timerindicator import TimerIndicator
 from game.ingame.turndirectionindicator import TurnDirectionIndicator
@@ -56,17 +59,27 @@ class InGameScene(Scene):
             lambda event: print(
                 f"\nFLOW: {type(event.before).__name__} -> {type(event.after).__name__}"  # noqa: E501
             ),
-            self.on_transition(PrepareFlowNode, None, self.setup_players),
-            self.on_transition(None, StartTurnFlowNode, self.activate_my_card_handlers),
-            self.on_transition(
+            on_transition(PrepareFlowNode, None, self.setup_players),
+            on_transition(
+                UseAbilityFlowNode,
+                ChangeFieldColorFlowNode,
+                self.show_black_to_another,
+            ),
+            on_transition(
+                ChangeFieldColorFlowNode,
+                EndAbilityFlowNode,
+                self.remove_change_color_modal,
+            ),
+            on_transition(None, StartTurnFlowNode, self.activate_my_card_handlers),
+            on_transition(
                 None,
                 StartTurnFlowNode,
                 lambda event: print(
                     f"턴 시작: {self.game_state.get_current_player().name}"
                 ),
             ),
-            self.on_transition(DiscardCardFlowNode, None, self.place_discarded_card),
-            self.on_transition(None, GameEndFlowNode, self.end_game),
+            on_transition(DiscardCardFlowNode, None, self.place_discarded_card),
+            on_transition(None, GameEndFlowNode, self.end_game),
         ]
         self.flow.events.on(GameFlowMachineEventType.TRANSITION, transition_handlers)
         self.flow.events.on(
@@ -79,6 +92,35 @@ class InGameScene(Scene):
         )
 
         self.world.settings.on("change", lambda _: self.update_cards_colorblind)
+
+        self.on("keydown", self.handle_color_keyboard)
+
+    def handle_color_keyboard(self, event: Event) -> None:
+        from game.gameplay.flow.endability import EndAbilityFlowNode
+
+        if self.has_child(self.change_color_modal):
+            card: Card = self.flow._current_node.card  # noqa: SLF001
+            match event.data["key"]:
+                case pygame.K_1:
+                    self.game_state.change_card_color("red")
+                    self.flow.transition_to(
+                        EndAbilityFlowNode(self.game_state, card, False)
+                    )
+                case pygame.K_2:
+                    self.game_state.change_card_color("yellow")
+                    self.flow.transition_to(
+                        EndAbilityFlowNode(self.game_state, card, False)
+                    )
+                case pygame.K_3:
+                    self.game_state.change_card_color("blue")
+                    self.flow.transition_to(
+                        EndAbilityFlowNode(self.game_state, card, False)
+                    )
+                case pygame.K_4:
+                    self.game_state.change_card_color("green")
+                    self.flow.transition_to(
+                        EndAbilityFlowNode(self.game_state, self.card, self.is_prepare)
+                    )
 
     def update(self, dt: float) -> None:
         super().update(dt)
@@ -126,20 +168,6 @@ class InGameScene(Scene):
 
     def render(self, surface: pygame.Surface) -> None:
         super().render(surface)
-
-    def on_transition(
-        self,
-        before: type[AbstractGameFlowNode] | None,
-        after: type[AbstractGameFlowNode] | None,
-        handler: EventHandler,
-    ) -> EventHandler:
-        def transition_handler(event: TransitionEvent) -> None:
-            satisfies_before = before is None or isinstance(event.before, before)
-            satisfies_after = after is None or isinstance(event.after, after)
-            if satisfies_before and satisfies_after:
-                handler(event)
-
-        return transition_handler
 
     def create_card_click_handler(self, card: Card) -> EventHandler:
         def handler(event: Event) -> None:
@@ -458,3 +486,13 @@ class InGameScene(Scene):
 
     def is_my_turn(self) -> bool:
         return self.game_state.get_current_player() == self.get_me()
+
+    def show_black_to_another(self, event: TransitionEvent) -> None:
+        self.change_color_modal = ChangeColorModal(self.game_state, self.flow)
+        self.layout.add(
+            self.change_color_modal, LayoutAnchor.CENTER, pygame.Vector2(0, 0)
+        )
+        self.add_child(self.change_color_modal)
+
+    def remove_change_color_modal(self, event: TransitionEvent) -> None:
+        self.remove_child(self.change_color_modal)

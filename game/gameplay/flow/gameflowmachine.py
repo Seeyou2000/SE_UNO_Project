@@ -63,3 +63,17 @@ class GameFlowMachine(FlowMachine, EventEmitter):
                 self.condition = True
         if self.condition is not True:
             game_state.draw_card(pressed_player)
+
+
+def on_transition(
+    before: type[AbstractGameFlowNode] | None,
+    after: type[AbstractGameFlowNode] | None,
+    handler: EventHandler,
+) -> EventHandler:
+    def transition_handler(event: TransitionEvent) -> None:
+        satisfies_before = before is None or isinstance(event.before, before)
+        satisfies_after = after is None or isinstance(event.after, after)
+        if satisfies_before and satisfies_after:
+            handler(event)
+
+    return transition_handler
