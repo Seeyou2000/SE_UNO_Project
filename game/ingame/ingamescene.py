@@ -7,7 +7,7 @@ from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.text import Text
 from engine.world import World
-from game.constant import NAME
+from game.constant import NAME, ColorableAbilityType
 from game.font import FontType, get_font
 from game.gameplay.card import Card
 from game.gameplay.cardentitiy import CardEntity
@@ -45,6 +45,8 @@ class InGameScene(Scene):
         self.game_state = GameState()
         self.screen_size = self.world.get_rect()
         self.mytimer_display = None
+        self.show_time = None
+        self.text_ability = None
 
         self.setup_base()
 
@@ -80,6 +82,12 @@ class InGameScene(Scene):
     def update(self, dt: float) -> None:
         super().update(dt)
         self.game_state.turn_timer.update(dt)
+        if self.show_time is not None:
+            self.show_time.update(dt)
+            self._time, self._duration = self.show_time.get_time()
+            if self._time >= self._duration:
+                if self.text_ability is not None and self.has_child(self.text_ability):
+                    self.remove_child(self.text_ability)
 
         my_cards = self.get_me().cards
         # print(len(cards))
@@ -301,7 +309,7 @@ class InGameScene(Scene):
                     20,
                     20,
                 ),
-                self.game_state.turn_timer,  # 좌표값 플레이어에 맞게 옮기기 필요
+                self.game_state.turn_timer,
             )
             self.layout.add(
                 self.mytimer_display,
@@ -331,6 +339,56 @@ class InGameScene(Scene):
 
     def handle_card_played(self, event: Event) -> None:
         card: Card = event.data["card"]
+        # 능력카드 발생시 이벤트 추가
+        match card.ability:
+            case ColorableAbilityType.GIVE_TWO_CARDS:
+                self.text_ability = Text(
+                    "Give Two cards",
+                    pygame.Vector2(),
+                    get_font(FontType.UI_BOLD, 25),
+                    "black",
+                )
+                self.add_child(self.text_ability)
+                self.layout.add(
+                    self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115)
+                )
+                self.show_time = Timer(2)
+            case ColorableAbilityType.GIVE_FOUR_CARDS:
+                self.text_ability = Text(
+                    "Give Four cards",
+                    pygame.Vector2(),
+                    get_font(FontType.UI_BOLD, 25),
+                    "black",
+                )
+                self.add_child(self.text_ability)
+                self.layout.add(
+                    self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115)
+                )
+                self.show_time = Timer(2)
+            case ColorableAbilityType.SKIP_ORDER:
+                self.text_ability = Text(
+                    "Skip",
+                    pygame.Vector2(),
+                    get_font(FontType.UI_BOLD, 25),
+                    "black",
+                )
+                self.add_child(self.text_ability)
+                self.layout.add(
+                    self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115)
+                )
+                self.show_time = Timer(2)
+            case ColorableAbilityType.REVERSE_ORDER:
+                self.text_ability = Text(
+                    "Reverse",
+                    pygame.Vector2(),
+                    get_font(FontType.UI_BOLD, 25),
+                    "black",
+                )
+                self.add_child(self.text_ability)
+                self.layout.add(
+                    self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115)
+                )
+                self.show_time = Timer(2)
         for child in self._children:
             if isinstance(child, CardEntity) and child.card is card:
                 self.remove_child(child)
