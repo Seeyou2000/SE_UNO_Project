@@ -72,7 +72,7 @@ def create_card_sprite(
     height = (
         CARD_BACK_SIZE_UNIT if is_back else CARD_SIZE_UNIT
     ) * CARD_HEIGHT_MULTIPLIER
-    card_color = COLORBLIND_COLORS[color] if is_colorblind else COLORS[color]
+    card_color = get_card_color(color, is_colorblind)
 
     card_surface = pygame.Surface((width, height), pygame.SRCALPHA)
     card_rect = card_surface.get_rect()
@@ -224,3 +224,7 @@ def draw_ability(surface: pygame.Surface, ability: AbilityType) -> None:
 
 def draw_color_shape(surface: pygame.Surface, color: str) -> None:
     pass
+
+
+def get_card_color(color: str, is_colorblind: bool) -> pygame.Color:
+    return COLORBLIND_COLORS[color] if is_colorblind else COLORS[color]

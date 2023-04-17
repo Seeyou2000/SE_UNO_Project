@@ -31,6 +31,7 @@ from game.gameplay.gamestate import GameState, GameStateEventType
 from game.gameplay.player import Player
 from game.gameplay.timer import Timer
 from game.ingame.changecolormodal import ChangeColorModal
+from game.ingame.nowcolorindicator import NowColorIndicator
 from game.ingame.otherplayerentry import OtherPlayerEntry
 from game.ingame.timerindicator import TimerIndicator
 from game.ingame.turndirectionindicator import TurnDirectionIndicator
@@ -216,6 +217,12 @@ class InGameScene(Scene):
         self.add_child(self.turn_direction_indicator)
         self.layout.add(
             self.turn_direction_indicator, LayoutAnchor.CENTER, pygame.Vector2(0, -150)
+        )
+
+        now_color_indicator = NowColorIndicator(self.game_state, self.world.settings)
+        self.add_child(now_color_indicator)
+        self.layout.add(
+            now_color_indicator, LayoutAnchor.CENTER, pygame.Vector2(130, -40)
         )
 
     def setup_players(self, event: TransitionEvent) -> None:
