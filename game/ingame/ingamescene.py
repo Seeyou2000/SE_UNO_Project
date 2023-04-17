@@ -1,18 +1,17 @@
 import pygame
 
-from engine.button import BaseButton, Button, ButtonSurfaces, SpriteButton
+from engine.button import Button, ButtonSurfaces, SpriteButton
 from engine.event import Event, EventHandler
 from engine.layout import LayoutAnchor
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.text import Text
 from engine.world import World
-from game.constant import NAME, ColorableAbilityType
+from game.constant import NAME, AbilityType
 from game.font import FontType, get_font
 from game.gameplay.aiplayer import AIPlayer
 from game.gameplay.card import Card
 from game.gameplay.cardentitiy import CardEntity
-from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.flow.changefieldcolor import ChangeFieldColorFlowNode
 from game.gameplay.flow.discardcard import DiscardCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
@@ -22,9 +21,11 @@ from game.gameplay.flow.gameflowmachine import (
     GameFlowMachine,
     GameFlowMachineEventType,
     TransitionEvent,
+    on_transition,
 )
 from game.gameplay.flow.prepare import PrepareFlowNode
 from game.gameplay.flow.startturn import StartTurnFlowNode
+from game.gameplay.flow.useability import UseAbilityFlowNode
 from game.gameplay.flow.validatecard import ValidateCardFlowNode
 from game.gameplay.gamestate import GameState, GameStateEventType
 from game.gameplay.player import Player
@@ -40,7 +41,6 @@ class InGameScene(Scene):
         self, world: World, player_count: int, my_player_index: int = 0
     ) -> None:
         super().__init__(world)
-
         self.my_player_index = my_player_index
 
         self.font = get_font(FontType.UI_BOLD, 20)
@@ -375,12 +375,13 @@ class InGameScene(Scene):
         self.layout.add(
             discarded_card_entity, LayoutAnchor.CENTER, self.discard_position
         )
+        self.update_cards_colorblind()
 
     def handle_card_played(self, event: Event) -> None:
         card: Card = event.data["card"]
         # 능력카드 발생시 이벤트 추가
         match card.ability:
-            case ColorableAbilityType.GIVE_TWO_CARDS:
+            case AbilityType.GIVE_TWO_CARDS:
                 self.text_ability = Text(
                     "Give Two cards",
                     pygame.Vector2(),
@@ -392,7 +393,7 @@ class InGameScene(Scene):
                     self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115)
                 )
                 self.show_time = Timer(2)
-            case ColorableAbilityType.GIVE_FOUR_CARDS:
+            case AbilityType.GIVE_FOUR_CARDS:
                 self.text_ability = Text(
                     "Give Four cards",
                     pygame.Vector2(),
@@ -404,7 +405,7 @@ class InGameScene(Scene):
                     self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115)
                 )
                 self.show_time = Timer(2)
-            case ColorableAbilityType.SKIP_ORDER:
+            case AbilityType.SKIP_ORDER:
                 self.text_ability = Text(
                     "Skip",
                     pygame.Vector2(),
@@ -416,7 +417,7 @@ class InGameScene(Scene):
                     self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115)
                 )
                 self.show_time = Timer(2)
-            case ColorableAbilityType.REVERSE_ORDER:
+            case AbilityType.REVERSE_ORDER:
                 self.text_ability = Text(
                     "Reverse",
                     pygame.Vector2(),
@@ -432,7 +433,8 @@ class InGameScene(Scene):
             if isinstance(child, CardEntity) and child.card is card:
                 self.remove_child(child)
                 self.layout.remove(child)
-                self.my_card_entities.remove(child)
+                if child in self.my_card_entities:
+                    self.my_card_entities.remove(child)
 
     def handle_me_card_earned(self, event: Event) -> None:
         card: Card = event.data["card"]
@@ -444,6 +446,7 @@ class InGameScene(Scene):
             return
 
         self.add_child(card_entity)
+        self.my_card_entities.append(card_entity)
         card_entity.set_colorblind(self.world.settings.is_colorblind)
         deck_margin = self.layout.get_constraint(self.deck_button).margin
         self.layout.add(
@@ -454,7 +457,6 @@ class InGameScene(Scene):
                 -self.deck_button.absolute_rect.centery + deck_margin.y,
             ),
         )
-        self.my_card_entities.append(card_entity)
 
     def update_cards_colorblind(self) -> None:
         for child in self._children:

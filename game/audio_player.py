@@ -1,13 +1,11 @@
 import pygame
 
 from engine.event import Event
-from game.settings import settings
 from game.settings.settings import Settings
 
 
 class AudioPlayer:
-
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings) -> None:
         self.bgm_volume = 1.0
         self.effect_volume = 1.0
         self.volume = 1.0
@@ -17,13 +15,17 @@ class AudioPlayer:
 
         # Load sound effect
         self.sound_effect = pygame.mixer.Sound("resources/audio/effectSound.wav")
-        self.bg_music_playing = False  # Add a flag to check if the background music is playing
+        self.bg_music_playing = (
+            False  # Add a flag to check if the background music is playing
+        )
 
         settings.on("change", self.handle_settings_change)
 
     def play_bg_music(self):
         # Play background music on loop
-        if not self.bg_music_playing:  # Check if the background music is already playing
+        if (
+            not self.bg_music_playing
+        ):  # Check if the background music is already playing
             self.bg_music.play(-1)
             self.bg_music_playing = True
             self.bg_music.set_volume(self.bgm_volume)

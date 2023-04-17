@@ -3,11 +3,7 @@ import pygame
 from engine.gameobjectcontainer import GameObjectContainer
 from engine.sprite import Sprite
 from game import text_outline
-from game.constant import (
-    AbilityType,
-    ColorableAbilityType,
-    NonColorableAbilityType,
-)
+from game.constant import AbilityType
 from game.font import FontType, get_font
 from game.gameplay.card import Card
 
@@ -180,15 +176,19 @@ def draw_ability(surface: pygame.Surface, ability: AbilityType) -> None:
 
     ability_text = ""
     match ability:
-        case NonColorableAbilityType.CHANGE_CARD_COLOR:
+        case AbilityType.CHANGE_CARD_COLOR:
             ability_text = "색"
-        case ColorableAbilityType.GIVE_TWO_CARDS:
+        case AbilityType.ABSOULTE_ATTACK:
             ability_text = "+2"
-        case ColorableAbilityType.GIVE_FOUR_CARDS:
+        case AbilityType.ABSOULTE_PROTECT:
+            ability_text = "☆"
+        case AbilityType.GIVE_TWO_CARDS:
+            ability_text = "+2"
+        case AbilityType.GIVE_FOUR_CARDS:
             ability_text = "+4"
-        case ColorableAbilityType.SKIP_ORDER:
+        case AbilityType.SKIP_ORDER:
             ability_text = "스킵"
-        case ColorableAbilityType.REVERSE_ORDER:
+        case AbilityType.REVERSE_ORDER:
             ability_text = "역"
 
     text_surface = text_outline.render(

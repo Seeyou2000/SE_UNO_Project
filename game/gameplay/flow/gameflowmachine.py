@@ -1,12 +1,15 @@
 from enum import Enum
 
-from engine.event import Event, EventEmitter
+from engine.event import Event, EventEmitter, EventHandler
 from engine.fsm import FlowMachine
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
+from game.gameplay.gamestate import GameState
+from game.gameplay.player import Player
 
 
 class GameFlowMachineEventType(Enum):
     TRANSITION = "transition"
+    TRANSITION_COMPLETE = "transition_complete"
     CARD_PLAYED = "card_played"
 
 
@@ -37,8 +40,12 @@ class GameFlowMachine(FlowMachine, EventEmitter):
             TransitionEvent(self._current_node, new_node),
         )
         super().transition_to(new_node)
+        self.events.emit(
+            GameFlowMachineEventType.TRANSITION_COMPLETE,
+            TransitionEvent(self._current_node, new_node),
+        )
 
-    def is_uno(self, game_state, pressed_player) -> None:
+    def is_uno(self, game_state: GameState, pressed_player: Player) -> None:
         # 우노판별
         current_player = game_state.get_current_player()
         self.condition = False
@@ -54,7 +61,7 @@ class GameFlowMachine(FlowMachine, EventEmitter):
         else:
             for player in game_state.players:
                 if player is not pressed_player:
-                    if len(player.cards) == 1 and player.is_unobutton_cliked == False:
+                    if len(player.cards) == 1 and player.is_unobutton_cliked is False:
                         game_state.draw_card(player)
                     else:
                         self.condition = False

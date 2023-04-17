@@ -1,5 +1,4 @@
 from engine.event import Event
-from game.constant import ColorableAbilityType
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.gamestate import GameState
 
@@ -10,17 +9,14 @@ class StartTurnFlowNode(AbstractGameFlowNode):
 
     def enter(self) -> None:
         super().enter()
+
         player = self.game_state.get_current_player()
 
+        if self.game_state.is_absolute_attack():
+            self.game_state.flush_attack_cards(self.game_state.get_current_player())
         if self.game_state.is_attacked():
-            for card in player.cards:
-                # 공격 카드
-                if (card.ability != ColorableAbilityType.GIVE_FOUR_CARDS) or (
-                    card.ability != ColorableAbilityType.GIVE_TWO_CARDS
-                ):
-                    self.game_state.flush_attack_cards(
-                        self.game_state.get_current_player()
-                    )
+            if self.game_state.have_attack_card_or_protect_card():
+                self.game_state.flush_attack_cards(self.game_state.get_current_player())
         self.game_state.turn_timer.on("tick", self.transition_to_draw_card)
 
         if len(player.cards) == 1 and player.is_unobutton_clicked is not True:

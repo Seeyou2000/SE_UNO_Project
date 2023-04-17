@@ -2,7 +2,7 @@ import random
 from enum import Enum
 
 from engine.event import Event, EventEmitter
-from game.constant import COLORS, ColorableAbilityType, NonColorableAbilityType
+from game.constant import COLORABLEABILITY, COLORS, NONCOLORABLEABILITY, AbilityType
 from game.gameplay.card import Card
 from game.gameplay.deck import Deck
 from game.gameplay.player import Player
@@ -34,16 +34,16 @@ class GameState(EventEmitter):
     def __init__(self) -> None:
         super().__init__()
         self.now_color = "red"
-        self.turn_timer = Timer(10)
+        self.turn_timer = Timer(5)
 
     def create_full_deck_cards(self) -> list[Card]:
         cards = [Card(color, number) for number in (range(1, 10)) for color in COLORS]
         cards += [
             Card(color, None, ability)
-            for ability in ColorableAbilityType
+            for ability in COLORABLEABILITY
             for color in COLORS
         ]
-        cards += [Card("black", None, ability) for ability in NonColorableAbilityType]
+        cards += [Card("black", None, ability) for ability in NONCOLORABLEABILITY]
         random.shuffle(cards)
         return cards
 
@@ -69,14 +69,30 @@ class GameState(EventEmitter):
 
     def discard(self, card: Card) -> None:
         self.discard_pile.cards.append(card)
-        self.now_color = card.color
-        self.get_current_player().cards.remove(card)
+        if card.color != "black":
+            self.change_card_color(card.color)
+        print(self.get_current_player().name, card)
+        try:
+            self.get_current_player().cards.remove(card)
+        except ValueError:
+            print(self.get_current_player().name, card)
 
     def attack_cards(self, n: int) -> None:
         self._cards_to_attack += n
 
     def is_attacked(self) -> bool:
         return self._cards_to_attack > 0
+
+    def have_attack_card_or_protect_card(self) -> bool:
+        for card in self.get_current_player().cards:
+            if (
+                card.ability == AbilityType.GIVE_FOUR_CARDS
+                or card.ability == AbilityType.GIVE_TWO_CARDS
+                or card.ability == AbilityType.ABSOULTE_ATTACK
+                or card.ability == AbilityType.ABSOULTE_PROTECT
+            ):
+                return False
+        return True
 
     def flush_attack_cards(self, player: Player) -> None:
         for _ in range(0, self._cards_to_attack):
@@ -110,3 +126,13 @@ class GameState(EventEmitter):
             diff - len(self.players) if is_clockwise else diff + len(self.players)
         )
         return (diff == target_turn_diff) or (reverse_diff == target_turn_diff)
+
+    def change_card_color(self, color: str) -> None:
+        self.now_color = color
+        print(self.now_color)
+
+    def is_absolute_attack(self) -> None:
+        return self._cards_to_attack > 0 and self.now_color == "black"
+
+    def absoulte_protect_cards(self) -> None:
+        self._cards_to_attack = 0
