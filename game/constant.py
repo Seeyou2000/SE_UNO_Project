@@ -25,4 +25,4 @@ NONCOLORABLEABILITY = [
 ]
 
 COLORS = ["red", "yellow", "green", "blue"]
-NAME = ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX"]
+NAME = ["PLAYER", "AI 1", "AI 2", "AI 3", "AI 4", "AI 5"]

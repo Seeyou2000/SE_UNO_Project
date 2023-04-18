@@ -6,8 +6,8 @@ from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
 from game.ingame.storymodeselectscene import StoryModeSelectScene
+from game.lobby.lobbyscene import LobbyScene
 from game.menu.menubutton import MenuButton
-from game.select.selectscene import SelectScene
 
 
 class MenuScene(Scene):
@@ -24,7 +24,7 @@ class MenuScene(Scene):
             MenuButton(
                 "Start",
                 button_size,
-                lambda _: world.director.change_scene(SelectScene(world)),
+                lambda _: world.director.change_scene(LobbyScene(world)),
             ),
             MenuButton(
                 "Story Mode",

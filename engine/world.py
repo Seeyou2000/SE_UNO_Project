@@ -5,8 +5,8 @@ import tween
 
 from engine.event import Event
 from engine.scene import SceneDirector
-from game.settings.settings import Settings
 from game.audio_player import AudioPlayer
+from game.settings.settings import Settings
 
 
 class World:
@@ -67,6 +67,10 @@ class World:
                     current_scene.emit("global_mouse_move", Event(event.dict))
                 case pygame.KEYDOWN:
                     current_scene.emit("keydown", Event(event.dict))
+                case pygame.TEXTEDITING:
+                    current_scene.emit("textediting", Event(event.dict))
+                case pygame.TEXTINPUT:
+                    current_scene.emit("textinput", Event(event.dict))
                 case pygame.WINDOWRESIZED:
                     event_width = event.dict["x"]
                     event_height = event.dict["y"]
