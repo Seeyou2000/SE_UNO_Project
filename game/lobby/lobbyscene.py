@@ -8,7 +8,7 @@ from engine.world import World
 from game.font import FontType, get_font
 
 
-class SelectScene(Scene):
+class LobbyScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
 
