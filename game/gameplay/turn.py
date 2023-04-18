@@ -3,11 +3,13 @@ class Turn:
     _is_clockwise: bool
     _index: int
     _player_count: int
+    _total_turn: int
 
     def __init__(self, player_count: int) -> None:
         self._is_clockwise = True
         self._player_count = player_count
         self._index = 0
+        self._total_turn = 0
 
     def next(self) -> None:
         if self._is_clockwise:

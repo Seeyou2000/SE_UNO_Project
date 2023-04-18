@@ -48,6 +48,34 @@ class GameState(EventEmitter):
         random.shuffle(cards)
         return cards
 
+    def weighty_draw_cards(self) -> list[Card]:
+        weighty_list = []
+        cards = []
+        prob = 0.6
+        normal_cards = [
+            Card(color, number) for number in (range(1, 10)) for color in COLORS
+        ]
+        ability_cards = [
+            Card(color, None, ability)
+            for ability in COLORABLEABILITY
+            for color in COLORS
+        ]
+        ability_cards += [
+            Card("black", None, ability) for ability in NONCOLORABLEABILITY
+        ]
+        random.shuffle(normal_cards)
+        random.shuffle(ability_cards)
+
+        for _ in range(0, 7):
+            if random.random() < prob:
+                weighty_list.append(normal_cards.pop())
+            else:
+                weighty_list.append(ability_cards.pop())
+        cards = normal_cards + ability_cards
+        random.shuffle(cards)
+        cards = cards + weighty_list
+        return cards
+
     def reset(self, players: list[Player]) -> None:
         self.game_deck = Deck(self.create_full_deck_cards())
         self.discard_pile = Deck([])

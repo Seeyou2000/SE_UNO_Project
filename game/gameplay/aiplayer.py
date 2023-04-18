@@ -25,7 +25,7 @@ class AIPlayer:
         self.player = player
         self.flow = flow
         self.game_state = game_state
-        self.uno_timer = Timer(3)
+        self.uno_timer = Timer(5)
         self.uno_timer.on("tick", self.press_uno)
         self.is_enabled = False
         self.is_change_color_enabled = False
@@ -88,7 +88,6 @@ class AIPlayer:
                 ):
                     self.flow.transition_to(ValidateCardFlowNode(self.game_state, card))
                     return
-        print(self.game_state.get_current_player().name, self.player.name)
         now_number = self.game_state.discard_pile.get_last().number
         for card in self.player.cards:
             print(card)
@@ -108,7 +107,6 @@ class AIPlayer:
             self.uno_timer.update(dt)
         else:
             self.check_ai_uno()
-
         if self.is_enabled and time > self.ai_time:
             self.action()
             self.is_enabled = False

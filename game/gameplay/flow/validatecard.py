@@ -62,3 +62,4 @@ class ValidateCardFlowNode(AbstractGameFlowNode):
             from game.gameplay.flow.startturn import StartTurnFlowNode
 
             self.machine.transition_to(StartTurnFlowNode(self.game_state))
+            self.machine.transition_to(StartTurnFlowNode(self.game_state))

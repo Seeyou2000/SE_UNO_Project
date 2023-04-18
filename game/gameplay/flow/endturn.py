@@ -8,6 +8,8 @@ class EndTurnFlowNode(AbstractGameFlowNode):
     def __init__(self, game_state: GameState) -> None:
         super().__init__(game_state)
 
+        self.game_state.turn._total_turn += 1  # noqa: SLF001
+
     def enter(self) -> None:
         super().enter()
         if (

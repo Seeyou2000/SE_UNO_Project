@@ -1,3 +1,5 @@
+import random
+
 import pygame
 
 from engine.button import Button, ButtonSurfaces, SpriteButton
@@ -11,7 +13,7 @@ from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.text import Text
 from engine.world import World
-from game.constant import NAME, AbilityType
+from game.constant import COLORS, NAME, AbilityType
 from game.font import FontType, get_font
 from game.gameplay.aiplayer import AIPlayer
 from game.gameplay.card import Card
@@ -45,9 +47,22 @@ class InGameScene(Scene):
     discarding_card_entities: list[CardEntity]
 
     def __init__(
-        self, world: World, player_count: int, my_player_index: int = 0
+        self,
+        world: World,
+        player_count: int,
+        more_ability_cards: bool = False,
+        give_every_card_to_players: bool = False,
+        random_color: bool = False,
+        six_players: bool = False,
+        my_player_index: int = 0,
     ) -> None:
         super().__init__(world)
+
+        self.more_ability_cards = more_ability_cards
+        self.give_every_card_to_players = give_every_card_to_players
+        self.random_color = random_color
+        self.six_players = six_players
+
         self.my_player_index = my_player_index
 
         self.font = get_font(FontType.UI_BOLD, 20)
@@ -91,6 +106,7 @@ class InGameScene(Scene):
                     f"턴 시작: {self.game_state.get_current_player().name}"
                 ),
             ),
+            on_transition(None, StartTurnFlowNode, self.story_color_change),
             on_transition(DiscardCardFlowNode, None, self.place_discarded_card),
             on_transition(None, GameEndFlowNode, self.end_game),
         ]
@@ -100,13 +116,23 @@ class InGameScene(Scene):
         )
         self.flow.transition_to(
             PrepareFlowNode(
-                self.game_state, [Player(name) for name in NAME[:player_count]]
+                self.game_state,
+                [Player(name) for name in NAME[:player_count]],
+                self.more_ability_cards,
+                self.give_every_card_to_players,
             )
         )
 
         self.world.settings.on("change", lambda _: self.update_cards_colorblind)
 
         self.on("keydown", self.handle_keydown)
+
+    def story_color_change(self, event: TransitionEvent) -> None:
+        if (
+            self.random_color
+            and self.game_state.turn._total_turn % 5 == 0  # noqa: SLF001
+        ):
+            self.game_state.change_card_color(random.choice(COLORS))
 
     def handle_keydown(self, event: Event) -> None:
         key: int = event.data["key"]
