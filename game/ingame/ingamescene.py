@@ -109,6 +109,7 @@ class InGameScene(Scene):
             on_transition(None, StartTurnFlowNode, self.story_color_change),
             on_transition(DiscardCardFlowNode, None, self.place_discarded_card),
             on_transition(None, GameEndFlowNode, self.end_game),
+            on_transition(None, GameEndFlowNode, self.back_to_menu)
         ]
         self.flow.events.on(GameFlowMachineEventType.TRANSITION, transition_handlers)
         self.flow.events.on(
@@ -169,7 +170,7 @@ class InGameScene(Scene):
                         )
                     )
                 case pygame.K_3:
-                    self.game_state.change_card_color("blue")
+                    self.game_state.change_card_color("green")
                     self.flow.transition_to(
                         EndAbilityFlowNode(
                             self.game_state,
@@ -178,7 +179,7 @@ class InGameScene(Scene):
                         )
                     )
                 case pygame.K_4:
-                    self.game_state.change_card_color("green")
+                    self.game_state.change_card_color("blue")
                     self.flow.transition_to(
                         EndAbilityFlowNode(
                             self.game_state,
@@ -557,6 +558,17 @@ class InGameScene(Scene):
             LayoutAnchor.CENTER,
             pygame.Vector2(),
         )
+        
+    def back_to_menu(self, event: Event) -> None:
+        from game.menu.menuscene import MenuScene
+        menu_button = Button(
+            "Back to menu",
+            pygame.Rect(10, 10, 180, 60),
+            self.font,
+            lambda _: self.world.director.change_scene(MenuScene(self.world)),
+        )
+        self.add_child(menu_button)
+        self.layout.add(menu_button, LayoutAnchor.CENTER, pygame.Vector2(0, 150))
 
     def hide_text_ability(self, event: Event) -> None:
         if self.has_child(self.text_ability):
