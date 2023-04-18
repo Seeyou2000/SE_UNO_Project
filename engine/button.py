@@ -100,7 +100,7 @@ class Button(BaseButton):
         self.focus_ring_surface = pygame.Surface(focus_ring_rect.size, pygame.SRCALPHA)
         pygame.draw.rect(
             self.focus_ring_surface,
-            pygame.Color("#ffdcc3"),
+            pygame.Color("#FF9549"),
             focus_ring_rect,
             width=2,
             border_radius=border_radius + 4,
