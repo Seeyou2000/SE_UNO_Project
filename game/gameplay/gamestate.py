@@ -67,7 +67,7 @@ class GameState(EventEmitter):
         random.shuffle(ability_cards)
 
         for _ in range(0, 7):
-            if random.random() < prob:
+            if random.random() > prob:
                 weighty_list.append(normal_cards.pop())
             else:
                 weighty_list.append(ability_cards.pop())
