@@ -85,7 +85,7 @@ class OtherPlayerEntry(GameObjectContainer):
             self.create_card_sprite()
 
     def render(self, surface: pygame.Surface) -> None:
-        pygame.draw.rect(surface, pygame.Color("gray"), self.absolute_rect)
+        # pygame.draw.rect(surface, pygame.Color("gray"), self.absolute_rect)
         super().render(surface)
 
     def update(self, dt: float) -> None:
