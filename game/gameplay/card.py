@@ -15,4 +15,4 @@ class Card(GameObjectContainer):
         self.ability = ability
 
     def __str__(self) -> str:
-        return f"카드 색:{self.color} 숫자:{self.number} 능력:{self.ability}"
+        return f"[카드 색: {self.color}, 숫자: {self.number}, 능력: {self.ability}]"

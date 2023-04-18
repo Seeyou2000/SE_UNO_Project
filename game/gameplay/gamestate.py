@@ -1,4 +1,5 @@
 import random
+import sys
 from enum import Enum
 
 from engine.event import Event, EventEmitter
@@ -88,6 +89,11 @@ class GameState(EventEmitter):
     def get_current_player(self) -> Player:
         return self.players[self.turn.current]
 
+    def get_next_player(self) -> Player:
+        for player in self.players:
+            if self.is_player_next_turn(player):
+                return player
+
     def draw_card(self, player: Player) -> None:
         if self.game_deck.get_card_amount() == 0:
             last_card = self.discard_pile.cards[-1]
@@ -109,11 +115,18 @@ class GameState(EventEmitter):
         self.discard_pile.cards.append(card)
         if card.color != "black":
             self.change_card_color(card.color)
-        print(self.get_current_player().name, card)
+        print("DISCARD by", self.get_current_player().name, "-", card)
         try:
             self.get_current_player().cards.remove(card)
-        except ValueError:
-            print(self.get_current_player().name, card)
+        except ValueError as e:
+            print(
+                "DISCARD ERROR",
+                self.get_current_player().name,
+                "-",
+                card,
+                file=sys.stderr,
+            )
+            raise e
 
     def attack_cards(self, n: int) -> None:
         self._cards_to_attack += n

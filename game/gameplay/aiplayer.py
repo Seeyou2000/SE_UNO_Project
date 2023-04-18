@@ -89,8 +89,11 @@ class AIPlayer:
                     self.flow.transition_to(ValidateCardFlowNode(self.game_state, card))
                     return
         now_number = self.game_state.discard_pile.get_last().number
+        print("----- AI 플레이어 패 -----")
         for card in self.player.cards:
             print(card)
+        print("-----------------------")
+        for card in self.player.cards:
             if (
                 card.color == self.game_state.now_color
                 or card.color == "black"
