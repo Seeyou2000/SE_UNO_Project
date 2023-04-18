@@ -25,6 +25,6 @@ def test_weighted_draw() -> None:
 
     print(ability_count, number_count)
 
-    tolerance = 100
     target = 600
+    tolerance = 600 * 0.05
     assert abs(ability_count - target) <= tolerance
