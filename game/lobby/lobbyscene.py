@@ -77,6 +77,7 @@ class LobbyScene(Scene):
             start_button, LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-50, -50)
         )
         self.add_child(start_button)
+        self.focus_controller.add(start_button)
 
         self.focus_controller.set_siblings(
             ai_player_buttons[-1], {FocusMoveDirection.RIGHT: menu_button}
