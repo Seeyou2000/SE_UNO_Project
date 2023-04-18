@@ -100,9 +100,11 @@ class LobbyScene(Scene):
         return handler
 
     def start_with_player_count(self, event: Event) -> None:
-        self.names = [self.name_input.text] + self.names
+        final_names = [self.name_input.text] + self.names
         NAME[0] = self.name_input.text
-        count = len(self.names)
+        count = len(final_names)
+        if count == 1:
+            return
         from game.ingame.ingamescene import InGameScene
 
         self.world.director.change_scene(InGameScene(self.world, count))
