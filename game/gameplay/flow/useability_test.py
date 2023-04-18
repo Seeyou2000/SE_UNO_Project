@@ -52,11 +52,13 @@ def test_ai_skip(
     assert attacker is ai.player, "공격자가 AI인지 확인"
 
     flow.transition_to(ValidateCardFlowNode(game_state, attacker.cards[0]))
-    ai.update(4)
+    ai.update(0)
 
     assert game_state.get_current_player() is attacker, "스킵 후 다시 자기 차례인가?"
 
-    ai.update(4)
+    ai.update(0)
+    game_state.turn_timer.update(4)
+    ai.update(0)
     # flow.transition_to(ValidateCardFlowNode(game_state, attacker.cards[0]))
 
     assert game_state.get_current_player() is victim, "AI가 연속으로 내는가?"
