@@ -109,7 +109,7 @@ class InGameScene(Scene):
             on_transition(None, StartTurnFlowNode, self.story_color_change),
             on_transition(DiscardCardFlowNode, None, self.place_discarded_card),
             on_transition(None, GameEndFlowNode, self.end_game),
-            on_transition(None, GameEndFlowNode, self.back_to_menu)
+            on_transition(None, GameEndFlowNode, self.back_to_menu),
         ]
         self.flow.events.on(GameFlowMachineEventType.TRANSITION, transition_handlers)
         self.flow.events.on(
@@ -541,10 +541,14 @@ class InGameScene(Scene):
             self.flow.transition_to(DrawCardFlowNode(self.game_state))
 
     def end_game(self, event: Event) -> None:
-        if len(self.get_me().cards) == 0:
-            self.game_result = "Win"
+        won_player: Player
+        for player in self.game_state.players:
+            if len(player.cards) == 0:
+                won_player = player
+        if won_player is self.get_me():
+            self.game_result = f"{won_player.name} Win!"
         else:
-            self.game_result = "Lose"
+            self.game_result = f"Lose! {won_player.name} Won!"
 
         self.text_gameend = Text(
             self.game_result,
@@ -558,9 +562,10 @@ class InGameScene(Scene):
             LayoutAnchor.CENTER,
             pygame.Vector2(),
         )
-        
+
     def back_to_menu(self, event: Event) -> None:
         from game.menu.menuscene import MenuScene
+
         menu_button = Button(
             "Back to menu",
             pygame.Rect(10, 10, 180, 60),
