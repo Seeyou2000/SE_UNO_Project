@@ -2,6 +2,7 @@ import pygame
 
 from engine.button import Button
 from engine.event import Event, EventHandler
+from engine.focus import FocusMoveDirection
 from engine.layout import LayoutAnchor
 from engine.scene import Scene
 from engine.text import Text
@@ -25,6 +26,7 @@ class SettingScene(Scene):
         self.place_sound_buttons()
         self.place_keyboard_options()
         self.place_bottom_buttons()
+        self.connect_focus_siblings()
 
         self.on("keydown", self.handle_key_down)
 
@@ -47,8 +49,10 @@ class SettingScene(Scene):
                 LayoutAnchor.TOP_LEFT,
                 pygame.Vector2(50 + i * (button.rect.width + 20), 50),
             )
+            self.focus_controller.add(button)
 
         self.add_children(screen_size_buttons)
+        self.screen_size_buttons = screen_size_buttons
 
     def place_colorblind_button(self) -> None:
         def handle_colorblind_change(event: Event) -> None:
@@ -68,6 +72,7 @@ class SettingScene(Scene):
         self.layout.add(
             colorblind_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 150)
         )
+        self.focus_controller.add(colorblind_button)
 
         self.add_child(colorblind_button)
 
@@ -105,6 +110,7 @@ class SettingScene(Scene):
                 LayoutAnchor.TOP_LEFT,
                 pygame.Vector2((button_width + gap) * i + 250, 250),
             )
+            self.focus_controller.add(bgm_volume_button)
 
         description_text = Text(
             "Effect Volume",
@@ -131,6 +137,7 @@ class SettingScene(Scene):
                 LayoutAnchor.TOP_LEFT,
                 pygame.Vector2((button_width + gap) * i + 250, 320),
             )
+            self.focus_controller.add(effect_volume_button)
 
     def place_keyboard_options(self) -> None:
         for i, (dict_key, keyboard_key) in enumerate(
@@ -156,8 +163,10 @@ class SettingScene(Scene):
                 self.create_key_button_click_handler(dict_key),
             )
             self.layout.add(
-                change_key_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(300, y)
+                change_key_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(250, y)
             )
+            self.focus_controller.add(change_key_button)
+            self.last_key_button = change_key_button
             self.add_child(change_key_button)
 
     def place_bottom_buttons(self) -> None:
@@ -172,6 +181,7 @@ class SettingScene(Scene):
         self.layout.add(
             back_button, LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-50, -50)
         )
+        self.focus_controller.add(back_button)
         self.add_child(back_button)
 
         reset_button = Button(
@@ -183,7 +193,9 @@ class SettingScene(Scene):
         self.layout.add(
             reset_button, LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-170, -50)
         )
+        self.focus_controller.add(reset_button)
         self.add_child(reset_button)
+        self.reset_button = reset_button
 
     def create_key_button_click_handler(self, dict_key: str) -> EventHandler:
         def handle_click(event: Event) -> None:
@@ -209,6 +221,18 @@ class SettingScene(Scene):
             self.changing_key = (None, None)
 
             changing_button.set_text(self.get_display_keyname(changing_dict_key))
+
+    def connect_focus_siblings(self) -> None:
+        self.focus_controller.set_siblings(
+            self.screen_size_buttons[1],
+            {FocusMoveDirection.LEFT: self.screen_size_buttons[0]},
+        )
+        self.focus_controller.set_siblings(
+            self.reset_button, {FocusMoveDirection.LEFT: self.last_key_button}
+        )
+        self.focus_controller.set_siblings(
+            self.last_key_button, {FocusMoveDirection.RIGHT: self.reset_button}
+        )
 
     def get_display_keyname(self, dict_key: str) -> str:
         return pygame.key.name(self.world.settings.keymap[dict_key]).upper()

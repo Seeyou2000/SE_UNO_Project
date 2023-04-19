@@ -8,3 +8,4 @@ class Player:
         super().__init__()
         self.name = name
         self.cards = []
+        self.is_unobutton_clicked = False

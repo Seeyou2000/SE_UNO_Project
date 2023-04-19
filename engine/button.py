@@ -4,6 +4,7 @@ import pygame
 from attr import dataclass
 
 from engine.event import Event, EventHandler
+from engine.focus import Focusable
 from engine.gameobject import GameObject
 
 
@@ -14,7 +15,7 @@ class ButtonSurfaces:
     pressed: pygame.Surface
 
 
-class BaseButton(GameObject):
+class BaseButton(GameObject, Focusable):
     font: pygame.font.Font
     on_click: EventHandler | None
 
@@ -55,8 +56,6 @@ class BaseButton(GameObject):
 
 
 class Button(BaseButton):
-    has_focus: bool
-
     def __init__(
         self,
         text: str,
@@ -64,14 +63,14 @@ class Button(BaseButton):
         font: pygame.font.Font,
         on_click: EventHandler | None = None,
     ) -> None:
-        self.has_focus = False
         border_radius = 10
-        normal_rect = rect.inflate(-4, -4)
-        normal_surface = pygame.Surface(normal_rect.size, pygame.SRCALPHA)
+        drawing_rect = rect.inflate(-4, -4)
+        drawing_rect.topleft = (2, 2)
+        normal_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
         pygame.draw.rect(
             normal_surface,
             pygame.Color("#fff1e7"),
-            normal_rect,
+            drawing_rect,
             border_radius=border_radius,
         )
 
@@ -79,7 +78,7 @@ class Button(BaseButton):
         pygame.draw.rect(
             hover_surface,
             pygame.Color("#ffe8d7"),
-            normal_rect,
+            drawing_rect,
             border_radius=border_radius,
         )
 
@@ -87,7 +86,7 @@ class Button(BaseButton):
         pygame.draw.rect(
             pressed_surface,
             pygame.Color("#ffdcc3"),
-            normal_rect,
+            drawing_rect,
             border_radius=border_radius,
         )
         super().__init__(
@@ -97,10 +96,11 @@ class Button(BaseButton):
         )
 
         focus_ring_rect = rect.copy()
+        focus_ring_rect.topleft = (0, 0)
         self.focus_ring_surface = pygame.Surface(focus_ring_rect.size, pygame.SRCALPHA)
         pygame.draw.rect(
             self.focus_ring_surface,
-            pygame.Color("#ffdcc3"),
+            pygame.Color("#FF9549"),
             focus_ring_rect,
             width=2,
             border_radius=border_radius + 4,
@@ -112,6 +112,7 @@ class Button(BaseButton):
         self.on("keydown", self.handle_keydown)
 
     def set_text(self, text: str) -> None:
+        self.text = text
         self._rendered_text = self.font.render(text, True, pygame.Color("#451e11"))
 
     def render(self, surface: pygame.Surface) -> None:

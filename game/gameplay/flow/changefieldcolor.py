@@ -4,16 +4,13 @@ from game.gameplay.gamestate import GameState
 
 
 class ChangeFieldColorFlowNode(AbstractGameFlowNode):
-    def __init__(self, game_state: GameState, card: Card) -> None:
+    def __init__(self, game_state: GameState, card: Card, is_prepare: bool) -> None:
         super().__init__(game_state)
 
         self.card = card
+        self.game_state = game_state
+        self.is_prepare = is_prepare
 
     def enter(self) -> None:
         super().enter()
-
         # 색 변경 대기 로직 구현
-
-        from gameplay.flow.endturn import EndTurnFlowNode
-
-        self.machine.transition_to(EndTurnFlowNode(self.game_state))

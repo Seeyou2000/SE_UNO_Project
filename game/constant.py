@@ -1,22 +1,28 @@
 from enum import Enum, auto
 
 
-class ColorableAbilityType(Enum):
+class AbilityType(Enum):
     GIVE_TWO_CARDS = 1
     GIVE_FOUR_CARDS = auto()
     SKIP_ORDER = auto()
     REVERSE_ORDER = auto()
-
-
-class NonColorableAbilityType(Enum):
-    # 우주방어
-    # 스킵
-    # 그냥 방어없이 무지성 카드 주기 <- 열받는용도
     CHANGE_CARD_COLOR = 100
+    ABSOULTE_ATTACK = auto()
+    ABSOULTE_PROTECT = auto()
 
 
-AbilityType = ColorableAbilityType | NonColorableAbilityType
+COLORABLEABILITY = [
+    AbilityType.GIVE_TWO_CARDS,
+    AbilityType.GIVE_FOUR_CARDS,
+    AbilityType.SKIP_ORDER,
+    AbilityType.REVERSE_ORDER,
+]
 
+NONCOLORABLEABILITY = [
+    AbilityType.CHANGE_CARD_COLOR,
+    AbilityType.ABSOULTE_ATTACK,
+    AbilityType.ABSOULTE_PROTECT,
+]
 
 COLORS = ["red", "yellow", "green", "blue"]
-NAME = ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX"]
+NAME = ["PLAYER", "AI 1", "AI 2", "AI 3", "AI 4", "AI 5"]

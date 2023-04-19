@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 import pygame
 
 from engine.gameobject import GameObject
@@ -77,3 +79,38 @@ class Layout:
                 child.rect.bottom = height
             else:
                 child.rect.centery = height
+
+
+def update_horizontal_linear_overlapping_layout(
+    objects: list[GameObject],
+    layout: Layout,
+    dt: float,
+    max_width: float,
+    gap: float,
+    offset_retriever: Callable[
+        [GameObject, float], pygame.Vector2
+    ] = lambda _, __: pygame.Vector2(),
+) -> None:
+    if len(objects) < 1:
+        return
+    width = objects[0].rect.width
+    original_total_width = (width - gap) * (len(objects) - 1) + width
+    clamped_total_width = min(original_total_width, max_width)
+    for i, obj in enumerate(objects):
+        # 일단 트윈 대신 감속 공식으로 애니메이션 구현
+        constraint = layout.get_constraint(obj)
+        if constraint is None:
+            continue
+        existing_margin = constraint.margin
+        objects_len = len(objects)
+        delta = obj.rect.width - gap
+        x = (
+            (i - objects_len / 2.0) * max_width / objects_len + gap
+            if original_total_width > max_width
+            else (i - 1 - objects_len / 2.0) * delta + obj.rect.width + gap / 2
+        )
+        target_pos = pygame.Vector2(x, 0) + offset_retriever(obj, clamped_total_width)
+        layout.update_constraint(
+            obj,
+            margin=existing_margin + (target_pos - existing_margin) * dt * 10,
+        )

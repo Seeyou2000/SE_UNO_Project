@@ -26,5 +26,10 @@ class Text(GameObject):
         surface.blit(self._rendered_text, self.absolute_rect.topleft)
 
     def set_text(self, text: str) -> None:
+        self.text = text
         self._rendered_text = self.font.render(text, True, self.color)
-        self.rect = self._rendered_text.get_rect()
+        self.rect = self._rendered_text.get_rect().move(self.rect.topleft)
+
+    def set_color(self, color: pygame.Color) -> None:
+        self.color = color
+        self.set_text(self.text)

@@ -38,6 +38,12 @@ class GameObjectContainer(GameObject, abc.ABC):
     def has_child(self, child: GameObject) -> None:
         return child in self._children
 
+    def set_order(self, child: GameObject, order: int) -> None:
+        if not self.has_child(child):
+            return
+        self._children.remove(child)
+        self._children.insert(order, child)
+
     def emit(self, event_name: str, event: Event, is_target_self: bool = True) -> None:
         super().emit(event_name, event, is_target_self)
         # 마우스 이벤트라면 위에서 이벤트를 감지했다면 앞에 깔려있는 오브젝트에 전파를 하지 않아도 된다

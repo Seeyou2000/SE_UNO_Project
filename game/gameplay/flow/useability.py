@@ -1,6 +1,7 @@
-from game.constant import ColorableAbilityType, NonColorableAbilityType
+from game.constant import AbilityType
 from game.gameplay.card import Card
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
+from game.gameplay.flow.changefieldcolor import ChangeFieldColorFlowNode
 from game.gameplay.gamestate import GameState
 
 
@@ -12,21 +13,28 @@ class UseAbilityFlowNode(AbstractGameFlowNode):
 
     def enter(self) -> None:
         super().enter()
+        print(type(self).__name__, self.card)
 
-        if ColorableAbilityType.GIVE_TWO_CARDS == self.card.ability:
+        if AbilityType.GIVE_TWO_CARDS == self.card.ability:
             self.game_state.attack_cards(2)
-        elif ColorableAbilityType.GIVE_FOUR_CARDS == self.card.ability:
+        elif AbilityType.GIVE_FOUR_CARDS == self.card.ability:
             self.game_state.attack_cards(4)
-        elif ColorableAbilityType.SKIP_ORDER == self.card.ability:
+        elif AbilityType.SKIP_ORDER == self.card.ability:
             self.game_state.reserve_skip(1)
-        elif ColorableAbilityType.REVERSE_ORDER == self.card.ability:
+        elif AbilityType.REVERSE_ORDER == self.card.ability:
             self.game_state.reverse_turn_direction()
-        elif NonColorableAbilityType.CHANGE_CARD_COLOR == self.card.ability:
-            pass
-            # self.change_card_color()
+        elif AbilityType.ABSOULTE_ATTACK == self.card.ability:
+            self.game_state.attack_cards(2)
+        elif AbilityType.ABSOULTE_PROTECT == self.card.ability:
+            self.game_state.absoulte_protect_cards()
 
         from game.gameplay.flow.endability import EndAbilityFlowNode
 
-        self.machine.transition_to(
-            EndAbilityFlowNode(self.game_state, self.card, self.is_prepare)
-        )
+        if self.card.color == "black":
+            self.machine.transition_to(
+                ChangeFieldColorFlowNode(self.game_state, self.card, self.is_prepare)
+            )
+        else:
+            self.machine.transition_to(
+                EndAbilityFlowNode(self.game_state, self.card, self.is_prepare)
+            )

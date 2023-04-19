@@ -10,3 +10,6 @@ class Deck:
 
     def get_last(self) -> Card:
         return self.cards[-1]
+
+    def get_card_amount(self) -> int:
+        return len(self.cards)

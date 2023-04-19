@@ -9,14 +9,14 @@ SETTINGS_FILE_PATH = "settings.json"
 POSSIBLE_SCREEN_SIZES: list[tuple[int, int]] = [(1280, 720), (1600, 900), (1920, 1080)]
 KEYS = [
     "draw_card",
-    "play_card",
+    "uno",
 ]
 
 KeyMap = dict[str, int]
 
 DEFAULT_KEYMAP: KeyMap = {}
 DEFAULT_KEYMAP[KEYS[0]] = pygame.K_s
-DEFAULT_KEYMAP[KEYS[1]] = pygame.K_RETURN
+DEFAULT_KEYMAP[KEYS[1]] = pygame.K_SPACE
 
 DEFAULT_SETTINGS = {
     "width": 1280,
