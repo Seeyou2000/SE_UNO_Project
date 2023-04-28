@@ -85,6 +85,34 @@ class SettingScene(Scene):
             BUTTON_HEIGHT,
         )
         gap = 10
+
+        description_text = Text(
+            "Master Volume",
+            pygame.Vector2(0, 0),
+            self.font,
+            pygame.Color("black"),
+        )
+        self.add_child(description_text)
+        self.layout.add(
+            description_text, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 250 + 15)
+        )
+        for i, volume_value in enumerate(range(0, 100 + 1, 25)):
+            master_volume_button = Button(
+                f"{volume_value}%",
+                button_rect.copy(),
+                self.font,
+                lambda _, volume_value=volume_value: self.world.settings.set_values(
+                    effect_volume=volume_value, bgm_volume=volume_value
+                ),
+            )
+            self.add_child(master_volume_button)
+            self.layout.add(
+                master_volume_button,
+                LayoutAnchor.TOP_LEFT,
+                pygame.Vector2((button_width + gap) * i + 250, 250),
+            )
+            self.focus_controller.add(master_volume_button)
+
         description_text = Text(
             "BGM Volume",
             pygame.Vector2(0, 0),
@@ -93,7 +121,7 @@ class SettingScene(Scene):
         )
         self.add_child(description_text)
         self.layout.add(
-            description_text, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 250 + 15)
+            description_text, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 320 + 15)
         )
         for i, volume_value in enumerate(range(0, 100 + 1, 25)):
             bgm_volume_button = Button(
@@ -108,7 +136,7 @@ class SettingScene(Scene):
             self.layout.add(
                 bgm_volume_button,
                 LayoutAnchor.TOP_LEFT,
-                pygame.Vector2((button_width + gap) * i + 250, 250),
+                pygame.Vector2((button_width + gap) * i + 250, 320),
             )
             self.focus_controller.add(bgm_volume_button)
 
@@ -120,7 +148,7 @@ class SettingScene(Scene):
         )
         self.add_child(description_text)
         self.layout.add(
-            description_text, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 320 + 15)
+            description_text, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 390 + 15)
         )
         for i, volume_value in enumerate(range(0, 100 + 1, 25)):
             effect_volume_button = Button(
@@ -135,7 +163,7 @@ class SettingScene(Scene):
             self.layout.add(
                 effect_volume_button,
                 LayoutAnchor.TOP_LEFT,
-                pygame.Vector2((button_width + gap) * i + 250, 320),
+                pygame.Vector2((button_width + gap) * i + 250, 390),
             )
             self.focus_controller.add(effect_volume_button)
 
@@ -152,7 +180,7 @@ class SettingScene(Scene):
                 pygame.Color("black"),
             )
             self.layout.add(
-                description_text, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, y + 15)
+                description_text, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, y + 85)
             )
             self.add_child(description_text)
 
@@ -163,7 +191,7 @@ class SettingScene(Scene):
                 self.create_key_button_click_handler(dict_key),
             )
             self.layout.add(
-                change_key_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(250, y)
+                change_key_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(250, y + 70)
             )
             self.focus_controller.add(change_key_button)
             self.last_key_button = change_key_button
