@@ -491,6 +491,7 @@ class InGameScene(Scene):
             start_position = other_player_entry.card_sprites[-1].absolute_rect.center
 
         animating_card_entity = CardEntity(card)
+        animating_card_entity.set_colorblind(self.world.settings.is_colorblind)
         animating_card_entity.rect.center = start_position
         self.discarding_card_entities.append(animating_card_entity)
         self.add_child(animating_card_entity)
