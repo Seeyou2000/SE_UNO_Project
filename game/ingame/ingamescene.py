@@ -317,8 +317,17 @@ class InGameScene(Scene):
         )
         self.layout.add(
             self.mytimer_display,
-            LayoutAnchor.BOTTOM_LEFT,
-            pygame.Vector2(160, -50),
+            LayoutAnchor.BOTTOM_CENTER,
+            pygame.Vector2(100, -175),
+        )
+        # 본인 이름 출력
+        self.name_font = get_font(FontType.UI_BOLD, 20)
+        self.name_text = Text(
+            me.name, pygame.Vector2(50, 10), self.name_font, pygame.Color("black")
+        )
+        self.add_child(self.name_text)
+        self.layout.add(
+            self.name_text, LayoutAnchor.BOTTOM_CENTER, pygame.Vector2(0, -175)
         )
 
         # 우노
@@ -330,7 +339,7 @@ class InGameScene(Scene):
         )
         self.add_child(self.my_uno_text)
         self.layout.add(
-            self.my_uno_text, LayoutAnchor.BOTTOM_LEFT, pygame.Vector2(50, -50)
+            self.my_uno_text, LayoutAnchor.BOTTOM_CENTER, pygame.Vector2(-100, -175)
         )
 
         def update_uno_text(event: Event) -> None:
