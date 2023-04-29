@@ -53,7 +53,7 @@ class InGameScene(Scene):
         more_ability_cards: bool = False,
         give_every_card_to_players: bool = False,
         random_color: bool = False,
-        six_players: bool = False,
+        random_turn: bool = False,
         my_player_index: int = 0,
     ) -> None:
         super().__init__(world)
@@ -61,7 +61,7 @@ class InGameScene(Scene):
         self.more_ability_cards = more_ability_cards
         self.give_every_card_to_players = give_every_card_to_players
         self.random_color = random_color
-        self.six_players = six_players
+        self.random_turn = random_turn
 
         self.my_player_index = my_player_index
 
@@ -107,6 +107,7 @@ class InGameScene(Scene):
                 ),
             ),
             on_transition(None, StartTurnFlowNode, self.story_color_change),
+            on_transition(None, StartTurnFlowNode, self.story_reverse_change),
             on_transition(DiscardCardFlowNode, None, self.place_discarded_card),
             on_transition(None, GameEndFlowNode, self.end_game),
             on_transition(None, GameEndFlowNode, self.back_to_menu),
@@ -129,11 +130,14 @@ class InGameScene(Scene):
         self.on("keydown", self.handle_keydown)
 
     def story_color_change(self, event: TransitionEvent) -> None:
-        if (
-            self.random_color
-            and self.game_state.turn._total_turn % 5 == 0  # noqa: SLF001
-        ):
+        is_five = self.game_state.turn.total
+        if self.random_color and (is_five % 5 == 0):
             self.game_state.change_card_color(random.choice(COLORS))
+
+    def story_reverse_change(self, event: TransitionEvent) -> None:
+        is_five = self.game_state.turn.total
+        if self.random_turn and (is_five % 5 == 0):
+            self.game_state.reverse_turn_direction()
 
     def handle_keydown(self, event: Event) -> None:
         key: int = event.data["key"]

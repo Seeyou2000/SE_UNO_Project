@@ -43,7 +43,7 @@ class StoryModeSelectScene(Scene):
                 story_button_size.copy(),
                 self.font,
                 lambda _: world.director.change_scene(
-                    InGameScene(self.world, 6, False, False, False, True)
+                    InGameScene(self.world, 5, False, False, False, True)
                 ),
             ),
         ]
