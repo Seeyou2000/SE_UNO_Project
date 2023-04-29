@@ -3,7 +3,8 @@ from typing import Any
 
 import pygame
 
-from engine.event import Event, EventEmitter
+from engine.events.emitter import EventEmitter
+from engine.events.event import Event
 
 SETTINGS_FILE_PATH = "settings.json"
 POSSIBLE_SCREEN_SIZES: list[tuple[int, int]] = [(1280, 720), (1600, 900), (1920, 1080)]

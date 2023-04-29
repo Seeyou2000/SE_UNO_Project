@@ -3,7 +3,7 @@ import sys
 import pygame
 import tween
 
-from engine.event import Event
+from engine.events.event import Event
 from engine.scene import SceneDirector
 from game.audio_player import AudioPlayer
 from game.settings.settings import Settings

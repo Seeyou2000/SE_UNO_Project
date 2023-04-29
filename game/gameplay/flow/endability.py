@@ -1,4 +1,4 @@
-from engine.event import Event
+from engine.events.event import Event
 from game.gameplay.card import Card
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.flow.discardcard import DiscardCardFlowNode

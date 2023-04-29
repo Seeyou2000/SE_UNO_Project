@@ -1,6 +1,6 @@
 import pygame
 
-from engine.event import Event
+from engine.events.event import Event
 from engine.focus import Focusable
 from engine.gameobject import GameObject
 

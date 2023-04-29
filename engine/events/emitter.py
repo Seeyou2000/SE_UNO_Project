@@ -1,26 +1,7 @@
-from __future__ import annotations
-
 from collections.abc import Callable
-from typing import Any, Self
+from typing import Self
 
-EventData = dict[str, Any] | None
-
-
-class Event:
-    name: str
-    data: EventData
-    is_propagation_stopped: bool
-    target: EventEmitter | None
-
-    def __init__(self, data: EventData) -> None:
-        self.is_propagation_stopped = False
-
-        self.data = data
-        self.target = None
-
-    def stop_propagation(self) -> None:
-        self.is_propagation_stopped = True
-
+from engine.events.event import Event
 
 EventHandler = Callable[[Event], None]
 

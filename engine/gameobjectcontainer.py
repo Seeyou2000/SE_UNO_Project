@@ -2,7 +2,7 @@ import abc
 
 import pygame
 
-from engine.event import Event
+from engine.events.event import Event
 from engine.gameobject import GameObject
 
 

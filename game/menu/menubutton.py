@@ -2,7 +2,8 @@ import pygame
 import tween
 
 from engine.button import BaseButton, ButtonSurfaces
-from engine.event import Event, EventHandler
+from engine.events.emitter import EventHandler
+from engine.events.event import Event
 from engine.focus import Focusable
 from game.font import FontType, get_font
 

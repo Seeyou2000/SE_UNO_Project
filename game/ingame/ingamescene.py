@@ -3,7 +3,8 @@ import random
 import pygame
 
 from engine.button import Button, ButtonSurfaces, SpriteButton
-from engine.event import Event, EventHandler
+from engine.events.emitter import EventHandler
+from engine.events.event import Event
 from engine.layout import (
     LayoutAnchor,
     LayoutConstraint,

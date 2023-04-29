@@ -2,7 +2,8 @@ import random
 import sys
 from enum import Enum
 
-from engine.event import Event, EventEmitter
+from engine.events.emitter import EventEmitter
+from engine.events.event import Event
 from game.constant import COLORABLEABILITY, COLORS, NONCOLORABLEABILITY, AbilityType
 from game.gameplay.card import Card
 from game.gameplay.deck import Deck

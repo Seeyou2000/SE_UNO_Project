@@ -1,4 +1,5 @@
-from engine.event import Event, EventEmitter
+from engine.events.emitter import EventEmitter
+from engine.events.event import Event
 
 
 class Timer(EventEmitter):

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import pygame
 
-from engine.event import Event
+from engine.events.event import Event
 from engine.focus import FocusController, FocusMoveDirection
 from engine.gameobjectcontainer import GameObjectContainer
 from engine.layout import Layout

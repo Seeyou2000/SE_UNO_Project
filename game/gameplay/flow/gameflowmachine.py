@@ -1,6 +1,7 @@
 from enum import Enum
 
-from engine.event import Event, EventEmitter, EventHandler
+from engine.events.emitter import EventEmitter, EventHandler
+from engine.events.event import Event
 from engine.fsm import FlowMachine
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.gamestate import GameState

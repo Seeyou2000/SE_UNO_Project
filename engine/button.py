@@ -3,7 +3,8 @@ from typing import Self
 import pygame
 from attr import dataclass
 
-from engine.event import Event, EventHandler
+from engine.events.emitter import EventHandler
+from engine.events.event import Event
 from engine.focus import Focusable
 from engine.gameobject import GameObject
 
