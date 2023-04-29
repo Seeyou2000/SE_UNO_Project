@@ -23,6 +23,7 @@ DEFAULT_SETTINGS = {
     "height": 720,
     "is_colorblind": False,
     "keymap": DEFAULT_KEYMAP,
+    "master_volume": 100,
     "bgm_volume": 100,
     "effect_volume": 100,
 }
@@ -33,6 +34,7 @@ class Settings(EventEmitter):
     _height: int
     _is_colorblind: bool
     _keymap: KeyMap
+    _master_volume: int
     _bgm_volume: int
     _effect_volume: int
 
@@ -48,6 +50,7 @@ class Settings(EventEmitter):
                     "height": self.height,
                     "is_colorblind": self.is_colorblind,
                     "keymap": self.keymap,
+                    "master_volume": self.master_volume,
                     "bgm_volume": self.bgm_volume,
                     "effect_volume": self.effect_volume,
                 },
@@ -69,6 +72,7 @@ class Settings(EventEmitter):
                 height=value["height"],
                 is_colorblind=value["is_colorblind"],
                 keymap=value["keymap"],
+                master_volume=value["master_volume"],
                 bgm_volume=value["bgm_volume"],
                 effect_volume=value["effect_volume"],
             )
@@ -97,6 +101,10 @@ class Settings(EventEmitter):
         return self._keymap
 
     @property
+    def master_volume(self) -> int:
+        return self._master_volume
+
+    @property
     def bgm_volume(self) -> int:
         return self._bgm_volume
 
@@ -115,6 +123,7 @@ class Settings(EventEmitter):
         height: int | None = None,
         is_colorblind: bool | None = None,
         keymap: KeyMap | None = None,
+        master_volume: int | None = None,
         bgm_volume: int | None = None,
         effect_volume: int | None = None,
     ) -> None:
@@ -124,6 +133,9 @@ class Settings(EventEmitter):
             is_colorblind if is_colorblind is not None else self._is_colorblind
         )
         self._keymap = keymap if keymap is not None else self._keymap
+        self._master_volume = (
+            master_volume if master_volume is not None else self._master_volume
+        )
         self._bgm_volume = bgm_volume if bgm_volume is not None else self._bgm_volume
         self._effect_volume = (
             effect_volume if effect_volume is not None else self._effect_volume

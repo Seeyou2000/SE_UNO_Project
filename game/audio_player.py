@@ -28,7 +28,7 @@ class AudioPlayer:
         ):  # Check if the background music is already playing
             self.bg_music.play(-1)
             self.bg_music_playing = True
-            self.bg_music.set_volume(self.bgm_volume)
+            self.bg_music.set_volume(self.volume)
 
     def stop_bg_music(self):
         # Stop background music
@@ -59,5 +59,6 @@ class AudioPlayer:
 
     def handle_settings_change(self, event: Event):
         settings: Settings = event.target
-        self.set_bgm_volume(settings.bgm_volume)
-        self.set_effect_volume(settings.effect_volume)
+        self.set_volume(settings.master_volume / 100.0)
+        self.set_bgm_volume(settings.bgm_volume / 100.0)
+        self.set_effect_volume(settings.effect_volume / 100.0)
