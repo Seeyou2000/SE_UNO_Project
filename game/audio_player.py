@@ -59,5 +59,6 @@ class AudioPlayer:
 
     def handle_settings_change(self, event: Event):
         settings: Settings = event.target
-        self.set_bgm_volume(settings.bgm_volume)
-        self.set_effect_volume(settings.effect_volume)
+        self.set_bgm_volume(settings.bgm_volume / 100.0)
+        self.set_effect_volume(settings.effect_volume / 100.0)
+        self.set_volume(settings.master_volume / 100.0)
