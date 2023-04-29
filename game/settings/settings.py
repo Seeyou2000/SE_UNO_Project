@@ -137,11 +137,9 @@ class Settings(EventEmitter):
             master_volume if master_volume is not None else self._master_volume
         )
         self._bgm_volume = bgm_volume if bgm_volume is not None else self._bgm_volume
-        self._bgm_volume = self._bgm_volume
         self._effect_volume = (
             effect_volume if effect_volume is not None else self._effect_volume
         )
-        self._effect_volume = self._effect_volume
 
         self.save()
         self.emit("change", Event(None))
