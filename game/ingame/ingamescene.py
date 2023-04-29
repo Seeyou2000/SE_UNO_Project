@@ -321,14 +321,12 @@ class InGameScene(Scene):
             pygame.Vector2(100, -175),
         )
         # 본인 이름 출력
-        self.name_font = get_font(FontType.UI_BOLD, 20)
-        self.name_text = Text(
-            me.name, pygame.Vector2(50, 10), self.name_font, pygame.Color("black")
+        name_font = get_font(FontType.UI_BOLD, 20)
+        name_text = Text(
+            me.name, pygame.Vector2(50, 10), name_font, pygame.Color("black")
         )
-        self.add_child(self.name_text)
-        self.layout.add(
-            self.name_text, LayoutAnchor.BOTTOM_CENTER, pygame.Vector2(0, -175)
-        )
+        self.add_child(name_text)
+        self.layout.add(name_text, LayoutAnchor.BOTTOM_CENTER, pygame.Vector2(0, -175))
 
         # 우노
         self.my_uno_text = Text(
