@@ -102,7 +102,7 @@ class SettingScene(Scene):
                 button_rect.copy(),
                 self.font,
                 lambda _, volume_value=volume_value: self.world.settings.set_values(
-                    effect_volume=volume_value, bgm_volume=volume_value
+                    master_volume=volume_value
                 ),
             )
             self.add_child(master_volume_button)
