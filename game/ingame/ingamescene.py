@@ -460,10 +460,10 @@ class InGameScene(Scene):
     def handle_start_turn(self, event: TransitionEvent) -> None:
         if self.is_my_turn():
             if self.mytimer_display is not None and self.has_child(
-                self.mytimer_display
+                    self.mytimer_display
             ):
                 self.remove_child(self.mytimer_display)
-                self.add_child(self.mytimer_display)
+            self.add_child(self.mytimer_display)
         else:
             if self.has_child(self.mytimer_display):
                 self.remove_child(self.mytimer_display)
