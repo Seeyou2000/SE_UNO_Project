@@ -130,13 +130,13 @@ class InGameScene(Scene):
         self.on("keydown", self.handle_keydown)
 
     def handle_color_change(self, event: TransitionEvent) -> None:
-        is_turn_five = self.game_state.turn.total
-        if self.random_color and (is_turn_five % 5 == 0):
+        is_turn_five = self.game_state.turn.total % 5 == 0
+        if self.random_color and is_turn_five:
             self.game_state.change_card_color(random.choice(COLORS))
 
     def handle_reverse_change(self, event: TransitionEvent) -> None:
-        is_turn_five = self.game_state.turn.total
-        if self.random_turn and (is_turn_five % 5 == 0):
+        is_turn_five = self.game_state.turn.total % 5 == 0
+        if self.random_turn and is_turn_five:
             self.game_state.reverse_turn_direction()
 
     def handle_keydown(self, event: Event) -> None:
