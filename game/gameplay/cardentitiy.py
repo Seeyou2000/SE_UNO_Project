@@ -241,15 +241,10 @@ def draw_color_shape(surface: pygame.Surface, color: str) -> None:
     container_rect = surface.get_rect()
 
     if color == "red":
-        pygame.draw.polygon(
+        pygame.draw.ellipse(
             surface,
             (255, 255, 255),
-            [
-                [5, container_rect.centery],
-                [container_rect.centerx, container_rect.centery * 2 - 5],
-                [container_rect.centerx * 2 - 5, container_rect.centery],
-                [container_rect.centerx, 5],
-            ],
+            [10, 10, container_rect.centerx * 2 - 20, container_rect.centery * 2 - 20],
         )
     elif color == "yellow":
         pygame.draw.polygon(
@@ -272,10 +267,15 @@ def draw_color_shape(surface: pygame.Surface, color: str) -> None:
             ],
         )
     elif color == "blue":
-        pygame.draw.ellipse(
+        pygame.draw.polygon(
             surface,
             (255, 255, 255),
-            [10, 10, container_rect.centerx * 2 - 20, container_rect.centery * 2 - 20],
+            [
+                [5, container_rect.centery],
+                [container_rect.centerx, container_rect.centery * 2 - 5],
+                [container_rect.centerx * 2 - 5, container_rect.centery],
+                [container_rect.centerx, 5],
+            ],
         )
 
 
