@@ -82,13 +82,13 @@ def create_card_sprite(
     is_colorblind: bool,
     number: int | None = None,
     ability: AbilityType | None = AbilityType,
+    is_small: bool = False,
 ) -> Sprite:
-    width = (CARD_BACK_SIZE_UNIT if is_back else CARD_SIZE_UNIT) * CARD_WIDTH_MULTIPLIER
+    width = (CARD_BACK_SIZE_UNIT if is_small else CARD_SIZE_UNIT) * CARD_WIDTH_MULTIPLIER
     height = (
-        CARD_BACK_SIZE_UNIT if is_back else CARD_SIZE_UNIT
+        CARD_BACK_SIZE_UNIT if is_small else CARD_SIZE_UNIT
     ) * CARD_HEIGHT_MULTIPLIER
     card_color = get_card_color(color, is_colorblind)
-
     card_surface = pygame.Surface((width, height), pygame.SRCALPHA)
     card_rect = card_surface.get_rect()
 

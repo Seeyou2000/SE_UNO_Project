@@ -17,7 +17,7 @@ from game.constant import COLORS, NAME, AbilityType
 from game.font import FontType, get_font
 from game.gameplay.aiplayer import AIPlayer
 from game.gameplay.card import Card
-from game.gameplay.cardentitiy import CardEntity
+from game.gameplay.cardentitiy import CardEntity, create_card_sprite
 from game.gameplay.flow.changefieldcolor import ChangeFieldColorFlowNode
 from game.gameplay.flow.discardcard import DiscardCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
@@ -47,22 +47,23 @@ class InGameScene(Scene):
     discarding_card_entities: list[CardEntity]
 
     def __init__(
-        self,
-        world: World,
-        player_count: int,
-        more_ability_cards: bool = False,
-        give_every_card_to_players: bool = False,
-        random_color: bool = False,
-        random_turn: bool = False,
-        my_player_index: int = 0,
+            self,
+            world: World,
+            player_count: int,
+            more_ability_cards: bool = False,
+            give_every_card_to_players: bool = False,
+            random_color: bool = False,
+            random_turn: bool = False,
+            my_player_index: int = 0,
+
     ) -> None:
         super().__init__(world)
 
+        self.deck_button = None
         self.more_ability_cards = more_ability_cards
         self.give_every_card_to_players = give_every_card_to_players
         self.random_color = random_color
         self.random_turn = random_turn
-
         self.my_player_index = my_player_index
 
         self.font = get_font(FontType.UI_BOLD, 20)
@@ -81,7 +82,6 @@ class InGameScene(Scene):
         self.change_color_modal = None
 
         self.setup_base()
-
         self.flow = GameFlowMachine()
         transition_handlers = [
             lambda event: print(
@@ -233,7 +233,7 @@ class InGameScene(Scene):
     def create_card_click_handler(self, card: Card) -> EventHandler:
         def handler(event: Event) -> None:
             if self.get_me() is self.game_state.get_current_player() and isinstance(
-                self.flow.current_node, StartTurnFlowNode
+                    self.flow.current_node, StartTurnFlowNode
             ):
                 print(f"ACTION: Use card {card}")
                 self.flow.transition_to(ValidateCardFlowNode(self.game_state, card))
@@ -378,7 +378,7 @@ class InGameScene(Scene):
         ]
 
         other_players = (
-            players[: self.my_player_index] + players[self.my_player_index + 1 :]
+                players[: self.my_player_index] + players[self.my_player_index + 1:]
         )
 
         for i, player in enumerate(other_players):
@@ -417,19 +417,27 @@ class InGameScene(Scene):
     def place_decks(self) -> None:
         self.discard_position = pygame.Vector2(16, 0)
 
-        deck_button = Button(
-            "",
-            pygame.Rect(0, 0, CardEntity.WIDTH, CardEntity.HEIGHT),
-            self.font,
-            lambda _: self.try_draw(),
+        deck_button_sprite = create_card_sprite(color='red', is_back=True, is_colorblind=False, is_small=False)
+        deck_button_surfaces = ButtonSurfaces(
+            deck_button_sprite.image,
+            deck_button_sprite.image,
+            deck_button_sprite.image,
         )
+        deck_button = SpriteButton(
+            deck_button_surfaces,
+            lambda _: self.try_draw()
+        )
+        self.deck_button = deck_button
+        # pygame.Rect(0, 0, CardEntity.WIDTH, CardEntity.HEIGHT),
+        # self.font,
+        # lambda _: self.try_draw(),
+        # )
         self.add_child(deck_button)
         self.layout.add(
             deck_button,
             LayoutAnchor.CENTER,
             self.discard_position - pygame.Vector2(CardEntity.WIDTH + 20, 0),
         )
-        self.deck_button = deck_button
 
         # 덱에서 한 장 열어놓기
         self.add_card_entity(
@@ -456,7 +464,7 @@ class InGameScene(Scene):
     def handle_start_turn(self, event: TransitionEvent) -> None:
         if self.is_my_turn():
             if self.mytimer_display is not None and self.has_child(
-                self.mytimer_display
+                    self.mytimer_display
             ):
                 self.remove_child(self.mytimer_display)
             self.add_child(self.mytimer_display)
@@ -609,10 +617,10 @@ class InGameScene(Scene):
         self.remove_child(self.change_color_modal)
 
     def add_card_entity(
-        self,
-        card: Card,
-        is_mine: bool,
-        layout_constaint: LayoutConstraint | None = None,
+            self,
+            card: Card,
+            is_mine: bool,
+            layout_constaint: LayoutConstraint | None = None,
     ) -> CardEntity:
         card_entity = CardEntity(card)
         self.add_child(card_entity)
