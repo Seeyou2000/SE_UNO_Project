@@ -84,7 +84,9 @@ def create_card_sprite(
     ability: AbilityType | None = AbilityType,
     is_small: bool = False,
 ) -> Sprite:
-    width = (CARD_BACK_SIZE_UNIT if is_small else CARD_SIZE_UNIT) * CARD_WIDTH_MULTIPLIER
+    width = (
+        CARD_BACK_SIZE_UNIT if is_small else CARD_SIZE_UNIT
+    ) * CARD_WIDTH_MULTIPLIER
     height = (
         CARD_BACK_SIZE_UNIT if is_small else CARD_SIZE_UNIT
     ) * CARD_HEIGHT_MULTIPLIER

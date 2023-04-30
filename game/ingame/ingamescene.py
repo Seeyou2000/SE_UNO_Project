@@ -55,7 +55,6 @@ class InGameScene(Scene):
         random_color: bool = False,
         random_turn: bool = False,
         my_player_index: int = 0,
-
     ) -> None:
         super().__init__(world)
 
@@ -378,7 +377,7 @@ class InGameScene(Scene):
         ]
 
         other_players = (
-            players[: self.my_player_index] + players[self.my_player_index + 1:]
+            players[: self.my_player_index] + players[self.my_player_index + 1 :]
         )
 
         for i, player in enumerate(other_players):
@@ -417,16 +416,15 @@ class InGameScene(Scene):
     def place_decks(self) -> None:
         self.discard_position = pygame.Vector2(16, 0)
 
-        deck_button_sprite = create_card_sprite(color='red', is_back=True, is_colorblind=False, is_small=False)
+        deck_button_sprite = create_card_sprite(
+            color="red", is_back=True, is_colorblind=False, is_small=False
+        )
         deck_button_surfaces = ButtonSurfaces(
             deck_button_sprite.image,
             deck_button_sprite.image,
             deck_button_sprite.image,
         )
-        deck_button = SpriteButton(
-            deck_button_surfaces,
-            lambda _: self.try_draw()
-        )
+        deck_button = SpriteButton(deck_button_surfaces, lambda _: self.try_draw())
         self.deck_button = deck_button
         self.add_child(deck_button)
         self.layout.add(
@@ -460,7 +458,7 @@ class InGameScene(Scene):
     def handle_start_turn(self, event: TransitionEvent) -> None:
         if self.is_my_turn():
             if self.mytimer_display is not None and self.has_child(
-                    self.mytimer_display
+                self.mytimer_display
             ):
                 self.remove_child(self.mytimer_display)
             self.add_child(self.mytimer_display)
