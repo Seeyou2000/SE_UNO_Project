@@ -47,14 +47,14 @@ class InGameScene(Scene):
     discarding_card_entities: list[CardEntity]
 
     def __init__(
-            self,
-            world: World,
-            player_count: int,
-            more_ability_cards: bool = False,
-            give_every_card_to_players: bool = False,
-            random_color: bool = False,
-            random_turn: bool = False,
-            my_player_index: int = 0,
+        self,
+        world: World,
+        player_count: int,
+        more_ability_cards: bool = False,
+        give_every_card_to_players: bool = False,
+        random_color: bool = False,
+        random_turn: bool = False,
+        my_player_index: int = 0,
 
     ) -> None:
         super().__init__(world)
@@ -233,7 +233,7 @@ class InGameScene(Scene):
     def create_card_click_handler(self, card: Card) -> EventHandler:
         def handler(event: Event) -> None:
             if self.get_me() is self.game_state.get_current_player() and isinstance(
-                    self.flow.current_node, StartTurnFlowNode
+                self.flow.current_node, StartTurnFlowNode
             ):
                 print(f"ACTION: Use card {card}")
                 self.flow.transition_to(ValidateCardFlowNode(self.game_state, card))
@@ -378,7 +378,7 @@ class InGameScene(Scene):
         ]
 
         other_players = (
-                players[: self.my_player_index] + players[self.my_player_index + 1:]
+            players[: self.my_player_index] + players[self.my_player_index + 1:]
         )
 
         for i, player in enumerate(other_players):
@@ -428,10 +428,6 @@ class InGameScene(Scene):
             lambda _: self.try_draw()
         )
         self.deck_button = deck_button
-        # pygame.Rect(0, 0, CardEntity.WIDTH, CardEntity.HEIGHT),
-        # self.font,
-        # lambda _: self.try_draw(),
-        # )
         self.add_child(deck_button)
         self.layout.add(
             deck_button,
@@ -464,14 +460,13 @@ class InGameScene(Scene):
     def handle_start_turn(self, event: TransitionEvent) -> None:
         if self.is_my_turn():
             if self.mytimer_display is not None and self.has_child(
-                    self.mytimer_display
+                self.mytimer_display
             ):
                 self.remove_child(self.mytimer_display)
-            self.add_child(self.mytimer_display)
+                self.add_child(self.mytimer_display)
         else:
             if self.has_child(self.mytimer_display):
                 self.remove_child(self.mytimer_display)
-
         self.text_cardnum.set_text(str(self.game_state.game_deck.get_card_amount()))
 
     def place_discarded_card(self, event: TransitionEvent) -> None:
@@ -617,10 +612,10 @@ class InGameScene(Scene):
         self.remove_child(self.change_color_modal)
 
     def add_card_entity(
-            self,
-            card: Card,
-            is_mine: bool,
-            layout_constaint: LayoutConstraint | None = None,
+        self,
+        card: Card,
+        is_mine: bool,
+        layout_constaint: LayoutConstraint | None = None,
     ) -> CardEntity:
         card_entity = CardEntity(card)
         self.add_child(card_entity)
