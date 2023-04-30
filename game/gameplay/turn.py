@@ -27,6 +27,9 @@ class Turn:
         for _ in range(0, n):
             self.next()
 
+    def add_total_turn(self) -> None:
+        self._total_turn += 1
+
     @property
     def current(self) -> int:
         return self._index
@@ -34,3 +37,7 @@ class Turn:
     @property
     def is_clockwise(self) -> bool:
         return self._is_clockwise
+
+    @property
+    def total(self) -> int:
+        return self._total_turn
