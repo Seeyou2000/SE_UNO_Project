@@ -106,8 +106,8 @@ class InGameScene(Scene):
                     f"턴 시작: {self.game_state.get_current_player().name}"
                 ),
             ),
-            on_transition(None, StartTurnFlowNode, self.story_color_change),
-            on_transition(None, StartTurnFlowNode, self.story_reverse_change),
+            on_transition(None, StartTurnFlowNode, self.handle_color_change),
+            on_transition(None, StartTurnFlowNode, self.handle_reverse_change),
             on_transition(DiscardCardFlowNode, None, self.place_discarded_card),
             on_transition(None, GameEndFlowNode, self.end_game),
             on_transition(None, GameEndFlowNode, self.back_to_menu),
@@ -129,14 +129,14 @@ class InGameScene(Scene):
 
         self.on("keydown", self.handle_keydown)
 
-    def story_color_change(self, event: TransitionEvent) -> None:
-        is_five = self.game_state.turn.total
-        if self.random_color and (is_five % 5 == 0):
+    def handle_color_change(self, event: TransitionEvent) -> None:
+        is_turn_five = self.game_state.turn.total
+        if self.random_color and (is_turn_five % 5 == 0):
             self.game_state.change_card_color(random.choice(COLORS))
 
-    def story_reverse_change(self, event: TransitionEvent) -> None:
-        is_five = self.game_state.turn.total
-        if self.random_turn and (is_five % 5 == 0):
+    def handle_reverse_change(self, event: TransitionEvent) -> None:
+        is_turn_five = self.game_state.turn.total
+        if self.random_turn and (is_turn_five % 5 == 0):
             self.game_state.reverse_turn_direction()
 
     def handle_keydown(self, event: Event) -> None:

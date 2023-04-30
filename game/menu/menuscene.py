@@ -5,9 +5,9 @@ import pygame
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
-from game.ingame.storymodeselectscene import StoryModeSelectScene
 from game.lobby.lobbyscene import LobbyScene
 from game.menu.menubutton import MenuButton
+from game.storyselect.storymodeselectscene import StoryModeSelectScene
 
 
 class MenuScene(Scene):

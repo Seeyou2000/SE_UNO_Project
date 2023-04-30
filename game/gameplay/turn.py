@@ -27,7 +27,7 @@ class Turn:
         for _ in range(0, n):
             self.next()
 
-    def total_turn_add(self) -> None:
+    def add_total_turn(self) -> None:
         self._total_turn += 1
 
     @property

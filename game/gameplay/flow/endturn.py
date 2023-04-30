@@ -8,10 +8,11 @@ class EndTurnFlowNode(AbstractGameFlowNode):
     def __init__(self, game_state: GameState) -> None:
         super().__init__(game_state)
 
-        self.game_state.turn.total_turn_add()
-
     def enter(self) -> None:
         super().enter()
+
+        self.game_state.turn.add_total_turn()
+
         if (
             len(self.game_state.get_current_player().cards) == 0
             and self.game_state.get_current_player().is_unobutton_clicked is True
