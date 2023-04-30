@@ -132,12 +132,12 @@ def create_card_sprite(
             border_radius=CARD_BORDER_RADIUS - 3,
         )
 
+        draw_color_shape(card_surface, color)
+
         if number is not None:
             draw_number(card_surface, number)
         if ability is not None:
             draw_ability(card_surface, ability)
-
-        draw_color_shape(card_surface, color)
 
     # 테두리
     pygame.draw.rect(
@@ -238,7 +238,45 @@ def draw_ability(surface: pygame.Surface, ability: AbilityType) -> None:
 
 
 def draw_color_shape(surface: pygame.Surface, color: str) -> None:
-    pass
+    container_rect = surface.get_rect()
+
+    if color == "red":
+        pygame.draw.ellipse(
+            surface,
+            (255, 255, 255),
+            [10, 10, container_rect.centerx * 2 - 20, container_rect.centery * 2 - 20],
+        )
+    elif color == "yellow":
+        pygame.draw.polygon(
+            surface,
+            (255, 255, 255),
+            [
+                [5, container_rect.centery / 2],
+                [container_rect.centerx, container_rect.centery * 2 - 5],
+                [container_rect.centerx * 2 - 5, container_rect.centery / 2],
+            ],
+        )
+    elif color == "green":
+        pygame.draw.polygon(
+            surface,
+            (255, 255, 255),
+            [
+                [5, (container_rect.centery / 2) * 3],
+                [container_rect.centerx, 5],
+                [container_rect.centerx * 2 - 5, (container_rect.centery / 2) * 3],
+            ],
+        )
+    elif color == "blue":
+        pygame.draw.polygon(
+            surface,
+            (255, 255, 255),
+            [
+                [5, container_rect.centery],
+                [container_rect.centerx, container_rect.centery * 2 - 5],
+                [container_rect.centerx * 2 - 5, container_rect.centery],
+                [container_rect.centerx, 5],
+            ],
+        )
 
 
 def get_card_color(color: str, is_colorblind: bool) -> pygame.Color:
