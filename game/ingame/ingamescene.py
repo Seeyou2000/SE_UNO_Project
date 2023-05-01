@@ -17,7 +17,7 @@ from game.constant import COLORS, NAME, AbilityType
 from game.font import FontType, get_font
 from game.gameplay.aiplayer import AIPlayer
 from game.gameplay.card import Card
-from game.gameplay.cardentitiy import CardEntity
+from game.gameplay.cardentitiy import CardEntity, create_card_sprite
 from game.gameplay.flow.changefieldcolor import ChangeFieldColorFlowNode
 from game.gameplay.flow.discardcard import DiscardCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
@@ -59,6 +59,7 @@ class InGameScene(Scene):
     ) -> None:
         super().__init__(world)
 
+        self.deck_button = None
         self.more_ability_cards = more_ability_cards
         self.give_every_card_to_players = give_every_card_to_players
         self.random_color = random_color
@@ -84,7 +85,6 @@ class InGameScene(Scene):
         self.change_color_modal = None
 
         self.setup_base()
-
         self.flow = GameFlowMachine()
         transition_handlers = [
             lambda event: print(
@@ -428,19 +428,22 @@ class InGameScene(Scene):
     def place_decks(self) -> None:
         self.discard_position = pygame.Vector2(16, 0)
 
-        deck_button = Button(
-            "",
-            pygame.Rect(0, 0, CardEntity.WIDTH, CardEntity.HEIGHT),
-            self.font,
-            lambda _: self.try_draw(),
+        deck_button_sprite = create_card_sprite(
+            color="red", is_back=True, is_colorblind=False, is_small=False
         )
+        deck_button_surfaces = ButtonSurfaces(
+            deck_button_sprite.image,
+            deck_button_sprite.image,
+            deck_button_sprite.image,
+        )
+        deck_button = SpriteButton(deck_button_surfaces, lambda _: self.try_draw())
+        self.deck_button = deck_button
         self.add_child(deck_button)
         self.layout.add(
             deck_button,
             LayoutAnchor.CENTER,
             self.discard_position - pygame.Vector2(CardEntity.WIDTH + 20, 0),
         )
-        self.deck_button = deck_button
 
         # 덱에서 한 장 열어놓기
         self.add_card_entity(
@@ -475,7 +478,6 @@ class InGameScene(Scene):
         else:
             if self.has_child(self.mytimer_display):
                 self.remove_child(self.mytimer_display)
-
         self.text_cardnum.set_text(str(self.game_state.game_deck.get_card_amount()))
 
     def place_discarded_card(self, event: TransitionEvent) -> None:
