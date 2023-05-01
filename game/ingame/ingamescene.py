@@ -200,6 +200,8 @@ class InGameScene(Scene):
         self.game_state.turn_timer.update(dt)
         for timer in self.delay_timers:
             timer.update(dt)
+            if not timer.enabled:
+                self.delay_timers.remove(timer)
 
         self.earned_card_idx_in_this_frame = 0
 
@@ -237,9 +239,6 @@ class InGameScene(Scene):
             if card_center.distance_to(target_pos) < 10:
                 self.discarding_card_entities.remove(card_entity)
                 self.remove_child(card_entity)
-
-    def update_earning_card_animation(self, card_entity: CardEntity, dt: float) -> None:
-        pass
 
     def create_card_click_handler(self, card: Card) -> EventHandler:
         def handler(event: Event) -> None:
