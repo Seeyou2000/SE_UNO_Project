@@ -5,7 +5,6 @@ from game.constant import (
     COLORS,
     NAME,
     NONCOLORABLEABILITY,
-    AbilityType,
 )
 from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
