@@ -1,5 +1,3 @@
-import pygame
-
 from game.constant import NAME
 from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
