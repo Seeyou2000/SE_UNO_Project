@@ -1,6 +1,12 @@
 import pygame
 
-from game.constant import NAME
+from game.constant import (
+    COLORABLEABILITY,
+    COLORS,
+    NAME,
+    NONCOLORABLEABILITY,
+    AbilityType,
+)
 from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
 
@@ -28,3 +34,15 @@ def test_weighted_draw() -> None:
     target = 600
     tolerance = 600 * 0.05
     assert abs(ability_count - target) <= tolerance
+
+
+def test_create_full_deck_cards() -> None:
+    player_count = 2
+    game_state = GameState()
+    game_state.reset([Player(name) for name in NAME[:player_count]])
+
+    full_deck_num = (
+        9 * len(COLORS) + len(COLORABLEABILITY) * len(COLORS) + len(NONCOLORABLEABILITY)
+    )
+
+    assert len(game_state.game_deck.cards) == full_deck_num
