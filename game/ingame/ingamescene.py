@@ -359,7 +359,7 @@ class InGameScene(Scene):
             self.my_uno_text.set_color(
                 pygame.Color("blue")
                 if self.get_me().is_unobutton_clicked
-                else pygame.Color("red")
+                else pygame.Color("gray")
             )
 
         self.game_state.on(

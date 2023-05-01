@@ -159,7 +159,7 @@ class OtherPlayerEntry(GameObjectContainer):
         self.uno_text.set_color(
             pygame.Color("blue")
             if self.player.is_unobutton_clicked
-            else pygame.Color("red")
+            else pygame.Color("gray")
         )
 
     def handle_card_earned(self, event: Event) -> None:
