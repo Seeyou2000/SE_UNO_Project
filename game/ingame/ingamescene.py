@@ -45,6 +45,7 @@ from game.ingame.turndirectionindicator import TurnDirectionIndicator
 
 class InGameScene(Scene):
     discarding_card_entities: list[CardEntity]
+    delay_timers: list[Timer]
 
     def __init__(
         self,
@@ -62,6 +63,7 @@ class InGameScene(Scene):
         self.give_every_card_to_players = give_every_card_to_players
         self.random_color = random_color
         self.random_turn = random_turn
+        self.earned_card_idx_in_this_frame = 0
 
         self.my_player_index = my_player_index
 
@@ -69,6 +71,7 @@ class InGameScene(Scene):
         self.other_player_entries = []
         self.my_card_entities = []
         self.discarding_card_entities = []
+        self.delay_timers = []
         self.game_state = GameState()
         self.screen_size = self.world.get_rect()
         self.mytimer_display = None
@@ -195,6 +198,11 @@ class InGameScene(Scene):
     def update(self, dt: float) -> None:
         super().update(dt)
         self.game_state.turn_timer.update(dt)
+        for timer in self.delay_timers:
+            timer.update(dt)
+
+        self.earned_card_idx_in_this_frame = 0
+
         for ai in self.ai:
             ai.update(dt)
 
@@ -229,6 +237,9 @@ class InGameScene(Scene):
             if card_center.distance_to(target_pos) < 10:
                 self.discarding_card_entities.remove(card_entity)
                 self.remove_child(card_entity)
+
+    def update_earning_card_animation(self, card_entity: CardEntity, dt: float) -> None:
+        pass
 
     def create_card_click_handler(self, card: Card) -> EventHandler:
         def handler(event: Event) -> None:
@@ -304,6 +315,7 @@ class InGameScene(Scene):
             self.add_card_entity(
                 card,
                 is_mine=True,
+                delay=0,
                 layout_constaint=LayoutConstraint(
                     LayoutAnchor.BOTTOM_CENTER, pygame.Vector2(0, 0)
                 ),
@@ -435,6 +447,7 @@ class InGameScene(Scene):
         self.add_card_entity(
             self.game_state.discard_pile.get_last(),
             is_mine=False,
+            delay=0,
             layout_constaint=LayoutConstraint(
                 LayoutAnchor.CENTER, self.discard_position
             ),
@@ -471,6 +484,7 @@ class InGameScene(Scene):
         self.add_card_entity(
             self.game_state.discard_pile.get_last(),
             is_mine=False,
+            delay=0,
             layout_constaint=LayoutConstraint(
                 LayoutAnchor.CENTER, self.discard_position
             ),
@@ -523,6 +537,8 @@ class InGameScene(Scene):
         card: Card = event.data["card"]
         player: Player = event.data["player"]
 
+        self.earned_card_idx_in_this_frame += 1
+
         self.text_cardnum.set_text(str(self.game_state.game_deck.get_card_amount()))
         if player is not self.get_me():
             return
@@ -531,6 +547,7 @@ class InGameScene(Scene):
         self.add_card_entity(
             card,
             is_mine=True,
+            delay=0.1 * self.earned_card_idx_in_this_frame,
             layout_constaint=LayoutConstraint(
                 LayoutAnchor.BOTTOM_CENTER,
                 pygame.Vector2(
@@ -539,8 +556,6 @@ class InGameScene(Scene):
                 ),
             ),
         )
-
-        assert len(self.my_card_entities) == len(self.get_me().cards)
 
     def update_cards_colorblind(self) -> None:
         for child in self._children:
@@ -612,17 +627,21 @@ class InGameScene(Scene):
         self,
         card: Card,
         is_mine: bool,
+        delay: float,
         layout_constaint: LayoutConstraint | None = None,
     ) -> CardEntity:
         card_entity = CardEntity(card)
-        self.add_child(card_entity)
         card_entity.set_colorblind(self.world.settings.is_colorblind)
         if is_mine:
-            self.my_card_entities.append(card_entity)
+            delay_timer = Timer(delay)
+            delay_timer.on("tick", self.append_card_animation(card_entity))
+            delay_timer.update(0)
+            self.delay_timers.append(delay_timer)
             card_entity.on("click", self.create_card_click_handler(card))
             card_entity.set_colorblind(self.world.settings.is_colorblind)
             self.focus_controller.add(card_entity)
         else:
+            self.add_child(card_entity)
             self.set_order(card_entity, 4)
 
         if layout_constaint is not None:
@@ -632,6 +651,13 @@ class InGameScene(Scene):
 
         return card_entity
 
+    def append_card_animation(self, card_entity: CardEntity) -> EventHandler:
+        def handler(event: Event) -> None:
+            self.add_child(card_entity)
+            self.my_card_entities.append(card_entity)
+
+        return handler
+
     def remove_card_entity(self, card: Card) -> CardEntity | None:
         for child in self._children:
             if isinstance(child, CardEntity) and child.card is card:
@@ -640,4 +666,5 @@ class InGameScene(Scene):
                     self.my_card_entities.remove(child)
                     self.focus_controller.remove(child)
                 return child
+        return None
         return None
