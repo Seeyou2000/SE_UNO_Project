@@ -6,6 +6,7 @@ from game.constant import (
     NAME,
     NONCOLORABLEABILITY,
 )
+from game.gameplay.card import Card
 from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
 
@@ -39,9 +40,30 @@ def test_create_full_deck_cards() -> None:
     player_count = 2
     game_state = GameState()
     game_state.reset([Player(name) for name in NAME[:player_count]])
+    not_exist = 0
 
     full_deck_num = (
         9 * len(COLORS) + len(COLORABLEABILITY) * len(COLORS) + len(NONCOLORABLEABILITY)
     )
 
     assert len(game_state.game_deck.cards) == full_deck_num
+
+    newcards = [Card(color, number) for number in (range(1, 10)) for color in COLORS]
+    newcards += [
+        Card(color, None, ability) for ability in COLORABLEABILITY for color in COLORS
+    ]
+    newcards += [Card("black", None, ability) for ability in NONCOLORABLEABILITY]
+
+    game_deck = [card.info() for card in game_state.game_deck.cards]
+
+    for i in range(full_deck_num):
+        if newcards[i].info() not in game_deck:
+            not_exist = 1
+        else:
+            for j in range(len(game_state.game_deck.cards)):
+                if newcards[i].info() == game_state.game_deck.cards[j].info():
+                    game_state.game_deck.cards.remove(game_state.game_deck.cards[j])
+                    break
+
+    assert len(game_state.game_deck.cards) == 0, "중복된 카드 존재"
+    assert not_exist == 0, "생성되지 않은 카드 존재"

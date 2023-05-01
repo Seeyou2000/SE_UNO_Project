@@ -16,3 +16,6 @@ class Card(GameObjectContainer):
 
     def __str__(self) -> str:
         return f"[카드 색: {self.color}, 숫자: {self.number}, 능력: {self.ability}]"
+
+    def info(self) -> str:  # gamestate_test.py 파일에서 모든 카드가 정상적으로 생성되는지 확인하기 위해 사용
+        return f"[카드 색: {self.color}, 숫자: {self.number}, 능력: {self.ability}]"
