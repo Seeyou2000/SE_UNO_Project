@@ -1,11 +1,6 @@
-import pygame
+from collections.abc import Callable
 
-from game.constant import (
-    COLORABLEABILITY,
-    COLORS,
-    NAME,
-    NONCOLORABLEABILITY,
-)
+from game.constant import COLORABLEABILITY, COLORS, NAME, NONCOLORABLEABILITY
 from game.gameplay.card import Card
 from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
@@ -47,54 +42,49 @@ def test_create_full_deck_cards() -> None:
 
     assert len(game_state.game_deck.cards) == full_deck_num
 
-    card_deck = []
-    for i in range(len(game_state.game_deck.cards)):
-        card_index = str(game_state.game_deck.cards[i])
-        card_deck.append(card_index)
+    deck_cards = game_state.game_deck.cards
 
-    for i in range(full_deck_num):
-        print(card_deck[i])
+    def count_deck_if(predicate: Callable[[Card], bool]) -> int:
+        return len([card for card in deck_cards if predicate(card)])
+
+    number_range = range(1, 10)
 
     # 숫자 카드 체크
-    error_num = 0
-    for find_num in range(1, 10):
-        find_num_card = str(find_num)
-        num_list = [s for s in card_deck if find_num_card in s]
-        print(len(num_list))
-        if len(num_list) != 4:
-            error_num = find_num
-            break
+    expected_colors_per_number = len(COLORS)
 
-    assert error_num == 0, "error_num 숫자카드 수량 이상 발생"
+    for number_to_find in number_range:
+        same_number_count = count_deck_if(lambda card: card.number == number_to_find)
+        assert (
+            same_number_count == expected_colors_per_number
+        ), "같은 숫자를 가진 카드가 각 색깔별 하나씩 있어야 한다"
 
     # 색 별 카드 수량 체크
-    error_color = 0
-    for find_color in COLORS:
-        find_color_card = str(find_color)
-        color_list = [s for s in card_deck if find_color_card in s]
-        print(len(color_list))
-        if len(color_list) != 9 + len(COLORABLEABILITY):
-            error_color = find_color
-            break
+    expected_numbers_per_color = len(number_range)
+    expected_abilities_per_color = len(COLORABLEABILITY)
 
-    assert error_color == 0, "error_color 색 카드 수량 이상 발생"
+    for color_to_find in COLORS:
+        same_color_count = count_deck_if(lambda card: card.color == color_to_find)
+        assert (
+            same_color_count
+            == expected_numbers_per_color + expected_abilities_per_color
+        ), "같은 색을 가진 카드가 숫자 하나씩 + 능력 하나씩 있어야 한다"
 
     # 색 있는 능력카드 체크
-    error_colorability = 0
-    for find_colorability in COLORABLEABILITY:
-        find_colorability_card = str(find_colorability)
-        colorability_list = [s for s in card_deck if find_colorability_card in s]
-        print(len(colorability_list))
-        if len(colorability_list) != len(COLORABLEABILITY):
-            error_colorability = find_colorability
-            break
-
-    assert error_colorability == 0, "색 있는 능력카드 수량 이상 발생"
+    for colorable_ability_to_find in COLORABLEABILITY:
+        same_colorable_ability_count = count_deck_if(
+            lambda card: card.ability == colorable_ability_to_find
+        )
+        assert (
+            same_colorable_ability_count == expected_abilities_per_color
+        ), "한 색에 같은 능력을 가진 카드가 하나씩만 있어야 한다"
 
     # 색 없는 능력카드 체크
-    noncolor_card_num = 0
-    for find_noncolorability in NONCOLORABLEABILITY:
-        noncolor_list = [s for s in card_deck if str(find_noncolorability) in s]
-        print(len(noncolor_list))
-        noncolor_card_num += len(noncolor_list)
-    assert noncolor_card_num == len(NONCOLORABLEABILITY), "색 없는 능력 카드 수량 이상 발생"
+    expected_non_colorable_abilities = 1
+
+    for noncolorable_ability_to_find in NONCOLORABLEABILITY:
+        same_noncolorable_ability_count = count_deck_if(
+            lambda card: card.ability == noncolorable_ability_to_find
+        )
+        assert (
+            same_noncolorable_ability_count == expected_non_colorable_abilities
+        ), "색 없는 능력 카드는 종류별로 하나씩만 있어야 한다"
