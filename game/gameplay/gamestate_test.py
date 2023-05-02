@@ -40,7 +40,6 @@ def test_create_full_deck_cards() -> None:
     player_count = 2
     game_state = GameState()
     game_state.reset([Player(name) for name in NAME[:player_count]])
-    not_exist = 0
 
     full_deck_num = (
         9 * len(COLORS) + len(COLORABLEABILITY) * len(COLORS) + len(NONCOLORABLEABILITY)
@@ -48,22 +47,54 @@ def test_create_full_deck_cards() -> None:
 
     assert len(game_state.game_deck.cards) == full_deck_num
 
-    newcards = [Card(color, number) for number in (range(1, 10)) for color in COLORS]
-    newcards += [
-        Card(color, None, ability) for ability in COLORABLEABILITY for color in COLORS
-    ]
-    newcards += [Card("black", None, ability) for ability in NONCOLORABLEABILITY]
-
-    game_deck = [card.info() for card in game_state.game_deck.cards]
+    card_deck = []
+    for i in range(len(game_state.game_deck.cards)):
+        card_index = str(game_state.game_deck.cards[i])
+        card_deck.append(card_index)
 
     for i in range(full_deck_num):
-        if newcards[i].info() not in game_deck:
-            not_exist = 1
-        else:
-            for j in range(len(game_state.game_deck.cards)):
-                if newcards[i].info() == game_state.game_deck.cards[j].info():
-                    game_state.game_deck.cards.remove(game_state.game_deck.cards[j])
-                    break
+        print(card_deck[i])
 
-    assert len(game_state.game_deck.cards) == 0, "중복된 카드 존재"
-    assert not_exist == 0, "생성되지 않은 카드 존재"
+    # 숫자 카드 체크
+    error_num = 0
+    for find_num in range(1, 10):
+        find_num_card = str(find_num)
+        num_list = [s for s in card_deck if find_num_card in s]
+        print(len(num_list))
+        if len(num_list) != 4:
+            error_num = find_num
+            break
+
+    assert error_num == 0, "error_num 숫자카드 수량 이상 발생"
+
+    # 색 별 카드 수량 체크
+    error_color = 0
+    for find_color in COLORS:
+        find_color_card = str(find_color)
+        color_list = [s for s in card_deck if find_color_card in s]
+        print(len(color_list))
+        if len(color_list) != 9 + len(COLORABLEABILITY):
+            error_color = find_color
+            break
+
+    assert error_color == 0, "error_color 색 카드 수량 이상 발생"
+
+    # 색 있는 능력카드 체크
+    error_colorability = 0
+    for find_colorability in COLORABLEABILITY:
+        find_colorability_card = str(find_colorability)
+        colorability_list = [s for s in card_deck if find_colorability_card in s]
+        print(len(colorability_list))
+        if len(colorability_list) != len(COLORABLEABILITY):
+            error_colorability = find_colorability
+            break
+
+    assert error_colorability == 0, "색 있는 능력카드 수량 이상 발생"
+
+    # 색 없는 능력카드 체크
+    noncolor_card_num = 0
+    for find_noncolorability in NONCOLORABLEABILITY:
+        noncolor_list = [s for s in card_deck if str(find_noncolorability) in s]
+        print(len(noncolor_list))
+        noncolor_card_num += len(noncolor_list)
+    assert noncolor_card_num == len(NONCOLORABLEABILITY), "색 없는 능력 카드 수량 이상 발생"
