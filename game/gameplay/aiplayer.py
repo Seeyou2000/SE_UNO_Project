@@ -58,7 +58,7 @@ class AIPlayer:
                 self.uno_timer.reset()
 
     def press_uno(self, event: Event) -> None:
-        self.flow.is_uno(self.game_state, self.player)
+        self.flow.check_uno(self.game_state, self.player)
         self.is_waiting_uno = False
 
     def change_color(self) -> None:

@@ -148,7 +148,7 @@ class InGameScene(Scene):
         if key == self.world.settings.keymap.get("draw_card"):
             self.try_draw()
         elif key == self.world.settings.keymap.get("uno"):
-            self.flow.is_uno(self.game_state, self.get_me())
+            self.flow.check_uno(self.game_state, self.get_me())
 
         # 색 선택
         from game.gameplay.flow.endability import EndAbilityFlowNode
@@ -273,7 +273,7 @@ class InGameScene(Scene):
                 pygame.image.load("resources/images/uno-button-hover.png"),
                 pygame.image.load("resources/images/uno-button-pressed.png"),
             ),
-            lambda _: self.is_uno_ingamescene(self.game_state, self.get_me()),
+            lambda _: self.check_uno_and_play_sound(self.game_state, self.get_me()),
             # gameflowmachine의 우노 판별 함수 호출
         )
         self.add_child(uno_button)
@@ -672,8 +672,8 @@ class InGameScene(Scene):
         return None
         return None
 
-    def is_uno_ingamescene(self, game_state: GameState, pressed_player: Player) -> None:
-        self.flow.is_uno(game_state, pressed_player)
+    def check_uno_and_play_sound(self, game_state: GameState, pressed_player: Player) -> None:
+        self.flow.check_uno(game_state, pressed_player)
         if pressed_player is self.get_me():
             self.world.audio_player.play_effect_uno_clicked()
 
