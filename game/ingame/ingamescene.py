@@ -642,7 +642,7 @@ class InGameScene(Scene):
             card_entity.on("click", self.create_card_click_handler(card))
             card_entity.set_colorblind(self.world.settings.is_colorblind)
             self.focus_controller.add(card_entity)
-            card_entity.on("focus", self.handle_focus_sound(card_entity))
+            card_entity.on("focus", self.handle_focus_sound)
         else:
             self.add_child(card_entity)
             self.set_order(card_entity, 4)
@@ -677,9 +677,5 @@ class InGameScene(Scene):
         if pressed_player is self.get_me():
             self.world.audio_player.play_effect_uno_clicked()
 
-    def handle_focus_sound(self, card_entity: CardEntity) -> EventHandler:
-        def handler(event: Event) -> None:
-            if card_entity.has_focus is True:
-                self.world.audio_player.play_effect_card_sliding()
-
-        return handler
+    def handle_focus_sound(self, event: Event) -> None:
+        self.world.audio_player.play_effect_card_sliding()
