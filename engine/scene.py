@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import pygame
 
 from engine.events.event import Event
+from engine.events.system import EventSystem
 from engine.focus import FocusController, FocusMoveDirection
 from engine.gameobjectcontainer import GameObjectContainer
 from engine.layout import Layout
@@ -17,11 +18,13 @@ class Scene(GameObjectContainer):
     def __init__(self, world: World) -> None:
         super().__init__()
         self.world = world
+        self.rect = self.world.get_rect()
         self.layout = Layout(world.get_rect())
         self.focus_controller = FocusController()
+        self.event_system = EventSystem(self)
 
         self.on("keydown", self.handle_focus_keydown)
-        self.on("resize", lambda _: self.layout.rect.update(self.world.get_rect()))
+        self.on("resize", self.handle_screen_resize)
 
     def update(self, dt: float) -> None:
         self.layout.update(dt)
@@ -39,6 +42,10 @@ class Scene(GameObjectContainer):
                 self.focus_controller.move_focus(FocusMoveDirection.LEFT)
             case pygame.K_RIGHT:
                 self.focus_controller.move_focus(FocusMoveDirection.RIGHT)
+
+    def handle_screen_resize(self, event: Event) -> None:
+        self.rect = self.world.get_rect()
+        self.layout.rect.update(self.world.get_rect())
 
 
 class SceneDirector:

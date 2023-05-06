@@ -50,7 +50,6 @@ class LobbyScene(Scene):
                 pygame.Vector2(-50, (i - 4) * 500 / 5),
             )
             self.focus_controller.add(button)
-            button.on("focus", lambda _, button=button: print(button))
             self.add_child(button)
             ai_player_buttons.append(button)
 
