@@ -206,7 +206,7 @@ class InGameScene(Scene):
             offset_retriever=lambda obj, _: pygame.Vector2(
                 0,
                 -30
-                if self.is_my_turn() and (obj.is_hovered or obj.has_focus)
+                if self.is_my_turn() and obj.has_focus
                 else -4
                 if self.is_my_turn()
                 else 12,

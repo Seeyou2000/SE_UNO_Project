@@ -1,8 +1,8 @@
 import abc
+from collections.abc import Iterator
 
 import pygame
 
-from engine.events.event import Event
 from engine.gameobject import GameObject
 
 
@@ -19,13 +19,16 @@ class GameObjectContainer(GameObject, abc.ABC):
             child.update(dt)
 
     def render(self, surface: pygame.Surface) -> None:
+        if not self.is_visible:
+            return
         super().render(surface)
         for child in self._children:
             child.render(surface)
 
     def add_child(self, child: GameObject) -> None:
         self._children.append(child)
-        child.parent = self
+        child.set_parent(self)
+        child.update_absolute_rect()
 
     def add_children(self, children: list[GameObject]) -> None:
         for child in children:
@@ -33,24 +36,19 @@ class GameObjectContainer(GameObject, abc.ABC):
 
     def remove_child(self, child: GameObject) -> None:
         self._children.remove(child)
-        child.parent = None
+        child.set_parent(None)
 
     def has_child(self, child: GameObject) -> None:
         return child in self._children
+
+    def len_children(self) -> int:
+        return len(self._children)
+
+    def reversed_child_iterator(self) -> Iterator[GameObject]:
+        return reversed(self._children)
 
     def set_order(self, child: GameObject, order: int) -> None:
         if not self.has_child(child):
             return
         self._children.remove(child)
         self._children.insert(order, child)
-
-    def emit(self, event_name: str, event: Event, is_target_self: bool = True) -> None:
-        super().emit(event_name, event, is_target_self)
-        # 마우스 이벤트라면 위에서 이벤트를 감지했다면 앞에 깔려있는 오브젝트에 전파를 하지 않아도 된다
-        # _children의 뒤에 있을 수록 나중에 렌더링되므로 순회를 역순으로 한다
-        for child in reversed(self._children):
-            if event.target is child:
-                continue
-            if event.is_propagation_stopped:
-                break
-            child.emit(event_name, event, False)

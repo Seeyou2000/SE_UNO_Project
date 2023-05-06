@@ -60,11 +60,11 @@ class World:
                     pygame.quit()
                     sys.exit()
                 case pygame.MOUSEBUTTONDOWN:
-                    current_scene.emit("global_mouse_down", Event(event.dict))
+                    current_scene.event_system.handle_mouse_down(event)
                 case pygame.MOUSEBUTTONUP:
-                    current_scene.emit("global_mouse_up", Event(event.dict))
+                    current_scene.event_system.handle_mouse_up(event)
                 case pygame.MOUSEMOTION:
-                    current_scene.emit("global_mouse_move", Event(event.dict))
+                    current_scene.event_system.handle_mouse_move(event)
                 case pygame.KEYDOWN:
                     current_scene.emit("keydown", Event(event.dict))
                 case pygame.TEXTEDITING:

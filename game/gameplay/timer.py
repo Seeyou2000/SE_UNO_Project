@@ -22,7 +22,7 @@ class Timer(EventEmitter):
             return
         self._time += dt
         if self._time >= self._duration:
-            self.emit("tick", Event({}))
+            self.emit("tick", Event({}, self))
 
             # 음수면 무한히 돌기
             if self._count < 0:

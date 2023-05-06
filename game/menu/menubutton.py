@@ -44,9 +44,9 @@ class MenuButton(BaseButton, Focusable):
         self.set_text(text)
 
         self.on("mouse_enter", self.handle_mouse_enter)
-        self.on("mouse_out", self.handle_mouse_out)
+        self.on("mouse_leave", self.handle_mouse_leave)
         self.on("focus", self.handle_mouse_enter)
-        self.on("unfocus", self.handle_mouse_out)
+        self.on("unfocus", self.handle_mouse_leave)
         self.hover_alpha = 0
 
     def set_text(self, text: str) -> None:
@@ -63,12 +63,12 @@ class MenuButton(BaseButton, Focusable):
         super().update(dt)
 
     def handle_mouse_enter(self, event: Event) -> None:
-        self._override_surface = self.surfaces.hover
+        # self._override_surface = self.surfaces.hover
         t = tween.to(self, "hover_alpha", 255, 0.3)
         t.on_update(self.update_hover_alpha)
 
-    def handle_mouse_out(self, event: Event) -> None:
-        self._override_surface = None
+    def handle_mouse_leave(self, event: Event) -> None:
+        # self._override_surface = None
         self.hover_alpha = 0
 
     def update_hover_alpha(self) -> None:
