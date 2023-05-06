@@ -460,7 +460,7 @@ class InGameScene(Scene):
             str(self.game_state.game_deck.get_card_amount()),
             pygame.Vector2(),
             get_font(FontType.UI_BOLD, 23),
-            pygame.Color("black"),
+            pygame.Color("white"),
         )
         self.layout.add(
             self.text_cardnum,
@@ -678,7 +678,9 @@ class InGameScene(Scene):
         return None
         return None
 
-    def check_uno_and_play_sound(self, game_state: GameState, pressed_player: Player) -> None:
+    def check_uno_and_play_sound(
+        self, game_state: GameState, pressed_player: Player
+    ) -> None:
         self.flow.check_uno(game_state, pressed_player)
         if pressed_player is self.get_me():
             self.world.audio_player.play_effect_uno_clicked()

@@ -133,7 +133,7 @@ def create_card_sprite(
             card_rect.inflate(-12, -12),
             border_radius=CARD_BORDER_RADIUS - 3,
         )
-        if is_colorblind == True:
+        if is_colorblind is True:
             draw_color_shape(card_surface, color)
 
         if number is not None:

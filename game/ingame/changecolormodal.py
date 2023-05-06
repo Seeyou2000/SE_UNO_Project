@@ -1,6 +1,5 @@
 import pygame
 
-from engine.button import Button
 from engine.events.event import Event
 from engine.gameobjectcontainer import GameObjectContainer
 from engine.sprite import Sprite
