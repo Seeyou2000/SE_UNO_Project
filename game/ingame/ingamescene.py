@@ -92,7 +92,7 @@ class InGameScene(Scene):
             on_transition(
                 UseAbilityFlowNode,
                 ChangeFieldColorFlowNode,
-                self.show_black_to_another,
+                self.show_change_color_modal,
             ),
             on_transition(
                 ChangeFieldColorFlowNode,
@@ -595,8 +595,13 @@ class InGameScene(Scene):
     def is_my_turn(self) -> bool:
         return self.game_state.get_current_player() == self.get_me()
 
-    def show_black_to_another(self, event: TransitionEvent) -> None:
-        self.change_color_modal = ChangeColorModal(self.game_state, self.flow)
+    def show_change_color_modal(self, event: TransitionEvent) -> None:
+        self.change_color_modal = ChangeColorModal(
+            self.game_state,
+            self.flow,
+            self.world.settings,
+            self.flow.current_node.is_prepare,
+        )
         self.layout.add(
             self.change_color_modal, LayoutAnchor.CENTER, pygame.Vector2(0, 0)
         )
