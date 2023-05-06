@@ -1,7 +1,7 @@
 import pygame
 
-from engine.event import Event
-from engine.focus import Focusable
+from engine.events.event import Event
+from engine.focus import Focusable, FocusController
 from engine.gameobject import GameObject
 
 
@@ -18,6 +18,7 @@ class TextInput(GameObject, Focusable):
         font: pygame.font.Font,
         color: pygame.Color,
         max_length: int,
+        focus_controller: FocusController,
     ) -> None:
         super().__init__()
         self.text = text
@@ -25,10 +26,11 @@ class TextInput(GameObject, Focusable):
         self.color = color
         self.rect = rect.copy()
         self._max_length = max_length
+        self.controller = focus_controller
         self.set_text(text)
         self.on("keydown", self.handle_keydown)
         self.on("textinput", self.handle_textinput)
-        self.on("click", lambda _: self.focus())
+        self.on("click", lambda _: self.controller.focus_target(self))
         self.on("focus", self.start_editing)
         self.on("unfocus", self.stop_editing)
 

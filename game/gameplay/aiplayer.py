@@ -1,6 +1,6 @@
 import random
 
-from engine.event import Event
+from engine.events.event import Event
 from game.constant import COLORS, AbilityType
 from game.gameplay.card import Card
 from game.gameplay.flow.changefieldcolor import ChangeFieldColorFlowNode

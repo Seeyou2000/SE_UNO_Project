@@ -3,8 +3,10 @@ from typing import Self
 import pygame
 from attr import dataclass
 
-from engine.event import Event, EventHandler
+from engine.events.emitter import EventHandler
+from engine.events.event import Event
 from engine.focus import Focusable
+from engine.fsm import FlowMachine, FlowNode
 from engine.gameobject import GameObject
 
 
@@ -15,12 +17,28 @@ class ButtonSurfaces:
     pressed: pygame.Surface
 
 
+class NormalState(FlowNode):
+    pass
+
+
+class HoverState(FlowNode):
+    pass
+
+
+class PressedState(FlowNode):
+    pass
+
+
+class DisabledState(FlowNode):
+    pass
+
+
 class BaseButton(GameObject, Focusable):
     font: pygame.font.Font
     on_click: EventHandler | None
 
     surfaces: ButtonSurfaces
-    _override_surface: pygame.Surface
+    state_machine: FlowMachine
 
     def __init__(
         self: Self,
@@ -32,7 +50,17 @@ class BaseButton(GameObject, Focusable):
 
         self.rect = rect
         self.surfaces = surfaces
-        self._override_surface = None
+        self.state_machine = FlowMachine()
+        self.state_machine.transition_to(NormalState())
+
+        self.on(
+            "mouse_down", lambda _: self.state_machine.transition_to(PressedState())
+        )
+        self.on("mouse_up", lambda _: self.state_machine.transition_to(NormalState()))
+        self.on("mouse_enter", lambda _: self.state_machine.transition_to(HoverState()))
+        self.on(
+            "mouse_leave", lambda _: self.state_machine.transition_to(NormalState())
+        )
 
         if on_click is not None:
             self.on("click", on_click)
@@ -41,14 +69,13 @@ class BaseButton(GameObject, Focusable):
         super().render(surface)
 
         button_surface = None
-        if self._override_surface is not None:
-            button_surface = self._override_surface
-        else:
-            button_surface = self.surfaces.normal
-            if self._is_pressed:
-                button_surface = self.surfaces.pressed
-            elif self._is_hovered:
+        match self.state_machine.current_node:
+            case NormalState():
+                button_surface = self.surfaces.normal
+            case HoverState():
                 button_surface = self.surfaces.hover
+            case PressedState():
+                button_surface = self.surfaces.pressed
 
         surface.blit(
             button_surface, button_surface.get_rect(center=self.absolute_rect.center)

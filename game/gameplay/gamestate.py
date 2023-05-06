@@ -2,7 +2,8 @@ import random
 import sys
 from enum import Enum
 
-from engine.event import Event, EventEmitter
+from engine.events.emitter import EventEmitter
+from engine.events.event import Event
 from game.constant import COLORABLEABILITY, COLORS, NONCOLORABLEABILITY, AbilityType
 from game.gameplay.card import Card
 from game.gameplay.deck import Deck
@@ -109,7 +110,7 @@ class GameState(EventEmitter):
         self.unset_uno_clicked(self.get_current_player())
         self.emit(
             GameStateEventType.PLAYER_EARNED_CARD,
-            Event({"player": player, "card": drawn_card}),
+            Event({"player": player, "card": drawn_card}, self),
         )
 
     def discard(self, card: Card) -> None:
@@ -161,11 +162,11 @@ class GameState(EventEmitter):
     def go_next_turn(self) -> None:
         self.flush_skip()
         self.turn.next()
-        self.emit(GameStateEventType.TURN_NEXT, Event(None))
+        self.emit(GameStateEventType.TURN_NEXT, Event(None, self))
 
     def reverse_turn_direction(self) -> None:
         self.turn.reverse()
-        self.emit(GameStateEventType.TURN_DIRECTION_REVERSE, Event(None))
+        self.emit(GameStateEventType.TURN_DIRECTION_REVERSE, Event(None, self))
 
     def is_player_next_turn(self, player: Player) -> bool:
         is_clockwise = self.turn.is_clockwise
@@ -195,12 +196,12 @@ class GameState(EventEmitter):
         player.is_unobutton_clicked = True
         self.emit(
             GameStateEventType.PLAYER_UNO_STATUS_CHANGED,
-            Event({"player": player, "status": player.is_unobutton_clicked}),
+            Event({"player": player, "status": player.is_unobutton_clicked}, self),
         )
 
     def unset_uno_clicked(self, player: Player) -> None:
         player.is_unobutton_clicked = False
         self.emit(
             GameStateEventType.PLAYER_UNO_STATUS_CHANGED,
-            Event({"player": player, "status": player.is_unobutton_clicked}),
+            Event({"player": player, "status": player.is_unobutton_clicked}, self),
         )

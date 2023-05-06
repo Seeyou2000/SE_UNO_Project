@@ -3,7 +3,8 @@ from typing import Any
 
 import pygame
 
-from engine.event import Event, EventEmitter
+from engine.events.emitter import EventEmitter
+from engine.events.event import Event
 
 SETTINGS_FILE_PATH = "settings.json"
 POSSIBLE_SCREEN_SIZES: list[tuple[int, int]] = [(1280, 720), (1600, 900), (1920, 1080)]
@@ -77,7 +78,8 @@ class Settings(EventEmitter):
                 effect_volume=value["effect_volume"],
             )
 
-        except (AttributeError, KeyError):
+        except (AttributeError, KeyError) as e:
+            raise e
             if value is DEFAULT_SETTINGS:
                 print("기본 설정값을 불러오는 데 문제가 있습니다. 키값을 점검하세요.")
             else:
@@ -142,7 +144,7 @@ class Settings(EventEmitter):
         )
 
         self.save()
-        self.emit("change", Event(None))
+        self.emit("change", Event(target=self))
 
     def toggle_colorblind(self) -> None:
         self.set_values(is_colorblind=not self.is_colorblind)

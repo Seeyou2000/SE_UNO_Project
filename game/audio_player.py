@@ -1,6 +1,6 @@
 import pygame
 
-from engine.event import Event
+from engine.events.event import Event
 from game.settings.settings import Settings
 
 
@@ -27,7 +27,7 @@ class AudioPlayer:
 
         settings.on("change", self.handle_settings_change)
 
-    def play_bg_music(self):
+    def play_bg_music(self) -> None:
         # Play background music on loop
         if (
             not self.bg_music_playing
@@ -36,37 +36,37 @@ class AudioPlayer:
             self.bg_music_playing = True
             self.bg_music.set_volume(self.volume)
 
-    def stop_bg_music(self):
+    def stop_bg_music(self) -> None:
         # Stop background music
         if self.bg_music_playing:
             self.bg_music.stop()
             self.bg_music_playing = False
 
-    def play_effect_uno_clicked(self):
+    def play_effect_uno_clicked(self) -> None:
         self.effect_uno_clicked.play()
 
-    def play_effect_card_sliding(self):
+    def play_effect_card_sliding(self) -> None:
         self.effect_card_sliding.play()
 
-    def play_effect_card_playing(self):
+    def play_effect_card_playing(self) -> None:
         self.effect_card_playing.play()
 
-    def set_volume(self, volume: float):
+    def set_volume(self, volume: float) -> None:
         self.volume = volume
         self.set_bgm_volume(self.volume)
         self.set_effect_volume(self.volume)
 
-    def set_bgm_volume(self, volume: float):
+    def set_bgm_volume(self, volume: float) -> None:
         self.bgm_volume = volume
         self.bg_music.set_volume(self.volume * self.bgm_volume)
 
-    def set_effect_volume(self, volume: float):
+    def set_effect_volume(self, volume: float) -> None:
         self.effect_volume = volume
         self.effect_uno_clicked.set_volume(self.volume * self.effect_volume)
         self.effect_card_sliding.set_volume(self.volume * self.effect_volume)
         self.effect_card_playing.set_volume(self.volume * self.effect_volume)
 
-    def handle_settings_change(self, event: Event):
+    def handle_settings_change(self, event: Event) -> None:
         settings: Settings = event.target
         self.set_volume(settings.master_volume / 100.0)
         self.set_bgm_volume(settings.bgm_volume / 100.0)

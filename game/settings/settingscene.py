@@ -1,7 +1,8 @@
 import pygame
 
 from engine.button import Button
-from engine.event import Event, EventHandler
+from engine.events.emitter import EventHandler
+from engine.events.event import Event
 from engine.focus import FocusMoveDirection
 from engine.layout import LayoutAnchor
 from engine.scene import Scene

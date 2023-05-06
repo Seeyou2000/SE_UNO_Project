@@ -1,4 +1,4 @@
-from engine.event import Event
+from engine.events.event import Event
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.gamestate import GameState
 
@@ -34,4 +34,4 @@ class StartTurnFlowNode(AbstractGameFlowNode):
 
     def exit(self) -> None:
         super().exit()
-        self.game_state.turn_timer.off_one("tick", self.transition_to_draw_card)
+        self.game_state.turn_timer.off("tick", self.transition_to_draw_card)

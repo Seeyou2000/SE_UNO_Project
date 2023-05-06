@@ -3,7 +3,8 @@ from enum import Enum
 
 import pygame
 
-from engine.event import Event, EventEmitter
+from engine.events.emitter import EventEmitter
+from engine.events.event import Event
 
 
 class FocusMoveDirection(Enum):
@@ -54,11 +55,11 @@ FocusSiblings = dict[FocusMoveDirection, Focusable]
 
 class FocusController:
     _targets: dict[Focusable, FocusSiblings | None]
-    _current_focus: Focusable
+    current_focus: Focusable
 
     def __init__(self) -> None:
         self._targets = {}
-        self._current_focus = None
+        self.current_focus = None
 
     def add(self, target: Focusable) -> None:
         self._targets[target] = {}
@@ -66,7 +67,7 @@ class FocusController:
 
     def remove(self, target: Focusable) -> None:
         targets = list(self._targets.keys())
-        self._current_focus = targets[targets.index(target) - 1]
+        self.current_focus = targets[targets.index(target) - 1]
         del self._targets[target]
         target.controller = None
 
@@ -82,21 +83,21 @@ class FocusController:
             return
 
         if target is not None:
-            before = self._current_focus
+            before = self.current_focus
             if before is not None:
                 before.unfocus()
             target.focus()
-            self._current_focus = target
+            self.current_focus = target
 
     def move_focus(self, direction: FocusMoveDirection) -> None:
-        before = self._current_focus
+        before = self.current_focus
         after: Focusable | None
         if before is None:
             if len(self._targets) == 0:
                 return
             after = next(iter(self._targets.keys()))
         else:
-            after = self.find_sibling(self._current_focus, direction)
+            after = self.find_sibling(self.current_focus, direction)
 
         if after is None:
             return

@@ -1,4 +1,4 @@
-from engine.event import Event
+from engine.events.event import Event
 from game.gameplay.card import Card
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.flow.discardcard import DiscardCardFlowNode
@@ -17,7 +17,9 @@ class EndAbilityFlowNode(AbstractGameFlowNode):
 
         if self.is_prepare:
             self.game_state.flush_skip()
-            self.game_state.emit(GameStateEventType.TURN_NEXT, Event(None))
+            self.game_state.emit(
+                GameStateEventType.TURN_NEXT, Event(None, self.game_state)
+            )
             self.machine.transition_to(StartTurnFlowNode(self.game_state))
         else:
             self.machine.transition_to(DiscardCardFlowNode(self.game_state, self.card))

@@ -1,7 +1,7 @@
 import pygame
 
 from engine.button import Button
-from engine.event import Event
+from engine.events.event import Event
 from engine.focus import FocusMoveDirection
 from engine.layout import LayoutAnchor
 from engine.scene import Scene
@@ -31,8 +31,10 @@ class LobbyScene(Scene):
             get_font(FontType.UI_BOLD, 30),
             pygame.Color("black"),
             10,
+            self.focus_controller,
         )
         self.add_child(self.name_input)
+        self.focus_controller.add(self.name_input)
 
         self.names = []
 
@@ -50,7 +52,6 @@ class LobbyScene(Scene):
                 pygame.Vector2(-50, (i - 4) * 500 / 5),
             )
             self.focus_controller.add(button)
-            button.on("focus", lambda _, button=button: print(button))
             self.add_child(button)
             ai_player_buttons.append(button)
 
