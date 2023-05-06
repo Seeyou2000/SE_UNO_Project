@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import pygame
 
+from engine.events.emitter import EventEmitter
 from engine.events.event import Event
 from engine.events.system import EventSystem
 from engine.focus import FocusController, FocusMoveDirection
@@ -24,6 +25,8 @@ class Scene(GameObjectContainer):
         self.event_system = EventSystem(self)
 
         self.on("keydown", self.handle_focus_keydown)
+        self.on("textinput", self.handle_textinput)
+        self.on("textediting", self.handle_textediting)
         self.on("resize", self.handle_screen_resize)
 
     def update(self, dt: float) -> None:
@@ -42,6 +45,17 @@ class Scene(GameObjectContainer):
                 self.focus_controller.move_focus(FocusMoveDirection.LEFT)
             case pygame.K_RIGHT:
                 self.focus_controller.move_focus(FocusMoveDirection.RIGHT)
+
+        if isinstance(self.focus_controller.current_focus, EventEmitter):
+            self.focus_controller.current_focus.emit("keydown", event)
+
+    def handle_textinput(self, event: Event) -> None:
+        if isinstance(self.focus_controller.current_focus, EventEmitter):
+            self.focus_controller.current_focus.emit("textinput", event)
+
+    def handle_textediting(self, event: Event) -> None:
+        if isinstance(self.focus_controller.current_focus, EventEmitter):
+            self.focus_controller.current_focus.emit("textediting", event)
 
     def handle_screen_resize(self, event: Event) -> None:
         self.rect = self.world.get_rect()

@@ -31,8 +31,10 @@ class LobbyScene(Scene):
             get_font(FontType.UI_BOLD, 30),
             pygame.Color("black"),
             10,
+            self.focus_controller,
         )
         self.add_child(self.name_input)
+        self.focus_controller.add(self.name_input)
 
         self.names = []
 
