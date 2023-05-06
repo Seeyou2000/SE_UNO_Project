@@ -46,7 +46,7 @@ class GameFlowMachine(FlowMachine, EventEmitter):
             TransitionEvent(self._current_node, new_node),
         )
 
-    def is_uno(self, game_state: GameState, pressed_player: Player) -> None:
+    def check_uno(self, game_state: GameState, pressed_player: Player) -> None:
         # 우노판별
         current_player = game_state.get_current_player()
         print(pressed_player.name + "가 눌렀습니다!!!!!!!!!!!!!!!!!!!!!!!")

@@ -25,6 +25,7 @@ CARD_BACK_BORDER_RADIUS = 5
 
 class OtherPlayerEntry(GameObjectContainer):
     card_sprites: list[CardEntity]
+    delay_timers: list[Timer]
 
     def __init__(
         self,
@@ -37,6 +38,7 @@ class OtherPlayerEntry(GameObjectContainer):
     ) -> None:
         super().__init__()
 
+        self.earned_card_idx_in_this_frame = 0
         self.player = player
         self.rect = pygame.Rect(0, 0, size.x, size.y)
         self.anchor = anchor
@@ -80,6 +82,7 @@ class OtherPlayerEntry(GameObjectContainer):
             self.uno_text.rect.topright = (name_text.rect.left - 20, 10)
 
         self.card_sprites = []
+        self.delay_timers = []
 
         for _ in range(0, len(player.cards)):
             self.create_card_sprite()
@@ -90,6 +93,14 @@ class OtherPlayerEntry(GameObjectContainer):
 
     def update(self, dt: float) -> None:
         super().update(dt)
+
+        self.earned_card_idx_in_this_frame = 0
+
+        for timer in self.delay_timers:
+            timer.update(dt)
+            if not timer.enabled:
+                self.delay_timers.remove(timer)
+
         update_horizontal_linear_overlapping_layout(
             objects=self.card_sprites,
             layout=self.layout,
@@ -108,11 +119,14 @@ class OtherPlayerEntry(GameObjectContainer):
         self.layout.update(dt)
 
     def create_or_remove_cards_if_needed(self) -> None:
-        displaying_card_count = len(self.card_sprites)
+        displaying_card_count = len(self.card_sprites) + len(self.delay_timers)
         player_card_count = len(self.player.cards)
         if displaying_card_count < player_card_count:
             for _ in range(0, player_card_count - displaying_card_count):
-                self.create_card_sprite()
+                self.earned_card_idx_in_this_frame += 1
+                delay_timer = Timer(0.1 * self.earned_card_idx_in_this_frame)
+                delay_timer.on("tick", lambda _: self.create_card_sprite())
+                self.delay_timers.append(delay_timer)
         elif displaying_card_count > player_card_count:
             for _ in range(0, displaying_card_count - player_card_count):
                 removed = self.card_sprites.pop()
@@ -120,7 +134,7 @@ class OtherPlayerEntry(GameObjectContainer):
                 self.layout.remove(removed)
 
     def create_card_sprite(self) -> None:
-        card_back_sprite = create_card_sprite("black", True, False)
+        card_back_sprite = create_card_sprite("black", True, False, is_small=True)
         card_back_sprite.rect.y = 50
         self.add_child(card_back_sprite)
         self.card_sprites.append(card_back_sprite)
@@ -145,7 +159,7 @@ class OtherPlayerEntry(GameObjectContainer):
         self.uno_text.set_color(
             pygame.Color("blue")
             if self.player.is_unobutton_clicked
-            else pygame.Color("red")
+            else pygame.Color("gray")
         )
 
     def handle_card_earned(self, event: Event) -> None:

@@ -14,7 +14,13 @@ class AudioPlayer:
         self.bg_music = pygame.mixer.Sound("resources/audio/Uno.mp3")
 
         # Load sound effect
-        self.sound_effect = pygame.mixer.Sound("resources/audio/effectSound.wav")
+        self.effect_uno_clicked = pygame.mixer.Sound("resources/audio/uno_clicked.wav")
+        self.effect_card_sliding = pygame.mixer.Sound(
+            "resources/audio/card_sliding_sound.wav"
+        )
+        self.effect_card_playing = pygame.mixer.Sound(
+            "resources/audio/card_playing_sound.wav"
+        )
         self.bg_music_playing = (
             False  # Add a flag to check if the background music is playing
         )
@@ -36,18 +42,19 @@ class AudioPlayer:
             self.bg_music.stop()
             self.bg_music_playing = False
 
-    def play_sound_effect(self):
-        # self.sound_effect.play()
-        self.sound_effect.play(volume=self.effect_volume)
+    def play_effect_uno_clicked(self):
+        self.effect_uno_clicked.play()
 
-    def play_card_drawn_sound_effect(self):
-        # Play sound effect when a card is drawn
-        self.sound_effect.play(volume=self.effect_volume)
+    def play_effect_card_sliding(self):
+        self.effect_card_sliding.play()
+
+    def play_effect_card_playing(self):
+        self.effect_card_playing.play()
 
     def set_volume(self, volume: float):
         self.volume = volume
-        self.bg_music.set_volume(self.volume * self.bgm_volume)
-        self.sound_effect.set_volume(self.volume * self.effect_volume)
+        self.set_bgm_volume(self.volume)
+        self.set_effect_volume(self.volume)
 
     def set_bgm_volume(self, volume: float):
         self.bgm_volume = volume
@@ -55,7 +62,9 @@ class AudioPlayer:
 
     def set_effect_volume(self, volume: float):
         self.effect_volume = volume
-        self.sound_effect.set_volume(self.volume * self.effect_volume)
+        self.effect_uno_clicked.set_volume(self.volume * self.effect_volume)
+        self.effect_card_sliding.set_volume(self.volume * self.effect_volume)
+        self.effect_card_playing.set_volume(self.volume * self.effect_volume)
 
     def handle_settings_change(self, event: Event):
         settings: Settings = event.target

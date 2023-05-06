@@ -63,7 +63,7 @@ class SettingScene(Scene):
                 f"Colorblind Mode: {'ON' if self.world.settings.is_colorblind else 'OFF'}"  # noqa: E501
             )
 
-        colorblind_button = Button(
+        self.colorblind_button = Button(
             f"Colorblind Mode: {'ON' if self.world.settings.is_colorblind else 'OFF'}",
             pygame.Rect(0, 0, 300, BUTTON_HEIGHT),
             self.font,
@@ -71,11 +71,11 @@ class SettingScene(Scene):
         )
 
         self.layout.add(
-            colorblind_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 150)
+            self.colorblind_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 150)
         )
-        self.focus_controller.add(colorblind_button)
+        self.focus_controller.add(self.colorblind_button)
 
-        self.add_child(colorblind_button)
+        self.add_child(self.colorblind_button)
 
     def place_sound_buttons(self) -> None:
         button_width = 80
@@ -169,9 +169,8 @@ class SettingScene(Scene):
             self.focus_controller.add(effect_volume_button)
 
     def place_keyboard_options(self) -> None:
-        for i, (dict_key, keyboard_key) in enumerate(
-            self.world.settings.keymap.items()
-        ):
+        self.keyboard_button_list = []
+        for i, dict_key in enumerate(self.world.settings.keymap.keys()):
             y = 430 + i * (BUTTON_HEIGHT + 20)
 
             description_text = Text(
@@ -197,6 +196,7 @@ class SettingScene(Scene):
             self.focus_controller.add(change_key_button)
             self.last_key_button = change_key_button
             self.add_child(change_key_button)
+            self.keyboard_button_list.append(change_key_button)
 
     def place_bottom_buttons(self) -> None:
         from game.menu.menuscene import MenuScene
@@ -217,7 +217,7 @@ class SettingScene(Scene):
             "RESET",
             pygame.Rect(0, 0, 100, BUTTON_HEIGHT),
             self.font,
-            on_click=lambda _: self.world.settings.reset(),
+            on_click=lambda _: self.reset(),
         )
         self.layout.add(
             reset_button, LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-170, -50)
@@ -265,6 +265,14 @@ class SettingScene(Scene):
 
     def get_display_keyname(self, dict_key: str) -> str:
         return pygame.key.name(self.world.settings.keymap[dict_key]).upper()
+
+    def reset(self) -> None:
+        self.world.settings.reset()
+        self.colorblind_button.set_text(
+            f"Colorblind Mode: {'ON' if self.world.settings.is_colorblind else 'OFF'}"  # noqa: E501
+        )
+        for i, dict_key in enumerate(self.world.settings.keymap.keys()):
+            self.keyboard_button_list[i].set_text(self.get_display_keyname(dict_key))
 
 
 def snake_key_to_name(str: str) -> str:

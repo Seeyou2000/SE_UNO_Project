@@ -107,6 +107,7 @@ class GameState(EventEmitter):
                 return
         drawn_card = self.game_deck.draw()
         player.cards.append(drawn_card)
+        self.unset_uno_clicked(self.get_current_player())
         self.emit(
             GameStateEventType.PLAYER_EARNED_CARD,
             Event({"player": player, "card": drawn_card}, self),

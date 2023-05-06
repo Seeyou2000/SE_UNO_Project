@@ -18,7 +18,7 @@ from game.constant import COLORS, NAME, AbilityType
 from game.font import FontType, get_font
 from game.gameplay.aiplayer import AIPlayer
 from game.gameplay.card import Card
-from game.gameplay.cardentitiy import CardEntity
+from game.gameplay.cardentitiy import CardEntity, create_card_sprite
 from game.gameplay.flow.changefieldcolor import ChangeFieldColorFlowNode
 from game.gameplay.flow.discardcard import DiscardCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
@@ -46,6 +46,7 @@ from game.ingame.turndirectionindicator import TurnDirectionIndicator
 
 class InGameScene(Scene):
     discarding_card_entities: list[CardEntity]
+    delay_timers: list[Timer]
 
     def __init__(
         self,
@@ -54,15 +55,17 @@ class InGameScene(Scene):
         more_ability_cards: bool = False,
         give_every_card_to_players: bool = False,
         random_color: bool = False,
-        six_players: bool = False,
+        random_turn: bool = False,
         my_player_index: int = 0,
     ) -> None:
         super().__init__(world)
 
+        self.deck_button = None
         self.more_ability_cards = more_ability_cards
         self.give_every_card_to_players = give_every_card_to_players
         self.random_color = random_color
-        self.six_players = six_players
+        self.random_turn = random_turn
+        self.earned_card_idx_in_this_frame = 0
 
         self.my_player_index = my_player_index
 
@@ -70,6 +73,7 @@ class InGameScene(Scene):
         self.other_player_entries = []
         self.my_card_entities = []
         self.discarding_card_entities = []
+        self.delay_timers = []
         self.game_state = GameState()
         self.screen_size = self.world.get_rect()
         self.mytimer_display = None
@@ -82,7 +86,6 @@ class InGameScene(Scene):
         self.change_color_modal = None
 
         self.setup_base()
-
         self.flow = GameFlowMachine()
         transition_handlers = [
             lambda event: print(
@@ -107,7 +110,8 @@ class InGameScene(Scene):
                     f"턴 시작: {self.game_state.get_current_player().name}"
                 ),
             ),
-            on_transition(None, StartTurnFlowNode, self.story_color_change),
+            on_transition(None, StartTurnFlowNode, self.handle_color_change),
+            on_transition(None, StartTurnFlowNode, self.handle_reverse_change),
             on_transition(DiscardCardFlowNode, None, self.place_discarded_card),
             on_transition(None, GameEndFlowNode, self.end_game),
             on_transition(None, GameEndFlowNode, self.back_to_menu),
@@ -129,12 +133,15 @@ class InGameScene(Scene):
 
         self.on("keydown", self.handle_keydown)
 
-    def story_color_change(self, event: TransitionEvent) -> None:
-        if (
-            self.random_color
-            and self.game_state.turn._total_turn % 5 == 0  # noqa: SLF001
-        ):
+    def handle_color_change(self, event: TransitionEvent) -> None:
+        is_turn_five = self.game_state.turn.total % 5 == 0
+        if self.random_color and is_turn_five:
             self.game_state.change_card_color(random.choice(COLORS))
+
+    def handle_reverse_change(self, event: TransitionEvent) -> None:
+        is_turn_five = self.game_state.turn.total % 5 == 0
+        if self.random_turn and is_turn_five:
+            self.game_state.reverse_turn_direction()
 
     def handle_keydown(self, event: Event) -> None:
         key: int = event.data["key"]
@@ -142,7 +149,7 @@ class InGameScene(Scene):
         if key == self.world.settings.keymap.get("draw_card"):
             self.try_draw()
         elif key == self.world.settings.keymap.get("uno"):
-            self.flow.is_uno(self.game_state, self.get_me())
+            self.flow.check_uno(self.game_state, self.get_me())
 
         # 색 선택
         from game.gameplay.flow.endability import EndAbilityFlowNode
@@ -192,6 +199,13 @@ class InGameScene(Scene):
     def update(self, dt: float) -> None:
         super().update(dt)
         self.game_state.turn_timer.update(dt)
+        for timer in self.delay_timers:
+            timer.update(dt)
+            if not timer.enabled:
+                self.delay_timers.remove(timer)
+
+        self.earned_card_idx_in_this_frame = 0
+
         for ai in self.ai:
             ai.update(dt)
 
@@ -260,7 +274,7 @@ class InGameScene(Scene):
                 pygame.image.load("resources/images/uno-button-hover.png"),
                 pygame.image.load("resources/images/uno-button-pressed.png"),
             ),
-            lambda _: self.flow.is_uno(self.game_state, self.get_me())
+            lambda _: self.check_uno_and_play_sound(self.game_state, self.get_me()),
             # gameflowmachine의 우노 판별 함수 호출
         )
         self.add_child(uno_button)
@@ -301,6 +315,7 @@ class InGameScene(Scene):
             self.add_card_entity(
                 card,
                 is_mine=True,
+                delay=0,
                 layout_constaint=LayoutConstraint(
                     LayoutAnchor.BOTTOM_CENTER, pygame.Vector2(0, 0)
                 ),
@@ -345,7 +360,7 @@ class InGameScene(Scene):
             self.my_uno_text.set_color(
                 pygame.Color("blue")
                 if self.get_me().is_unobutton_clicked
-                else pygame.Color("red")
+                else pygame.Color("gray")
             )
 
         self.game_state.on(
@@ -414,24 +429,28 @@ class InGameScene(Scene):
     def place_decks(self) -> None:
         self.discard_position = pygame.Vector2(16, 0)
 
-        deck_button = Button(
-            "",
-            pygame.Rect(0, 0, CardEntity.WIDTH, CardEntity.HEIGHT),
-            self.font,
-            lambda _: self.try_draw(),
+        deck_button_sprite = create_card_sprite(
+            color="red", is_back=True, is_colorblind=False, is_small=False
         )
+        deck_button_surfaces = ButtonSurfaces(
+            deck_button_sprite.image,
+            deck_button_sprite.image,
+            deck_button_sprite.image,
+        )
+        deck_button = SpriteButton(deck_button_surfaces, lambda _: self.try_draw())
+        self.deck_button = deck_button
         self.add_child(deck_button)
         self.layout.add(
             deck_button,
             LayoutAnchor.CENTER,
             self.discard_position - pygame.Vector2(CardEntity.WIDTH + 20, 0),
         )
-        self.deck_button = deck_button
 
         # 덱에서 한 장 열어놓기
         self.add_card_entity(
             self.game_state.discard_pile.get_last(),
             is_mine=False,
+            delay=0,
             layout_constaint=LayoutConstraint(
                 LayoutAnchor.CENTER, self.discard_position
             ),
@@ -460,7 +479,6 @@ class InGameScene(Scene):
         else:
             if self.has_child(self.mytimer_display):
                 self.remove_child(self.mytimer_display)
-
         self.text_cardnum.set_text(str(self.game_state.game_deck.get_card_amount()))
 
     def place_discarded_card(self, event: TransitionEvent) -> None:
@@ -468,6 +486,7 @@ class InGameScene(Scene):
         self.add_card_entity(
             self.game_state.discard_pile.get_last(),
             is_mine=False,
+            delay=0,
             layout_constaint=LayoutConstraint(
                 LayoutAnchor.CENTER, self.discard_position
             ),
@@ -494,6 +513,7 @@ class InGameScene(Scene):
         animating_card_entity.rect.center = start_position
         self.discarding_card_entities.append(animating_card_entity)
         self.add_child(animating_card_entity)
+        self.world.audio_player.play_effect_card_playing()
 
         # 능력카드 발생시 화면에 띄우기
         if card.ability is not None:
@@ -520,6 +540,8 @@ class InGameScene(Scene):
         card: Card = event.data["card"]
         player: Player = event.data["player"]
 
+        self.earned_card_idx_in_this_frame += 1
+
         self.text_cardnum.set_text(str(self.game_state.game_deck.get_card_amount()))
         if player is not self.get_me():
             return
@@ -528,6 +550,7 @@ class InGameScene(Scene):
         self.add_card_entity(
             card,
             is_mine=True,
+            delay=0.1 * self.earned_card_idx_in_this_frame,
             layout_constaint=LayoutConstraint(
                 LayoutAnchor.BOTTOM_CENTER,
                 pygame.Vector2(
@@ -536,8 +559,6 @@ class InGameScene(Scene):
                 ),
             ),
         )
-
-        assert len(self.my_card_entities) == len(self.get_me().cards)
 
     def update_cards_colorblind(self) -> None:
         for child in self._children:
@@ -614,17 +635,22 @@ class InGameScene(Scene):
         self,
         card: Card,
         is_mine: bool,
+        delay: float,
         layout_constaint: LayoutConstraint | None = None,
     ) -> CardEntity:
         card_entity = CardEntity(card)
-        self.add_child(card_entity)
         card_entity.set_colorblind(self.world.settings.is_colorblind)
         if is_mine:
-            self.my_card_entities.append(card_entity)
+            delay_timer = Timer(delay)
+            delay_timer.on("tick", self.append_card_animation(card_entity))
+            delay_timer.update(0)
+            self.delay_timers.append(delay_timer)
             card_entity.on("click", self.create_card_click_handler(card))
             card_entity.set_colorblind(self.world.settings.is_colorblind)
             self.focus_controller.add(card_entity)
+            card_entity.on("focus", self.handle_focus_sound)
         else:
+            self.add_child(card_entity)
             self.set_order(card_entity, 4)
 
         if layout_constaint is not None:
@@ -633,6 +659,13 @@ class InGameScene(Scene):
             )
 
         return card_entity
+
+    def append_card_animation(self, card_entity: CardEntity) -> EventHandler:
+        def handler(event: Event) -> None:
+            self.add_child(card_entity)
+            self.my_card_entities.append(card_entity)
+
+        return handler
 
     def remove_card_entity(self, card: Card) -> CardEntity | None:
         for child in self._children:
@@ -643,3 +676,12 @@ class InGameScene(Scene):
                     self.focus_controller.remove(child)
                 return child
         return None
+        return None
+
+    def check_uno_and_play_sound(self, game_state: GameState, pressed_player: Player) -> None:
+        self.flow.check_uno(game_state, pressed_player)
+        if pressed_player is self.get_me():
+            self.world.audio_player.play_effect_uno_clicked()
+
+    def handle_focus_sound(self, event: Event) -> None:
+        self.world.audio_player.play_effect_card_sliding()
