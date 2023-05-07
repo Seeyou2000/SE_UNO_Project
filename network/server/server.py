@@ -64,7 +64,7 @@ async def create_room(sid: str, data: dict) -> None:
     )
 
     logger.success(f"[CREATE ROOM] by: {sid}, room id: {new_room_id}")
-    join_room_impl(sid, new_room_id, message.password)
+    await join_room_impl(sid, new_room_id, message.password)
 
 
 @sio.event
