@@ -1,7 +1,7 @@
+from dataclasses import dataclass
 from typing import Self
 
 import pygame
-from attr import dataclass
 
 from engine.events.emitter import EventHandler
 from engine.events.event import Event
