@@ -39,7 +39,7 @@ async def connect(sid: str, environ: dict, auth: dict) -> None:
 @sio.event
 async def disconnect(sid: str) -> None:
     name = (await sio.get_session(sid))["session"].name
-    logger.info(f"[CONNECT] {name}({sid})")
+    logger.info(f"[DISCONNECT] {name}({sid})")
 
 
 @sio.event
