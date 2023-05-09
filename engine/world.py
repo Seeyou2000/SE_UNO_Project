@@ -5,7 +5,6 @@ import tween
 
 from engine.events.event import Event
 from engine.scene import SceneDirector
-from game.achievements import Achievements
 from game.audio_player import AudioPlayer
 from game.settings.settings import Settings
 
@@ -16,7 +15,6 @@ class World:
     clock: pygame.time.Clock
     target_fps: float
     settings: Settings
-    achievements: Achievements
 
     def __init__(self, size: tuple[float, float], target_fps: float = 60) -> None:
         pygame.init()
@@ -28,7 +26,6 @@ class World:
         self.settings.on("change", self.handle_settings_change)
         self.audio_player = AudioPlayer(self.settings)
         self.audio_player.play_bg_music()
-        self.achievements = Achievements()
 
     def set_size(self, size: tuple[float, float]) -> None:
         self.screen = pygame.display.set_mode(size, pygame.RESIZABLE)
