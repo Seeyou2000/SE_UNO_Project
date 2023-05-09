@@ -133,4 +133,5 @@ dmypy.json
 
 # Project-specific
 settings.json
+achievements.json
 .DS_Store
