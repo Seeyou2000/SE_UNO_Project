@@ -1,5 +1,6 @@
 from engine.events.event import Event
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
+from game.gameplay.flow.gameflowmachine import GameFlowMachineEventType
 from game.gameplay.gamestate import GameState
 
 
@@ -10,7 +11,7 @@ class GameEndFlowNode(AbstractGameFlowNode):
     def enter(self) -> None:
         super().enter()
         self.machine.events.emit(
-            "game_end",
+            GameFlowMachineEventType.GAME_END,
             Event(
                 {
                     "turn": self.game_state.turn.current,

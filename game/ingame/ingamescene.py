@@ -133,7 +133,9 @@ class InGameScene(Scene):
         self.world.settings.on("change", lambda _: self.update_cards_colorblind)
 
         self.on("keydown", self.handle_keydown)
-        self.flow.events.on("game_end", self.check_win_less_10turn)
+        self.flow.events.on(
+            GameFlowMachineEventType.GAME_END, self.check_win_less_10turn
+        )
 
     def handle_color_change(self, event: TransitionEvent) -> None:
         is_turn_five = self.game_state.turn.total % 5 == 0
