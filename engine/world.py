@@ -18,6 +18,8 @@ class World:
 
     def __init__(self, size: tuple[float, float], target_fps: float = 60) -> None:
         pygame.init()
+        pygame.scrap.init()
+        pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
         self.director = SceneDirector()
         self.set_size(size)
         self.clock = pygame.time.Clock()

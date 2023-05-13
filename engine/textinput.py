@@ -1,8 +1,12 @@
+import sys
+
 import pygame
 
 from engine.events.event import Event
 from engine.focus import Focusable, FocusController
 from engine.gameobject import GameObject
+
+platform = sys.platform
 
 
 class TextInput(GameObject, Focusable):
@@ -85,12 +89,22 @@ class TextInput(GameObject, Focusable):
         if not self.has_focus:
             return
         key: int = event.data["key"]
+        mod: int = event.data["mod"]
 
         match key:
             case pygame.K_BACKSPACE:
                 self.set_text(self.text[:-1])
             case pygame.K_ESCAPE:
                 self.unfocus()
+            case pygame.K_v:
+                if mod & (
+                    pygame.KMOD_CTRL if platform != "darwin" else pygame.KMOD_META
+                ):
+                    text = pygame.scrap.get(pygame.SCRAP_TEXT)
+                    if text is None:
+                        text = pygame.scrap.get("text/plain;charset=utf-8").decode()
+                    if text is not None:
+                        self.set_text(self.text + text)
 
     def handle_textinput(self, event: Event) -> None:
         if not self.has_focus:
