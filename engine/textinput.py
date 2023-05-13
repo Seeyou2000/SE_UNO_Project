@@ -100,11 +100,11 @@ class TextInput(GameObject, Focusable):
                 if mod & (
                     pygame.KMOD_CTRL if platform != "darwin" else pygame.KMOD_META
                 ):
-                    text = pygame.scrap.get(pygame.SCRAP_TEXT)
+                    text = pygame.scrap.get(pygame.SCRAP_TEXT).decode()
                     if text is None:
                         text = pygame.scrap.get("text/plain;charset=utf-8").decode()
                     if text is not None:
-                        self.set_text(self.text + text)
+                        self.set_text(self.text + text.rstrip("\x00"))
 
     def handle_textinput(self, event: Event) -> None:
         if not self.has_focus:
