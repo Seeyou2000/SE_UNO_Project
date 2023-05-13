@@ -1,5 +1,3 @@
-import asyncio
-
 import pygame
 import socketio
 from loguru import logger
