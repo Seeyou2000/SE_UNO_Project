@@ -6,11 +6,7 @@ from aiohttp import web
 from loguru import logger
 
 from network.common.messages import CreateRoom, JoinRoom, parse_message
-from network.server.room import (
-    PlayerLocation,
-    PlayerSession,
-    ServerRoomMetadata,
-)
+from network.server.room import PlayerLocation, PlayerSession, ServerRoomMetadata
 
 sio = socketio.AsyncServer(async_mode="aiohttp")
 app = web.Application()
@@ -39,6 +35,9 @@ async def connect(sid: str, environ: dict, auth: dict) -> None:
 @sio.event
 async def disconnect(sid: str) -> None:
     name = (await sio.get_session(sid))["session"].name
+    rooms = sio.rooms(sid)
+    for room in rooms:
+        print(room)
     logger.info(f"[DISCONNECT] {name}({sid})")
 
 
@@ -51,10 +50,10 @@ async def room_list(sid: str) -> None:
 
 
 @sio.event
-async def create_room(sid: str, data: dict) -> None:
+async def create_room(sid: str, data: dict) -> bool:
     message = parse_message(CreateRoom, data, "CREATE ROOM")
     if message is None:
-        return
+        return False
 
     new_room_id = str(uuid4())
 
@@ -65,22 +64,26 @@ async def create_room(sid: str, data: dict) -> None:
 
     logger.success(f"[CREATE ROOM] by: {sid}, room id: {new_room_id}")
     await join_room_impl(sid, new_room_id, message.password)
+    return True
 
 
 @sio.event
 async def join_room(sid: str, data: dict) -> bool:
     message = parse_message(JoinRoom, data, "JOIN ROOM")
     if message is None:
-        return
+        return False
 
     return await join_room_impl(sid, message.id, message.password)
 
 
 async def join_room_impl(sid: str, room_id: str, password: str) -> bool:
     is_room_exist = room_id in room_meta_by_id.keys()
+    if not is_room_exist:
+        return False
+
     is_same_password = room_meta_by_id[room_id].password == password
 
-    if is_room_exist and is_same_password:
+    if is_same_password:
         sio.enter_room(sid, room_id)
 
         async with sio.session(sid) as session:
