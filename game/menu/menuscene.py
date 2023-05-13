@@ -2,11 +2,13 @@ import sys
 
 import pygame
 
+from engine.events.event import Event
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
 from game.lobby.lobbyscene import LobbyScene
 from game.menu.menubutton import MenuButton
+from game.networktest.networktestscene import NetworkTestScene
 from game.storyselect.storymodeselectscene import StoryModeSelectScene
 
 
@@ -52,3 +54,10 @@ class MenuScene(Scene):
             self.focus_controller.add(item)
 
         self.add_children([sprite] + button_list)
+
+        self.on("keydown", self.handle_keydown)
+
+    def handle_keydown(self, e: Event) -> None:
+        if e.data["key"] == pygame.K_n:
+            self.world.director.change_scene(NetworkTestScene(self.world))
+
