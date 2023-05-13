@@ -18,8 +18,6 @@ class World:
 
     def __init__(self, size: tuple[float, float], target_fps: float = 60) -> None:
         pygame.init()
-        pygame.scrap.init()
-        pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
         self.director = SceneDirector()
         self.set_size(size)
         self.clock = pygame.time.Clock()
@@ -28,6 +26,9 @@ class World:
         self.settings.on("change", self.handle_settings_change)
         self.audio_player = AudioPlayer(self.settings)
         self.audio_player.play_bg_music()
+
+        pygame.scrap.init()
+        pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
 
     def set_size(self, size: tuple[float, float]) -> None:
         self.screen = pygame.display.set_mode(size, pygame.RESIZABLE)
