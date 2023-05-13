@@ -1,8 +1,11 @@
 from collections.abc import Callable
+from enum import Enum
+from typing import Self
 
 import pygame
 
 from engine.gameobject import GameObject
+from engine.gameobjectcontainer import GameObjectContainer
 
 
 class LayoutAnchor:
@@ -79,6 +82,71 @@ class Layout:
                 child.rect.bottom = height
             else:
                 child.rect.centery = height
+
+
+class LinearLayoutDirection(Enum):
+    HORIZONTAL = 0
+    VERTICAL = 1
+
+
+class LinearLayout(GameObjectContainer):
+    direction: LinearLayoutDirection
+    gap: int
+
+    def __init__(
+        self,
+        pos: pygame.Vector2,
+        direction: LinearLayoutDirection,
+        gap: int,
+        elements: list[GameObject | Self],
+        margin: int = 0,
+    ) -> None:
+        super().__init__()
+        self.rect = pygame.Rect(pos.x, pos.y, 0, 0)
+        self.direction = direction
+        self.gap = gap
+        self.margin = margin
+        self.add_children(elements)
+        self.update(0)
+
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        next_pos = self.margin
+        max_sub_axis_size = 0
+        for child in self._children:
+            if self.direction == LinearLayoutDirection.HORIZONTAL:
+                child.rect.x = next_pos
+                next_pos = self.margin + child.rect.right + self.gap
+                max_sub_axis_size = max(max_sub_axis_size, child.rect.height)
+            else:
+                child.rect.y = next_pos
+                next_pos = self.margin + child.rect.bottom + self.gap
+                max_sub_axis_size = max(max_sub_axis_size, child.rect.width)
+
+        if self.direction == LinearLayoutDirection.HORIZONTAL:
+            self.rect.width = (
+                self._children[-1].rect.right if len(self._children) > 0 else 0
+            ) + self.margin
+            self.rect.height = max_sub_axis_size
+        else:
+            self.rect.width = max_sub_axis_size
+            self.rect.height = (
+                self._children[-1].rect.bottom if len(self._children) > 0 else 0
+            ) + self.margin
+
+
+class Horizontal(LinearLayout):
+    def __init__(
+        self, pos: pygame.Vector2, gap: int, elements: list[GameObject | Self]
+    ) -> None:
+        super().__init__(pos, LinearLayoutDirection.HORIZONTAL, gap, elements)
+
+
+class Vertical(LinearLayout):
+    def __init__(
+        self, pos: pygame.Vector2, gap: int, elements: list[GameObject | Self]
+    ) -> None:
+        super().__init__(pos, LinearLayoutDirection.VERTICAL, gap, elements)
 
 
 def update_horizontal_linear_overlapping_layout(

@@ -127,7 +127,7 @@ class FocusController:
         distance_sorted = sorted(
             filter(lambda t: t is not target, self._targets.keys()),
             key=lambda other: pygame.Vector2(other.rect.center).distance_squared_to(
-                target.rect.center
+                target.absolute_rect.center
             ),
             reverse=farthest,
         )
@@ -151,8 +151,8 @@ class FocusController:
 def get_angle(
     target: Focusable, other: Focusable, direction_vector: pygame.Vector2
 ) -> float:
-    target_center = pygame.Vector2(target.rect.center)
-    other_center = pygame.Vector2(other.rect.center)
+    target_center = pygame.Vector2(target.absolute_rect.center)
+    other_center = pygame.Vector2(other.absolute_rect.center)
     diff = other_center - target_center
 
     angle = diff.angle_to(direction_vector)

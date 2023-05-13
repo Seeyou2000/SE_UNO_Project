@@ -30,6 +30,9 @@ class World:
         self.audio_player.play_bg_music()
         self.achievements = Achievements()
 
+        pygame.scrap.init()
+        pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
+
     def set_size(self, size: tuple[float, float]) -> None:
         self.screen = pygame.display.set_mode(size, pygame.RESIZABLE)
         current_scene = self.director.get_current()
