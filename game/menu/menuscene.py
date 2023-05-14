@@ -5,7 +5,7 @@ import pygame
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
-from game.archievementscene import ArchievementScene
+from game.achievementscene import AchievementScene
 from game.lobby.lobbyscene import LobbyScene
 from game.menu.menubutton import MenuButton
 from game.storyselect.storymodeselectscene import StoryModeSelectScene
@@ -32,9 +32,9 @@ class MenuScene(Scene):
                 lambda _: world.director.change_scene(StoryModeSelectScene(world)),
             ),
             MenuButton(
-                "Archievements",
+                "Achievements",
                 button_size,
-                lambda _: world.director.change_scene(ArchievementScene(world)),
+                lambda _: world.director.change_scene(AchievementScene(world)),
             ),
             MenuButton(
                 "Settings",

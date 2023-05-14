@@ -12,6 +12,7 @@ class GameFlowMachineEventType(Enum):
     TRANSITION = "transition"
     TRANSITION_COMPLETE = "transition_complete"
     CARD_PLAYED = "card_played"
+    GAME_END = "game_end"
 
 
 class TransitionEvent(Event):

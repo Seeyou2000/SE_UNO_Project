@@ -1,4 +1,5 @@
 import random
+from datetime import datetime
 
 import pygame
 
@@ -132,6 +133,9 @@ class InGameScene(Scene):
         self.world.settings.on("change", lambda _: self.update_cards_colorblind)
 
         self.on("keydown", self.handle_keydown)
+        self.flow.events.on(
+            GameFlowMachineEventType.GAME_END, self.check_win_less_10turn
+        )
 
     def handle_color_change(self, event: TransitionEvent) -> None:
         is_turn_five = self.game_state.turn.total % 5 == 0
@@ -687,3 +691,9 @@ class InGameScene(Scene):
 
     def handle_focus_sound(self, event: Event) -> None:
         self.world.audio_player.play_effect_card_sliding()
+
+    def check_win_less_10turn(self, event: Event) -> None:
+        if event.data["turn"] <= 10 and event.data["player"] is self.get_me():
+            self.world.achievements.set_values(
+                win_less_10turn=[True, f"{datetime.now()}"]
+            )
