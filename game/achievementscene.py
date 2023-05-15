@@ -1,5 +1,3 @@
-import json
-
 import pygame
 
 from engine.button import Button
