@@ -1,4 +1,5 @@
 import random
+from enum import Enum
 
 from engine.events.event import Event
 from game.constant import COLORS, AbilityType
@@ -18,13 +19,22 @@ from game.gameplay.player import Player
 from game.gameplay.timer import Timer
 
 
-class AIPlayer:
-    def __init__(
-        self, player: Player, flow: GameFlowMachine, game_state: GameState
+class AIType(Enum):
+    NORMAL = 0
+    STAGE_1 = 1
+
+
+class AIController:
+    def __init__(self, ai_type: AIType) -> None:
+        self.type = ai_type
+
+    def setup(
+        self, player: Player, machine: GameFlowMachine, game_state: GameState
     ) -> None:
         self.player = player
-        self.flow = flow
+        self.machine = machine
         self.game_state = game_state
+
         self.uno_timer = Timer(5)
         self.uno_timer.on("tick", self.press_uno)
         self.is_enabled = False
@@ -36,7 +46,7 @@ class AIPlayer:
             on_transition(None, ChangeFieldColorFlowNode, self.check_ai_change_color)
             # 우노
         ]
-        self.flow.events.on(
+        self.machine.events.on(
             GameFlowMachineEventType.TRANSITION_COMPLETE, transition_handlers
         )
 
@@ -58,7 +68,7 @@ class AIPlayer:
                 self.uno_timer.reset()
 
     def press_uno(self, event: Event) -> None:
-        self.flow.check_uno(self.game_state, self.player)
+        self.machine.check_uno(self.game_state, self.player)
         self.is_waiting_uno = False
 
     def change_color(self) -> None:
@@ -66,12 +76,12 @@ class AIPlayer:
             return
         select_ai_color = random.choice(COLORS)
         self.game_state.change_card_color(select_ai_color)
-        card: Card = self.flow._current_node.card  # noqa: SLF001
-        self.flow.transition_to(
+        card: Card = self.machine._current_node.card  # noqa: SLF001
+        self.machine.transition_to(
             EndAbilityFlowNode(
                 self.game_state,
                 card,
-                self.flow._current_node.is_prepare,  # noqa: SLF001
+                self.machine._current_node.is_prepare,  # noqa: SLF001
             )
         )
 
@@ -86,7 +96,9 @@ class AIPlayer:
                     or card.ability == AbilityType.ABSOULTE_ATTACK
                     or card.ability == AbilityType.ABSOULTE_PROTECT
                 ):
-                    self.flow.transition_to(ValidateCardFlowNode(self.game_state, card))
+                    self.machine.transition_to(
+                        ValidateCardFlowNode(self.game_state, card)
+                    )
                     return
         now_number = self.game_state.discard_pile.get_last().number
         print("----- AI 플레이어 패 -----")
@@ -99,9 +111,9 @@ class AIPlayer:
                 or card.color == "black"
                 or (card.number == now_number and now_number is not None)
             ):
-                self.flow.transition_to(ValidateCardFlowNode(self.game_state, card))
+                self.machine.transition_to(ValidateCardFlowNode(self.game_state, card))
                 return
-        self.flow.transition_to(DrawCardFlowNode(self.game_state))
+        self.machine.transition_to(DrawCardFlowNode(self.game_state))
 
     def update(self, dt: float) -> None:
         time, duration = self.game_state.turn_timer.get_time()

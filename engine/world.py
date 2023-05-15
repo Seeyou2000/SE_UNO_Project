@@ -1,3 +1,4 @@
+import asyncio
 import sys
 
 import pygame
@@ -52,10 +53,11 @@ class World:
     def get_rect(self) -> pygame.Rect:
         return self.screen.get_rect()
 
-    def loop(self) -> None:
+    async def loop(self, _: any) -> None:
         while True:
             self.update()
             self.render()
+            await asyncio.sleep(0)
 
     def update(self) -> None:
         self.handle_event()
@@ -73,8 +75,7 @@ class World:
         for event in pygame.event.get():
             match event.type:
                 case pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.exit()
                 case pygame.MOUSEBUTTONDOWN:
                     current_scene.event_system.handle_mouse_down(event)
                 case pygame.MOUSEBUTTONUP:
@@ -99,4 +100,5 @@ class World:
 
     def exit(self) -> None:
         clientio.disconnect()
+        pygame.quit()
         sys.exit()

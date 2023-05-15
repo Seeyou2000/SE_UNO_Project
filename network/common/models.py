@@ -15,3 +15,4 @@ class LobbyRoom(Model):
     current_player: int
     max_player: int
     is_private: bool
+    is_game_started: bool

@@ -11,7 +11,7 @@ from game.font import FontType, get_font
 from game.lobby.validatepasswordmodal import ValidatePasswordModal
 from game.messagemodal import MessageModal
 from network.client.client import clientio
-from network.common.messages import JoinRoom
+from network.common.messages.lobby import JoinRoom
 from network.common.models import LobbyRoom
 
 

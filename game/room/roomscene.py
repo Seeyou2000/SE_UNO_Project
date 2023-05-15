@@ -11,11 +11,17 @@ from engine.world import World
 from game.constant import NAME
 from game.font import FontType, get_font
 from game.gameplay.timer import Timer
+from network.client.client import clientio, my_user_id
+from network.common.messages.pregame import HumanRemoved, PreGameMessageType
+from network.common.schema import parse_message
 
 
 class RoomScene(Scene):
-    def __init__(self, world: World) -> None:
+    def __init__(self, world: World, room_id: str) -> None:
         super().__init__(world)
+
+        clientio.on(PreGameMessageType.HUMAN_REMOVED.value, self.handle_human_removed)
+
         self.on("mouse_down", self.drag())
         self.on("mouse_up", self.drop())
         self.drag_data: str
@@ -90,7 +96,7 @@ class RoomScene(Scene):
             self.ai_buttons.insert(i, button)
 
             button = Button(
-                "Player Slot",
+                "슬롯 열기",
                 pygame.Rect(0, 0, 150, 100),
                 self.font,
                 self.show_buttons(i),
@@ -105,21 +111,14 @@ class RoomScene(Scene):
             self.player_slot_buttons.insert(i, button)
             self.create_player_button_set(i)
 
-        from game.menu.menuscene import MenuScene
-
-        menu_button = Button(
-            "Back to menu",
-            pygame.Rect(0, 0, 180, 60),
-            self.font,
-            lambda _: self.world.director.change_scene(MenuScene(self.world)),
+        lobby_button = Button(
+            "나가기", pygame.Rect(0, 0, 150, 60), self.font, self.handle_lobby_button
         )
-        self.layout.add(
-            menu_button, LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-250, -50)
-        )
-        self.add_child(menu_button)
+        self.layout.add(lobby_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 50))
+        self.add_child(lobby_button)
 
         start_button = Button(
-            "Start",
+            "게임 시작",
             pygame.Rect(0, 0, 180, 60),
             self.font,
         )
@@ -128,6 +127,20 @@ class RoomScene(Scene):
         )
         self.add_child(start_button)
         self.focus_controller.add(start_button)
+
+    def handle_human_removed(self, data: dict) -> None:
+        message = parse_message(HumanRemoved, data, "사람 나감")
+
+        if message.id == my_user_id:
+            from game.lobby.multilobbyscene import MultiLobbyScene
+
+            self.world.director.change_scene(MultiLobbyScene(self.world))
+
+    def handle_lobby_button(self, event: Event) -> None:
+        from game.lobby.multilobbyscene import MultiLobbyScene
+
+        clientio.emit(PreGameMessageType.QUIT_ROOM.value)
+        self.world.director.change_scene(MultiLobbyScene(self.world))
 
     def update(self, dt: float) -> None:
         super().update(dt)

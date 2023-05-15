@@ -14,7 +14,6 @@ from game.lobby.lobbyscene import LobbyScene
 from game.lobby.multilobbyscene import MultiLobbyScene
 from game.menu.menubutton import MenuButton
 from game.messagemodal import MessageModal
-from game.networktest.networktestscene import NetworkTestScene
 from game.storyselect.storymodeselectscene import StoryModeSelectScene
 from network.client.client import clientio
 
@@ -90,8 +89,6 @@ class MenuScene(Scene):
 
         self.time = 0
 
-        self.on("keydown", self.handle_keydown)
-
     def update(self, dt: float) -> None:
         super().update(dt)
         self.time += dt
@@ -116,10 +113,6 @@ class MenuScene(Scene):
             (self.rect.right - 1000, -150),
         )
         super().render(surface)
-
-    def handle_keydown(self, e: Event) -> None:
-        if e.data["key"] == pygame.K_n:
-            self.world.director.change_scene(NetworkTestScene(self.world))
 
     def change_to_multiplay(self, e: Event) -> None:
         if self.try_connect("http://127.0.0.1:10008"):

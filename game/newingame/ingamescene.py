@@ -17,24 +17,13 @@ from engine.text import Text
 from engine.world import World
 from game.constant import COLORS, NAME, AbilityType
 from game.font import FontType, get_font
-from game.gameplay.aicontroller import AIController
 from game.gameplay.card import Card
 from game.gameplay.cardentitiy import CardEntity, create_card_sprite
-from game.gameplay.flow.changefieldcolor import ChangeFieldColorFlowNode
-from game.gameplay.flow.discardcard import DiscardCardFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
-from game.gameplay.flow.endability import EndAbilityFlowNode
-from game.gameplay.flow.gameend import GameEndFlowNode
-from game.gameplay.flow.gameflowmachine import (
-    GameFlowMachine,
-    GameFlowMachineEventType,
-    TransitionEvent,
-    on_transition,
-)
-from game.gameplay.flow.prepare import PrepareFlowNode
+from game.gameplay.flow.gameflowmachine import GameFlowMachineEventType, TransitionEvent
 from game.gameplay.flow.startturn import StartTurnFlowNode
-from game.gameplay.flow.useability import UseAbilityFlowNode
 from game.gameplay.flow.validatecard import ValidateCardFlowNode
+from game.gameplay.gameparams import GameParams
 from game.gameplay.gamestate import GameState, GameStateEventType
 from game.gameplay.player import Player
 from game.gameplay.timer import Timer
@@ -43,6 +32,10 @@ from game.ingame.nowcolorindicator import NowColorIndicator
 from game.ingame.otherplayerentry import OtherPlayerEntry
 from game.ingame.timerindicator import TimerIndicator
 from game.ingame.turndirectionindicator import TurnDirectionIndicator
+from network.client.client import clientio
+from network.client.localgamestate import LocalGameState
+from network.common.messages.ingame import ChangeColor, InGameMessageType
+from network.common.messages.pregamehost import StartGame
 
 
 class InGameScene(Scene):
@@ -52,32 +45,22 @@ class InGameScene(Scene):
     def __init__(
         self,
         world: World,
-        player_count: int,
-        more_ability_cards: bool = False,
-        give_every_card_to_players: bool = False,
-        random_color: bool = False,
-        random_turn: bool = False,
+        game_params: GameParams,
         my_player_index: int = 0,
-        area_number: int | None = None,
     ) -> None:
         super().__init__(world)
 
         self.deck_button = None
-        self.more_ability_cards = more_ability_cards
-        self.give_every_card_to_players = give_every_card_to_players
-        self.random_color = random_color
-        self.random_turn = random_turn
         self.earned_card_idx_in_this_frame = 0
 
         self.my_player_index = my_player_index
-        self.area_number = area_number
 
         self.font = get_font(FontType.UI_BOLD, 20)
         self.other_player_entries = []
         self.my_card_entities = []
         self.discarding_card_entities = []
         self.delay_timers = []
-        self.game_state = GameState()
+        self.game_state = LocalGameState()
         self.screen_size = self.world.get_rect()
         self.mytimer_display = None
         self.card_effect_timer = Timer(2)
@@ -88,119 +71,40 @@ class InGameScene(Scene):
         self.layout.add(self.text_ability, LayoutAnchor.CENTER, pygame.Vector2(0, -115))
         self.change_color_modal = None
 
-        self.setup_base()
-        self.flow = GameFlowMachine()
-        transition_handlers = [
-            lambda event: print(
-                f"\nFLOW: {type(event.before).__name__} -> {type(event.after).__name__}"  # noqa: E501
-            ),
-            on_transition(PrepareFlowNode, None, self.setup_players),
-            on_transition(
-                UseAbilityFlowNode,
-                ChangeFieldColorFlowNode,
-                self.show_change_color_modal,
-            ),
-            on_transition(
-                ChangeFieldColorFlowNode,
-                EndAbilityFlowNode,
-                self.remove_change_color_modal,
-            ),
-            on_transition(None, StartTurnFlowNode, self.handle_start_turn),
-            on_transition(
-                None,
-                StartTurnFlowNode,
-                lambda event: print(
-                    f"턴 시작: {self.game_state.get_current_player().name}"
-                ),
-            ),
-            on_transition(None, StartTurnFlowNode, self.handle_color_change),
-            on_transition(None, StartTurnFlowNode, self.handle_reverse_change),
-            on_transition(DiscardCardFlowNode, None, self.place_discarded_card),
-            on_transition(None, GameEndFlowNode, self.end_game),
-            on_transition(None, GameEndFlowNode, self.back_to_menu),
-        ]
-        self.flow.events.on(GameFlowMachineEventType.TRANSITION, transition_handlers)
-        self.flow.events.on(
-            GameFlowMachineEventType.CARD_PLAYED, self.handle_card_played
-        )
-        self.flow.transition_to(
-            PrepareFlowNode(
-                self.game_state,
-                [Player(name) for name in NAME[:player_count]],
-                self.more_ability_cards,
-                self.give_every_card_to_players,
-            )
+        self.setup_board()
+        self.setup_network_handlers()
+
+        clientio.emit(
+            "start_game",
+            StartGame(game_params).to_dict(),
         )
 
         self.world.settings.on("change", lambda _: self.update_cards_colorblind)
 
         self.on("keydown", self.handle_keydown)
-        self.flow.events.on(
-            GameFlowMachineEventType.GAME_END, self.check_win_less_10turn
-        )
-
-    def handle_color_change(self, event: TransitionEvent) -> None:
-        is_turn_five = self.game_state.turn.total % 5 == 0
-        if self.random_color and is_turn_five:
-            self.game_state.change_card_color(random.choice(COLORS))
-
-    def handle_reverse_change(self, event: TransitionEvent) -> None:
-        is_turn_five = self.game_state.turn.total % 5 == 0
-        if self.random_turn and is_turn_five:
-            self.game_state.reverse_turn_direction()
 
     def handle_keydown(self, event: Event) -> None:
         key: int = event.data["key"]
         # 우노
-        if key == self.world.settings.keymap.get("draw_card"):
-            self.try_draw()
-        elif key == self.world.settings.keymap.get("uno"):
-            self.flow.check_uno(self.game_state, self.get_me())
+        match key:
+            case self.world.settings.keymap.get("draw_card"):
+                self.try_draw()
+            case self.world.settings.keymap.get("uno"):
+                clientio.emit("uno")
 
         # 색 선택
-        from game.gameplay.flow.endability import EndAbilityFlowNode
-
         if self.change_color_modal is None:
             return
         if self.has_child(self.change_color_modal):
-            card: Card = self.flow._current_node.card  # noqa: SLF001
             match key:
                 case pygame.K_1:
-                    self.game_state.change_card_color("red")
-                    self.flow.transition_to(
-                        EndAbilityFlowNode(
-                            self.game_state,
-                            card,
-                            self.flow._current_node.is_prepare,  # noqa: SLF001
-                        )
-                    )
+                    clientio.emit("change_color", ChangeColor("red"))
                 case pygame.K_2:
-                    self.game_state.change_card_color("yellow")
-                    self.flow.transition_to(
-                        EndAbilityFlowNode(
-                            self.game_state,
-                            card,
-                            self.flow._current_node.is_prepare,  # noqa: SLF001
-                        )
-                    )
+                    clientio.emit("change_color", ChangeColor("yellow"))
                 case pygame.K_3:
-                    self.game_state.change_card_color("green")
-                    self.flow.transition_to(
-                        EndAbilityFlowNode(
-                            self.game_state,
-                            card,
-                            self.flow._current_node.is_prepare,  # noqa: SLF001
-                        )
-                    )
+                    clientio.emit("change_color", ChangeColor("green"))
                 case pygame.K_4:
-                    self.game_state.change_card_color("blue")
-                    self.flow.transition_to(
-                        EndAbilityFlowNode(
-                            self.game_state,
-                            card,
-                            self.flow._current_node.is_prepare,  # noqa: SLF001
-                        )
-                    )
+                    clientio.emit("change_color", ChangeColor("blue"))
 
     def update(self, dt: float) -> None:
         super().update(dt)
@@ -211,10 +115,6 @@ class InGameScene(Scene):
                 self.delay_timers.remove(timer)
 
         self.earned_card_idx_in_this_frame = 0
-
-        for ai in self.ai:
-            ai.update(dt)
-
         self.card_effect_timer.update(dt)
 
         update_horizontal_linear_overlapping_layout(
@@ -233,9 +133,6 @@ class InGameScene(Scene):
             ),
         )
         self.update_discarding_card_animation(dt)
-
-    def render(self, surface: pygame.Surface) -> None:
-        super().render(surface)
 
     def update_discarding_card_animation(self, dt: float) -> None:
         screen_center = pygame.Vector2(self.screen_size.size) / 2
@@ -257,16 +154,29 @@ class InGameScene(Scene):
 
         return handler
 
-    def setup_base(self) -> None:
+    def setup_network_handlers(self) -> None:
+        clientio.on(InGameMessageType.GAME_STARTED, self.setup_board)
+        clientio.on(
+            InGameMessageType.CHANGE_COLOR_STARTED, self.show_change_color_modal
+        )
+        clientio.on(
+            InGameMessageType.CHANGE_COLOR_FINISHED, self.remove_change_color_modal
+        )
+        clientio.on(InGameMessageType.TURN_STARTED, self.handle_start_turn)
+        clientio.on(InGameMessageType.CARD_PLAYED, self.place_discarded_card)
+        clientio.on(InGameMessageType.CARD_PLAYED, self.handle_card_played)
+        clientio.on(InGameMessageType.GAME_ENDED, self.end_game)
+        clientio.on(InGameMessageType.GAME_ENDED, self.check_win_less_10turn)
+
+    def setup_board(self, data: dict) -> None:
         from game.menu.menuscene import MenuScene
 
         menu_button = Button(
-            "메뉴로 돌아가기",
-            pygame.Rect(0, 0, 180, 60),
+            "Back to menu",
+            pygame.Rect(10, 10, 180, 60),
             self.font,
             lambda _: self.world.director.change_scene(MenuScene(self.world)),
         )
-        self.layout.add(menu_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 50))
         self.add_child(menu_button)
 
         center_base_sprite = Sprite(
@@ -305,7 +215,7 @@ class InGameScene(Scene):
             now_color_indicator, LayoutAnchor.CENTER, pygame.Vector2(130, -40)
         )
 
-    def setup_players(self, event: TransitionEvent) -> None:
+    def setup_board(self) -> None:
         self.place_decks()
         self.setup_me()
         self.setup_other_players()
@@ -376,11 +286,7 @@ class InGameScene(Scene):
 
     def setup_other_players(self) -> None:
         players = self.game_state.players
-        me = self.get_me()
-        self.ai = [
-            AIController(player, self.flow, self.game_state)
-            for player in filter(lambda x: x is not me, players)
-        ]
+
         layout_infos = [  # 플레이어 위치에서 시계방향으로
             (LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(0, 80)),
             (LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(0, -80)),
@@ -584,8 +490,6 @@ class InGameScene(Scene):
                 won_player = player
         if won_player is self.get_me():
             self.game_result = f"{won_player.name} Win!"
-            if self.area_number is not None:
-                self.world.story_clear_status.update_status(self.area_number, True)
         else:
             self.game_result = f"Lose! {won_player.name} Won!"
 
@@ -602,17 +506,20 @@ class InGameScene(Scene):
             pygame.Vector2(),
         )
 
-    def back_to_menu(self, event: Event) -> None:
+        self.show_back_to_menu()
+        self.check_win_less_10turn()
+
+    def show_back_to_menu(self) -> None:
         from game.menu.menuscene import MenuScene
 
         menu_button = Button(
-            "메뉴로 돌아가기",
-            pygame.Rect(0, 0, 180, 60),
+            "Back to menu",
+            pygame.Rect(10, 10, 180, 60),
             self.font,
             lambda _: self.world.director.change_scene(MenuScene(self.world)),
         )
         self.add_child(menu_button)
-        self.layout.add(menu_button, LayoutAnchor.CENTER, pygame.Vector2(0, 100))
+        self.layout.add(menu_button, LayoutAnchor.CENTER, pygame.Vector2(0, 150))
 
     def hide_text_ability(self, event: Event) -> None:
         if self.has_child(self.text_ability):

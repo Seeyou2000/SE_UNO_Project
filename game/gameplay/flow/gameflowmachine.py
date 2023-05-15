@@ -1,8 +1,17 @@
+from __future__ import annotations
+
 from enum import Enum
+from typing import TYPE_CHECKING
+
+from loguru import logger
 
 from engine.events.emitter import EventEmitter, EventHandler
 from engine.events.event import Event
 from engine.fsm import FlowMachine
+
+if TYPE_CHECKING:
+    from game.gameplay.aicontroller import AIController
+
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
@@ -31,15 +40,20 @@ class TransitionEvent(Event):
 
 class GameFlowMachine(FlowMachine, EventEmitter):
     events: EventEmitter
+    ai_controllers: list[AIController]
 
-    def __init__(self) -> None:
+    def __init__(self, ai_controllers: list[AIController]) -> None:
         super().__init__()
         self.events = EventEmitter()
+        self.ai_controllers = ai_controllers
 
     def transition_to(self, new_node: AbstractGameFlowNode) -> None:
         self.events.emit(
             GameFlowMachineEventType.TRANSITION,
             TransitionEvent(self._current_node, new_node),
+        )
+        logger.info(
+            f"[트랜지션] {type(self._current_node).__name__} -> {type(new_node).__name__}"
         )
         super().transition_to(new_node)
         self.events.emit(
@@ -73,6 +87,13 @@ class GameFlowMachine(FlowMachine, EventEmitter):
                 self.condition = True
         # if self.condition is not True:
         # game_state.draw_card(pressed_player)
+
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        # from game.gameplay.aicontroller import AIController
+
+        for ai in self.ai_controllers:
+            ai.update(dt)
 
 
 def on_transition(

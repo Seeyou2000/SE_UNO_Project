@@ -7,6 +7,7 @@ from engine.events.event import Event
 from game.constant import COLORABLEABILITY, COLORS, NONCOLORABLEABILITY, AbilityType
 from game.gameplay.card import Card
 from game.gameplay.deck import Deck
+from game.gameplay.gameparams import GameParams
 from game.gameplay.player import Player
 from game.gameplay.timer import Timer
 from game.gameplay.turn import Turn
@@ -26,6 +27,7 @@ class GameState(EventEmitter):
     게임의 실제 로직 관련된 부분은 game.gameplay.state 모듈에 작성해 주세요.
     """
 
+    game_params: GameParams
     game_deck: Deck
     players: list[Player]
     turn: Turn
@@ -34,8 +36,9 @@ class GameState(EventEmitter):
     _turn_to_add: int
     _cards_to_attack: int
 
-    def __init__(self) -> None:
+    def __init__(self, game_params: GameParams | None = None) -> None:
         super().__init__()
+        self.game_params = game_params if game_params is not None else GameParams()
         self.now_color = "red"
         self.turn_timer = Timer(5, -1)
 

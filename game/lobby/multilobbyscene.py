@@ -12,8 +12,9 @@ from game.font import FontType, get_font
 from game.lobby.createroommodal import CreateRoomModal
 from game.lobby.roomlistitem import RoomListItem
 from network.client.client import clientio
-from network.common.messages import parse_message
+from network.common.messages.lobby import LobbyMessageType
 from network.common.models import LobbyRoom
+from network.common.schema import parse_message
 
 
 class MultiLobbyScene(Scene):
@@ -134,4 +135,5 @@ class MultiLobbyScene(Scene):
         from game.menu.menuscene import MenuScene
 
         self.world.director.change_scene(MenuScene(self.world))
+        clientio.emit(LobbyMessageType.QUIT_LOBBY.value)
         clientio.disconnect()

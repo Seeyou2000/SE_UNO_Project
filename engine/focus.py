@@ -41,13 +41,6 @@ class Focusable(EventEmitter, abc.ABC):
         if event.data["key"] == pygame.K_RETURN and self.has_focus:
             self.emit("click", Event(None))
 
-    def focus_on_hover(self, event: Event) -> None:
-        if self.controller is None:
-            return
-        if event.target is not self:
-            return
-        self.controller.focus_target(self)
-
 
 FocusSiblings = dict[FocusMoveDirection, Focusable]
 

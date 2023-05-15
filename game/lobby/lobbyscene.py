@@ -10,11 +10,14 @@ from engine.textinput import TextInput
 from engine.world import World
 from game.constant import NAME
 from game.font import FontType, get_font
+from game.gameplay.gameparams import GameParams
 
 
 class LobbyScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
+
+        default_player_name = "PLAYER"
 
         font = get_font(FontType.UI_BOLD, 20)
 
@@ -26,7 +29,7 @@ class LobbyScene(Scene):
         )
         self.add_child(name_text)
         self.name_input = TextInput(
-            NAME[0],
+            default_player_name,
             pygame.Rect(50, 340, 300, 80),
             get_font(FontType.UI_BOLD, 30),
             pygame.Color("black"),
