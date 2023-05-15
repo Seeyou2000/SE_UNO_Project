@@ -9,6 +9,7 @@ from engine.world import World
 from game.lobby.lobbyscene import LobbyScene
 from game.menu.menubutton import MenuButton
 from game.networktest.networktestscene import NetworkTestScene
+from game.room.roomscene import RoomScene
 from game.storyselect.storymodeselectscene import StoryModeSelectScene
 
 
@@ -26,7 +27,8 @@ class MenuScene(Scene):
             MenuButton(
                 "Start",
                 button_size,
-                lambda _: world.director.change_scene(LobbyScene(world)),
+                lambda _: world.director.change_scene(RoomScene(world)),
+                # lambda _: world.director.change_scene(LobbyScene(world)),
             ),
             MenuButton(
                 "Story Mode",
@@ -60,4 +62,3 @@ class MenuScene(Scene):
     def handle_keydown(self, e: Event) -> None:
         if e.data["key"] == pygame.K_n:
             self.world.director.change_scene(NetworkTestScene(self.world))
-
