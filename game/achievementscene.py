@@ -13,11 +13,12 @@ class AchievementScene(Scene):
         super().__init__(world)
 
         self.font = get_font(FontType.UI_BOLD, 20)
+        self.achieve_font = get_font(FontType.UI_BOLD, 18)
+        self.text_font = get_font(FontType.UI_NORMAL, 11)
 
         from game.menu.menuscene import MenuScene
 
         self.is_cleared = []  # 업적 정보 받아서 bool로 클리어 유무 저장
-        print(self.world.achievements.win_less_10turn)
         win_less_10turn = self.world.achievements.win_less_10turn
         if win_less_10turn[0] == True:
             self.is_cleared.append(True)
@@ -55,37 +56,37 @@ class AchievementScene(Scene):
             Text(
                 "싱글 플레이어에서 승리",
                 pygame.Vector2(50, 300),
-                get_font(FontType.UI_BOLD, 20),
+                self.achieve_font,
                 pygame.Color("black"),
             ),
             Text(
                 "10턴 내에 승리",
                 pygame.Vector2(50, 300),
-                get_font(FontType.UI_BOLD, 20),
+                self.achieve_font,
                 pygame.Color("black"),
             ),
             Text(
                 "기술 카드 사용하지 않고 승리",
                 pygame.Vector2(50, 300),
-                get_font(FontType.UI_BOLD, 20),
+                self.achieve_font,
                 pygame.Color("black"),
             ),
             Text(
                 "다른 플레이어가 UNO를 선언한 뒤 승리",
                 pygame.Vector2(50, 300),
-                get_font(FontType.UI_BOLD, 20),
+                self.achieve_font,
                 pygame.Color("black"),
             ),
             Text(
                 "???",
                 pygame.Vector2(50, 300),
-                get_font(FontType.UI_BOLD, 20),
+                self.achieve_font,
                 pygame.Color("black"),
             ),
             Text(
                 "???",
                 pygame.Vector2(50, 300),
-                get_font(FontType.UI_BOLD, 20),
+                self.achieve_font,
                 pygame.Color("black"),
             ),
         ]
@@ -93,31 +94,109 @@ class AchievementScene(Scene):
             Text(
                 "???",
                 pygame.Vector2(50, 300),
-                get_font(FontType.UI_BOLD, 20),
+                self.achieve_font,
                 pygame.Color("black"),
             ),
             Text(
                 "스테이지 1 클리어",
                 pygame.Vector2(50, 300),
-                get_font(FontType.UI_BOLD, 20),
+                self.achieve_font,
                 pygame.Color("black"),
             ),
             Text(
                 "스테이지 2 클리어",
                 pygame.Vector2(50, 300),
-                get_font(FontType.UI_BOLD, 20),
+                self.achieve_font,
                 pygame.Color("black"),
             ),
             Text(
                 "스테이지 3 클리어",
                 pygame.Vector2(50, 300),
-                get_font(FontType.UI_BOLD, 20),
+                self.achieve_font,
                 pygame.Color("black"),
             ),
             Text(
                 "스테이지 4 클리어",
                 pygame.Vector2(50, 300),
-                get_font(FontType.UI_BOLD, 20),
+                self.achieve_font,
+                pygame.Color("black"),
+            ),
+        ]
+        self.achieve_text1_detail_list = [
+            Text(
+                "싱글 플레이어로 승리 시 달성",
+                pygame.Vector2(50, 300),
+                self.text_font,
+                pygame.Color("black"),
+            ),
+            Text(
+                "10턴 내에 승리 시 달성",
+                pygame.Vector2(50, 300),
+                self.text_font,
+                pygame.Color("black"),
+            ),
+            Text(
+                "기술 카드를 사용하지 않고 승리 시 달성",
+                pygame.Vector2(50, 300),
+                self.text_font,
+                pygame.Color("black"),
+            ),
+            Text(
+                "다른 플레이어가 UNO를 선언한 뒤 승리 시 달성",
+                pygame.Vector2(50, 300),
+                self.text_font,
+                pygame.Color("black"),
+            ),
+            Text(
+                "???",
+                pygame.Vector2(50, 300),
+                self.text_font,
+                pygame.Color("black"),
+            ),
+            Text(
+                "???",
+                pygame.Vector2(50, 300),
+                self.text_font,
+                pygame.Color("black"),
+            ),
+        ]
+        self.achieve_text2_detail_list = [
+            Text(
+                "???",
+                pygame.Vector2(50, 300),
+                self.text_font,
+                pygame.Color("black"),
+            ),
+            Text(
+                "Area1 클리어 시 달성합니다.",
+                pygame.Vector2(50, 300),
+                self.text_font,
+                pygame.Color("black"),
+            ),
+            Text(
+                "Area2 클리어 시 달성합니다.",
+                pygame.Vector2(50, 300),
+                self.text_font,
+                pygame.Color("black"),
+            ),
+            Text(
+                "Area3 클리어 시 달성합니다.",
+                pygame.Vector2(50, 300),
+                self.text_font,
+                pygame.Color("black"),
+            ),
+            Text(
+                "Area4 클리어 시 달성합니다.",
+                pygame.Vector2(50, 300),
+                self.text_font,
+                pygame.Color("black"),
+            ),
+        ]
+        self.achieve_text1_cleartime_list = [
+            Text(
+                win_less_10turn[1],
+                pygame.Vector2(50, 300),
+                self.text_font,
                 pygame.Color("black"),
             ),
         ]
@@ -127,15 +206,25 @@ class AchievementScene(Scene):
         # cleared 에셋은 배경 없는 png로 할 것, 사이즈는 100x100 px / png로 덮어쓰기 시 뒤에 아이콘 에셋 살아있는거 확인했음
         self.place_achieve1()
         self.place_achieve2()
+        self.place_clear_time()
 
-        self.add_children(self.achieve_icon1_list + self.achieve_text1_list)
-        self.add_children(self.achieve_icon2_list + self.achieve_text2_list)
+        self.add_children(
+            self.achieve_icon1_list
+            + self.achieve_text1_list
+            + self.achieve_text1_detail_list
+            + self.achieve_text1_cleartime_list
+        )
+        self.add_children(
+            self.achieve_icon2_list
+            + self.achieve_text2_list
+            + self.achieve_text2_detail_list
+        )
         self.add_children(self.clear_list)
 
     def place_achieve1(self) -> None:
         for i, item in enumerate(self.achieve_icon1_list):
             self.layout.add(
-                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(-550, (i - 2) * 103 + 20)
+                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(-550, (i - 2) * 103 - 20)
             )
             if self.is_cleared[i] == True:
                 self.clear_list.append(
@@ -144,13 +233,18 @@ class AchievementScene(Scene):
                 self.layout.add(
                     self.clear_list[self.clear_count],
                     pygame.Vector2(0.5, 0.5),
-                    pygame.Vector2(-550, (i - 2) * 103 + 20),
+                    pygame.Vector2(-550, (i - 2) * 103 - 20),
                 )
+
                 self.clear_count += 1
 
         for i, item in enumerate(self.achieve_text1_list):
             self.layout.add(
-                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(-250, (i - 2) * 103 + 20)
+                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(-250, (i - 2) * 103 - 53)
+            )
+        for i, item in enumerate(self.achieve_text1_detail_list):
+            self.layout.add(
+                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(-250, (i - 2) * 103 - 23)
             )
 
     def place_achieve2(self) -> None:
@@ -170,5 +264,15 @@ class AchievementScene(Scene):
                 self.clear_count += 1
         for i, item in enumerate(self.achieve_text2_list):
             self.layout.add(
-                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(400, (i - 2) * 103 + 20)
+                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(400, (i - 2) * 103 - 13)
+            )
+        for i, item in enumerate(self.achieve_text2_detail_list):
+            self.layout.add(
+                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(400, (i - 2) * 103 + 17)
+            )
+
+    def place_clear_time(self) -> None:
+        for i, item in enumerate(self.achieve_text1_cleartime_list):
+            self.layout.add(
+                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(-250, (i - 2) * 103 - 3)
             )

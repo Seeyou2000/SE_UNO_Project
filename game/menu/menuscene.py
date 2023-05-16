@@ -16,7 +16,7 @@ class MenuScene(Scene):
         super().__init__(world)
         from game.settings.settingscene import SettingScene
 
-        button_size = pygame.Vector2(200, 80)
+        button_size = pygame.Vector2(200, 70)
 
         sprite = Sprite(pygame.image.load("resources/uno.jpg"))
 
@@ -52,7 +52,7 @@ class MenuScene(Scene):
 
         for i, item in enumerate(button_list):
             self.layout.add(
-                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, 70 * i + 80)
+                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, 60 * i + 80)
             )
             self.focus_controller.add(item)
 
