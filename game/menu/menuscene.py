@@ -6,6 +6,7 @@ from engine.events.event import Event
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
+from game.achievementscene import AchievementScene
 from game.lobby.lobbyscene import LobbyScene
 from game.menu.menubutton import MenuButton
 from game.networktest.networktestscene import NetworkTestScene
@@ -15,10 +16,9 @@ from game.storyselect.storymodeselectscene import StoryModeSelectScene
 class MenuScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
-
         from game.settings.settingscene import SettingScene
 
-        button_size = pygame.Vector2(200, 80)
+        button_size = pygame.Vector2(200, 70)
 
         sprite = Sprite(pygame.image.load("resources/uno.jpg"))
 
@@ -32,6 +32,11 @@ class MenuScene(Scene):
                 "Story Mode",
                 button_size,
                 lambda _: world.director.change_scene(StoryModeSelectScene(world)),
+            ),
+            MenuButton(
+                "Achievements",
+                button_size,
+                lambda _: world.director.change_scene(AchievementScene(world)),
             ),
             MenuButton(
                 "Settings",
@@ -49,7 +54,7 @@ class MenuScene(Scene):
 
         for i, item in enumerate(button_list):
             self.layout.add(
-                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, 80 * i + 80)
+                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, 60 * i + 80)
             )
             self.focus_controller.add(item)
 
