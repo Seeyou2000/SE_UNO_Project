@@ -46,6 +46,24 @@ class RoomScene(Scene):
         self.add_child(self.name_input)
         self.focus_controller.add(self.name_input)
 
+        password_text = Text(
+            "PASSWORD",
+            pygame.Vector2(50, 150),
+            get_font(FontType.UI_BOLD, 16),
+            pygame.Color("gray"),
+        )
+        self.add_child(password_text)
+        self.password_input = TextInput(
+            "",
+            pygame.Rect(50, 190, 300, 80),
+            get_font(FontType.UI_BOLD, 30),
+            pygame.Color("black"),
+            10,
+            self.focus_controller,
+        )
+        self.add_child(self.password_input)
+        self.focus_controller.add(self.password_input)
+
         self.names = []
         self.ai_buttons = []
         self.player_slot_buttons = []
