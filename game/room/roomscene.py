@@ -47,6 +47,8 @@ class RoomScene(Scene):
         self.focus_controller.add(self.name_input)
 
         self.names = []
+        self.ai_buttons = []
+        self.player_slot_buttons = []
         self.player_buttons = []
         self.return_buttons = []
         self.kick_buttons = []
@@ -64,6 +66,7 @@ class RoomScene(Scene):
             )
             self.focus_controller.add(button)
             self.add_child(button)
+            self.ai_buttons.insert(i, button)
 
             button = Button(
                 "Player Slot",
@@ -78,6 +81,7 @@ class RoomScene(Scene):
             )
             self.focus_controller.add(button)
             self.add_child(button)
+            self.player_slot_buttons.insert(i, button)
             self.create_player_button_set(i)
 
         from game.menu.menuscene import MenuScene
@@ -159,6 +163,13 @@ class RoomScene(Scene):
             self.focus_controller.add(self.return_buttons[i])
             self.add_child(self.return_buttons[i])
 
+            self.remove_child(self.ai_buttons[i])
+            self.layout.remove(self.ai_buttons[i])
+            self.focus_controller.remove(self.ai_buttons[i])
+            self.remove_child(self.player_slot_buttons[i])
+            self.layout.remove(self.player_slot_buttons[i])
+            self.focus_controller.remove(self.player_slot_buttons[i])
+
         return handler
 
     def remove_buttons(self, i: int) -> None:
@@ -172,6 +183,22 @@ class RoomScene(Scene):
             self.remove_child(self.kick_buttons[i])
             self.layout.remove(self.kick_buttons[i])
             self.focus_controller.remove(self.kick_buttons[i])
+
+            self.layout.add(
+                self.ai_buttons[i],
+                LayoutAnchor.MIDDLE_RIGHT,
+                pygame.Vector2(-200, (i - 3) * 500 / 5),
+            )
+            self.focus_controller.add(self.ai_buttons[i])
+            self.add_child(self.ai_buttons[i])
+
+            self.layout.add(
+                self.player_slot_buttons[i],
+                LayoutAnchor.MIDDLE_RIGHT,
+                pygame.Vector2(-50, (i - 3) * 500 / 5),
+            )
+            self.focus_controller.add(self.player_slot_buttons[i])
+            self.add_child(self.player_slot_buttons[i])
 
         return handler
 
