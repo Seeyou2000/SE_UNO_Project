@@ -20,7 +20,7 @@ class AchievementScene(Scene):
 
         self.is_cleared = []  # 업적 정보 받아서 bool로 클리어 유무 저장
         win_less_10turn = self.world.achievements.win_less_10turn
-        if win_less_10turn[0] == True:
+        if win_less_10turn[0] is True:
             self.is_cleared.append(True)
         else:
             self.is_cleared.append(False)
@@ -38,19 +38,19 @@ class AchievementScene(Scene):
         self.add_child(menu_button)
 
         self.achieve_icon1_list = [
-            Sprite(pygame.image.load("resources/unoarchieve_temp.jpg")),
-            Sprite(pygame.image.load("resources/unoarchieve_temp.jpg")),
-            Sprite(pygame.image.load("resources/unoarchieve_temp.jpg")),
-            Sprite(pygame.image.load("resources/unoarchieve_temp.jpg")),
-            Sprite(pygame.image.load("resources/unoarchieve_temp.jpg")),
-            Sprite(pygame.image.load("resources/unoarchieve_temp.jpg")),
+            Sprite(pygame.image.load("resources/images/unoarchieve_temp.jpg")),
+            Sprite(pygame.image.load("resources/images/unoarchieve_temp.jpg")),
+            Sprite(pygame.image.load("resources/images/unoarchieve_temp.jpg")),
+            Sprite(pygame.image.load("resources/images/unoarchieve_temp.jpg")),
+            Sprite(pygame.image.load("resources/images/unoarchieve_temp.jpg")),
+            Sprite(pygame.image.load("resources/images/unoarchieve_temp.jpg")),
         ]
         self.achieve_icon2_list = [
-            Sprite(pygame.image.load("resources/unoarchieve_temp.jpg")),
-            Sprite(pygame.image.load("resources/unoarchieve_temp.jpg")),
-            Sprite(pygame.image.load("resources/unoarchieve_temp.jpg")),
-            Sprite(pygame.image.load("resources/unoarchieve_temp.jpg")),
-            Sprite(pygame.image.load("resources/unoarchieve_temp.jpg")),
+            Sprite(pygame.image.load("resources/images/unoarchieve_temp.jpg")),
+            Sprite(pygame.image.load("resources/images/unoarchieve_temp.jpg")),
+            Sprite(pygame.image.load("resources/images/unoarchieve_temp.jpg")),
+            Sprite(pygame.image.load("resources/images/unoarchieve_temp.jpg")),
+            Sprite(pygame.image.load("resources/images/unoarchieve_temp.jpg")),
         ]
         self.achieve_text1_list = [
             Text(
@@ -226,9 +226,9 @@ class AchievementScene(Scene):
             self.layout.add(
                 item, pygame.Vector2(0.5, 0.5), pygame.Vector2(-550, (i - 2) * 103 - 20)
             )
-            if self.is_cleared[i] == True:
+            if self.is_cleared[i] is True:
                 self.clear_list.append(
-                    Sprite(pygame.image.load("resources/unocleared.png"))
+                    Sprite(pygame.image.load("resources/images/unocleared.png"))
                 )
                 self.layout.add(
                     self.clear_list[self.clear_count],
@@ -252,9 +252,9 @@ class AchievementScene(Scene):
             self.layout.add(
                 item, pygame.Vector2(0.5, 0.5), pygame.Vector2(100, (i - 2) * 103 + 20)
             )
-            if self.is_cleared[i + len(self.achieve_icon1_list)] == True:
+            if self.is_cleared[i + len(self.achieve_icon1_list)] is True:
                 self.clear_list.append(
-                    Sprite(pygame.image.load("resources/unocleared.png"))
+                    Sprite(pygame.image.load("resources/images/unocleared.png"))
                 )
                 self.layout.add(
                     self.clear_list[self.clear_count],
