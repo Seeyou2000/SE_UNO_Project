@@ -301,11 +301,6 @@ class InGameScene(Scene):
         self.layout.add(
             now_color_indicator, LayoutAnchor.CENTER, pygame.Vector2(130, -40)
         )
-        screenx = self.world.get_rect().right
-        screeny = self.world.get_rect().bottom
-        pygame.draw.rect(
-            self.world.screen, "#FDE3BC", [screenx - 400, screeny - 150, 400, 150]
-        )
 
     def setup_players(self, event: TransitionEvent) -> None:
         self.place_decks()
