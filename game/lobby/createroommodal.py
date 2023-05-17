@@ -4,7 +4,7 @@ from loguru import logger
 from engine.button import Button
 from engine.checkbox import Checkbox
 from engine.events.event import Event
-from engine.layout import Horizontal, LayoutAnchor
+from engine.layout import Horizontal
 from engine.modal import Modal
 from engine.scene import Scene
 from engine.text import Text
@@ -25,7 +25,7 @@ class CreateRoomModal(Modal):
     def create_room_modal_ui(self) -> None:
         room_text = Text(
             "방 이름",
-            pygame.Vector2(0, 0),
+            pygame.Vector2(0, 20),
             get_font(FontType.UI_BOLD, 20),
             pygame.Color("gray"),
         )
@@ -50,15 +50,14 @@ class CreateRoomModal(Modal):
 
         password_text = Text(
             "비밀번호 유무",
-            pygame.Vector2(0, 0),
+            pygame.Vector2(0, 20),
             get_font(FontType.UI_BOLD, 20),
             pygame.Color("gray"),
         )
 
         self.password_check_box = Checkbox(
-            pygame.Rect(0, 0, 20, 20),
+            pygame.Rect(0, 15, 30, 30),
             self.font,
-            pygame.Color("black"),
         )
 
         self.password_check_box.on("click", self.toggle_password_input)

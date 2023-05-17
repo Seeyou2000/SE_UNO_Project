@@ -16,9 +16,16 @@ class Modal(GameObjectContainer):
         self.surface = pygame.Surface(size, pygame.SRCALPHA)
         pygame.draw.rect(
             self.surface,
-            pygame.Color("#fff1e7"),
+            pygame.Color("#fff7f0"),
             self.surface.get_rect(),
             border_radius=5,
+        )
+        pygame.draw.rect(
+            self.surface,
+            pygame.Color("#ffe1c7"),
+            self.surface.get_rect(),
+            border_radius=5,
+            width=2
         )
         background = Sprite(self.surface)
         self.add_child(background)
@@ -43,7 +50,7 @@ class Modal(GameObjectContainer):
 
         if isinstance(self.focus_controller.current_focus, EventEmitter):
             self.focus_controller.current_focus.emit("keydown", event)
-            
+
     def handle_textinput(self, event: Event) -> None:
         if isinstance(self.focus_controller.current_focus, EventEmitter):
             self.focus_controller.current_focus.emit("textinput", event)

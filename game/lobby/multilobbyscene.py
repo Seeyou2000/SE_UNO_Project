@@ -1,9 +1,8 @@
 import pygame
-from loguru import logger
 
 from engine.button import Button
 from engine.events.event import Event
-from engine.layout import Horizontal, LayoutAnchor, LayoutConstraint, Vertical
+from engine.layout import LayoutAnchor, LayoutConstraint, Vertical
 from engine.scene import Scene
 from engine.text import Text
 from engine.textinput import TextInput
@@ -12,7 +11,6 @@ from game.constant import NAME
 from game.font import FontType, get_font
 from game.lobby.createroommodal import CreateRoomModal
 from game.lobby.roomlistitem import RoomListItem
-from game.messagemodal import MessageModal
 from network.client.client import clientio
 from network.common.messages import parse_message
 from network.common.models import LobbyRoom
@@ -96,7 +94,6 @@ class MultiLobbyScene(Scene):
         self.add(
             self.empty_lobby_text,
             LayoutConstraint(LayoutAnchor.CENTER, pygame.Vector2()),
-            False,
         )
 
     def show_create_room_modal(self) -> None:
@@ -119,8 +116,6 @@ class MultiLobbyScene(Scene):
                 self,
                 room,
                 pygame.Rect(0, 0, 1200, 60),
-                self.font,
-                pygame.Color("black"),
             )
             self.room_list.append(room_info)
         for i, item in enumerate(self.room_list):
@@ -134,5 +129,6 @@ class MultiLobbyScene(Scene):
 
     def change_to_menuscene(self, e: Event) -> None:
         from game.menu.menuscene import MenuScene
+
         self.world.director.change_scene(MenuScene(self.world))
         clientio.disconnect()

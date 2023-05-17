@@ -7,6 +7,7 @@ from engine.gameobjectcontainer import GameObjectContainer
 from engine.layout import Layout, LayoutAnchor
 from engine.scene import Scene
 from engine.text import Text
+from game.font import FontType, get_font
 from game.lobby.validatepasswordmodal import ValidatePasswordModal
 from game.messagemodal import MessageModal
 from network.client.client import clientio
@@ -16,49 +17,63 @@ from network.common.models import LobbyRoom
 
 class RoomListItem(GameObjectContainer, Focusable):
     font: pygame.font.Font
-    color: pygame.Color
+    text_color: pygame.Color
 
     def __init__(
         self,
         scene: Scene,
         room: LobbyRoom,
         rect: pygame.Rect,
-        font: pygame.font.Font,
-        color: pygame.Color,
     ) -> None:
         super().__init__()
         self.scene = scene
         self.room = room
-        self.font = font
-        self.color = color
         self.rect = rect.copy()
         self.layout = Layout(self.rect)
+
+        self.text_color = pygame.Color("black")
+        self.sub_text_color = pygame.Color("#222222")
+        self.font_size = 20
+
         self.room_id = room.id
-        self.room_name = Text(room.name, pygame.Vector2(0, 0), self.font, self.color)
+        self.room_name = Text(
+            room.name,
+            pygame.Vector2(0, 0),
+            get_font(FontType.UI_BOLD, self.font_size),
+            self.text_color,
+        )
         self.player_data = Text(
             str(room.current_player) + "/" + str(room.max_player),
             pygame.Vector2(0, 0),
-            self.font,
-            self.color,
+            get_font(FontType.UI_NORMAL, self.font_size),
+            self.text_color,
         )
         self.is_private = room.is_private
         self.password_is_exist = Text(
-            "비밀번호 O", pygame.Vector2(0, 0), self.font, self.color
+            "비밀",
+            pygame.Vector2(0, 0),
+            get_font(FontType.UI_NORMAL, self.font_size),
+            self.sub_text_color,
         )
         self.password_is_not_exist = Text(
-            "비밀번호 X", pygame.Vector2(0, 0), self.font, self.color
+            "공개",
+            pygame.Vector2(0, 0),
+            get_font(FontType.UI_NORMAL, self.font_size),
+            self.sub_text_color,
         )
         self.room_data = []
 
-        self.layout.add(self.room_name, LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(10, 0))
-        self.layout.add(self.player_data, LayoutAnchor.CENTER, pygame.Vector2(0, 0))
+        self.layout.add(self.room_name, LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(40, 0))
         self.layout.add(
-            self.password_is_exist, LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(-10, 0)
+            self.player_data, LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(-120, 0)
+        )
+        self.layout.add(
+            self.password_is_exist, LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(-40, 0)
         )
         self.layout.add(
             self.password_is_not_exist,
             LayoutAnchor.MIDDLE_RIGHT,
-            pygame.Vector2(-10, 0),
+            pygame.Vector2(-40, 0),
         )
 
         self.on("click", self.try_enter_room)
