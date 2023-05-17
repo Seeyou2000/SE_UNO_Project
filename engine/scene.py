@@ -7,7 +7,7 @@ import pygame
 from engine.events.emitter import EventEmitter
 from engine.events.event import Event
 from engine.events.system import EventSystem
-from engine.focus import FocusController, FocusMoveDirection
+from engine.focus import Focusable, FocusController, FocusMoveDirection
 from engine.gameobject import GameObject
 from engine.gameobjectcontainer import GameObjectContainer
 from engine.layout import Layout, LayoutAnchor, LayoutConstraint
@@ -42,12 +42,11 @@ class Scene(GameObjectContainer):
         self,
         child: GameObject,
         layout: LayoutConstraint | None = None,
-        use_focus: bool = True,
     ) -> None:
         self.add_child(child)
         if layout is not None:
             self.layout.add(child, layout.anchor, layout.margin)
-        if use_focus:
+        if isinstance(child, Focusable):
             self.focus_controller.add(child)
 
     def remove(self, child: GameObject) -> None:
