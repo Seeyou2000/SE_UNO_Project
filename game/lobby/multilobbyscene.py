@@ -28,23 +28,6 @@ class MultiLobbyScene(Scene):
         self.place_ui(world)
 
     def place_ui(self, world: World) -> None:
-        ip_input = TextInput(
-            "http://127.0.0.1:10008",
-            pygame.Rect(0, 0, 300, 60),
-            self.font,
-            pygame.Color("black"),
-            30,
-            self.focus_controller,
-        )
-        self.focus_controller.add(ip_input)
-
-        connect_button = Button(
-            "접속",
-            pygame.Rect(0, 0, 80, 60),
-            self.font,
-            lambda _: self.try_connect(ip_input.text),
-        )
-
         refresh_button = Button(
             "새로고침", pygame.Rect(0, 0, 80, 60), self.font, lambda _: self.refresh_lobby()
         )
@@ -100,22 +83,8 @@ class MultiLobbyScene(Scene):
         )
         self.focus_controller.add(name_input)
 
-        gap = 30
-        self.add_child(
-            Vertical(
-                pygame.Vector2(50, 50),
-                gap,
-                [
-                    Horizontal(pygame.Vector2(0, 0), gap, [ip_input, connect_button]),
-                ],
-            )
-        )
-
     def show_create_room_modal(self) -> None:
         self.create_room_modal = CreateRoomModal(self)
-        self.layout.add(
-            self.create_room_modal, LayoutAnchor.CENTER, pygame.Vector2(0, 0)
-        )
         self.open_modal(self.create_room_modal)
 
     def refresh_lobby(self) -> None:
@@ -144,12 +113,3 @@ class MultiLobbyScene(Scene):
             )
             self.focus_controller.add(item)
         self.add_children(self.room_list)
-
-    def try_connect(self, server_ip: str) -> None:
-        try:
-            clientio.connect(server_ip, auth={"username": "Test Player"})
-            rooms: list[LobbyRoom] = clientio.call("room_list")
-            logger.info(rooms)
-
-        except socketio.client.exceptions.ConnectionError as e:
-            logger.error(f"방 접속 실패 {e}")

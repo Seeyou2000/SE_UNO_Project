@@ -1,4 +1,6 @@
 import pygame
+import socketio
+from loguru import logger
 
 from engine.events.event import Event
 from engine.scene import Scene
@@ -7,8 +9,10 @@ from engine.world import World
 from game.lobby.lobbyscene import LobbyScene
 from game.lobby.multilobbyscene import MultiLobbyScene
 from game.menu.menubutton import MenuButton
+from game.messagemodal import MessageModal
 from game.networktest.networktestscene import NetworkTestScene
 from game.storyselect.storymodeselectscene import StoryModeSelectScene
+from network.client.client import clientio
 
 
 class MenuScene(Scene):
@@ -35,7 +39,7 @@ class MenuScene(Scene):
             MenuButton(
                 "Multi Play",
                 button_size,
-                lambda _: world.director.change_scene(MultiLobbyScene(world)),
+                self.change_to_multiplay,
             ),
             MenuButton(
                 "Settings",
@@ -64,3 +68,18 @@ class MenuScene(Scene):
     def handle_keydown(self, e: Event) -> None:
         if e.data["key"] == pygame.K_n:
             self.world.director.change_scene(NetworkTestScene(self.world))
+
+    def change_to_multiplay(self, e: Event) -> None:
+        if self.try_connect("http://127.0.0.1:10008"):
+            self.world.director.change_scene(MultiLobbyScene(self.world))
+
+    def try_connect(self, server_ip: str) -> bool:
+        try:
+            clientio.connect(server_ip, auth={"username": "Test Player"})
+
+        except socketio.client.exceptions.ConnectionError as e:
+            self.open_modal(MessageModal(self, "서버에 접속하지 못했습니다."))
+            logger.error(f"방 접속 실패 {e}")
+            return False
+        
+        return True
