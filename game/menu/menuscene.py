@@ -1,8 +1,12 @@
+import math
+
 import pygame
 import socketio
+import tween
 from loguru import logger
 
 from engine.events.event import Event
+from engine.layout import LayoutAnchor, LayoutConstraint, Vertical
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
@@ -12,7 +16,6 @@ from game.lobby.multilobbyscene import MultiLobbyScene
 from game.menu.menubutton import MenuButton
 from game.messagemodal import MessageModal
 from game.networktest.networktestscene import NetworkTestScene
-from game.room.roomscene import RoomScene
 from game.storyselect.storymodeselectscene import StoryModeSelectScene
 from network.client.client import clientio
 
@@ -24,52 +27,84 @@ class MenuScene(Scene):
 
         button_size = pygame.Vector2(200, 60)
 
-        sprite = Sprite(pygame.image.load("resources/uno.jpg"))
+        self.background_tile_surface = pygame.image.load("resources/images/background-tile.png")
+        self.background_tile_rect = self.background_tile_surface.get_rect()
+        self.background_surface = pygame.Surface((self.background_tile_rect.width, self.background_tile_rect.height * 2), pygame.SRCALPHA)
+
+        self.logo = Sprite(pygame.image.load("resources/images/logo.png"))
+        self.add(
+            self.logo,
+            LayoutConstraint(LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(-200, 0)),
+        )
+
+        self.logo_icon = Sprite(pygame.image.load("resources/images/logo-icon.png"))
+        self.add(
+            self.logo_icon,
+            LayoutConstraint(LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(-500, -80)),
+        )
 
         button_list = [
             MenuButton(
-                "Single Play",
+                "싱글플레이",
                 button_size,
                 lambda _: world.director.change_scene(LobbyScene(world)),
             ),
             MenuButton(
-                "Story Mode",
+                "스토리",
                 button_size,
                 lambda _: world.director.change_scene(StoryModeSelectScene(world)),
             ),
             MenuButton(
-                "Multi Play",
+                "멀티플레이",
                 button_size,
                 self.change_to_multiplay,
             ),
             MenuButton(
-                "Achievements",
+                "업적",
                 button_size,
                 lambda _: world.director.change_scene(AchievementScene(world)),
             ),
             MenuButton(
-                "Settings",
+                "설정",
                 button_size,
                 lambda _: world.director.change_scene(SettingScene(world)),
             ),
             MenuButton(
-                "Exit",
+                "나가기",
                 button_size,
                 lambda _: world.exit(),
             ),
         ]
 
-        self.layout.add(sprite, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, -130))
-
-        for i, item in enumerate(button_list):
-            self.layout.add(
-                item, pygame.Vector2(0.5, 0.5), pygame.Vector2(0, 60 * i + 80)
-            )
+        for item in button_list:
             self.focus_controller.add(item)
 
-        self.add_children([sprite] + button_list)
+        menu_area = Vertical(pygame.Vector2(), 10, button_list)
+        self.add(
+            menu_area, LayoutConstraint(LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(40, 0))
+        )
+
+        self.time = 0
 
         self.on("keydown", self.handle_keydown)
+
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        self.time += dt
+
+        self.layout.get_constraint(self.logo).margin.y = math.sin(self.time * 3) * 6
+        self.layout.get_constraint(self.logo_icon).margin.y = (
+            -80 + math.sin(self.time * 3 + 1) * 4
+        )
+
+    def render(self, surface: pygame.Surface) -> None:
+        upper_y = (self.time * 120 % self.background_tile_rect.height) - self.background_tile_rect.height
+        self.background_surface.fill((0, 0, 0, 0))
+        self.background_surface.blit(self.background_tile_surface, (0, upper_y))
+        self.background_surface.blit(self.background_tile_surface, (0, upper_y + self.background_tile_rect.height))
+        surface.blit(pygame.transform.rotate(self.background_surface, -10), (self.rect.right - 1000, -150))
+        super().render(surface)
+    
 
     def handle_keydown(self, e: Event) -> None:
         if e.data["key"] == pygame.K_n:
