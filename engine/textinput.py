@@ -42,7 +42,7 @@ class TextInput(GameObject, Focusable):
         if not self.is_visible:
             return
         super().render(surface)
-        
+
         pygame.draw.rect(
             surface,
             pygame.Color("#fff1e7"),

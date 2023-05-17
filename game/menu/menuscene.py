@@ -81,5 +81,5 @@ class MenuScene(Scene):
             self.open_modal(MessageModal(self, "서버에 접속하지 못했습니다."))
             logger.error(f"방 접속 실패 {e}")
             return False
-        
+
         return True
