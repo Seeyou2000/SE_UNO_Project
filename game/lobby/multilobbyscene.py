@@ -2,6 +2,7 @@ import pygame
 from loguru import logger
 
 from engine.button import Button
+from engine.events.event import Event
 from engine.layout import Horizontal, LayoutAnchor, LayoutConstraint, Vertical
 from engine.scene import Scene
 from engine.text import Text
@@ -37,13 +38,11 @@ class MultiLobbyScene(Scene):
             LayoutConstraint(LayoutAnchor.TOP_RIGHT, pygame.Vector2(-50, 50)),
         )
 
-        from game.menu.menuscene import MenuScene
-
         change_menu_scene = Button(
             "뒤로가기",
             pygame.Rect(0, 0, 80, 60),
             self.font,
-            lambda _: world.director.change_scene(MenuScene(world)),
+            self.change_to_menuscene,
         )
         self.add(
             change_menu_scene,
@@ -88,6 +87,18 @@ class MultiLobbyScene(Scene):
             LayoutConstraint(LayoutAnchor.BOTTOM_LEFT, pygame.Vector2(50, -50)),
         )
 
+        self.empty_lobby_text = Text(
+            "방을 만들어보세요!",
+            pygame.Vector2(),
+            get_font(FontType.UI_BOLD, 30),
+            pygame.Color("#ffaa6e"),
+        )
+        self.add(
+            self.empty_lobby_text,
+            LayoutConstraint(LayoutAnchor.CENTER, pygame.Vector2()),
+            False,
+        )
+
     def show_create_room_modal(self) -> None:
         self.create_room_modal = CreateRoomModal(self)
         self.open_modal(self.create_room_modal)
@@ -118,3 +129,10 @@ class MultiLobbyScene(Scene):
             )
             self.focus_controller.add(item)
         self.add_children(self.room_list)
+
+        self.empty_lobby_text.is_visible = len(self.room_list) == 0
+
+    def change_to_menuscene(self, e: Event) -> None:
+        from game.menu.menuscene import MenuScene
+        self.world.director.change_scene(MenuScene(self.world))
+        clientio.disconnect()
