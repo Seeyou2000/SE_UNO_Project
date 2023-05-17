@@ -10,7 +10,7 @@ from engine.events.system import EventSystem
 from engine.focus import FocusController, FocusMoveDirection
 from engine.gameobject import GameObject
 from engine.gameobjectcontainer import GameObjectContainer
-from engine.layout import Layout, LayoutAnchor
+from engine.layout import Layout, LayoutAnchor, LayoutConstraint
 
 if TYPE_CHECKING:
     from engine.world import World
@@ -38,10 +38,22 @@ class Scene(GameObjectContainer):
         self.layout.update(dt)
         super().update(dt)
 
+    def add(
+        self,
+        child: GameObject,
+        layout: LayoutConstraint | None = None,
+        use_focus: bool = True,
+    ) -> None:
+        self.add_child(child)
+        if layout is not None:
+            self.layout.add(child, layout.anchor, layout.margin)
+        if use_focus:
+            self.focus_controller.add(child)
+
     def open_modal(self, modal: GameObject, centered: bool = True) -> None:
         self.modal_layer.add_child(modal)
         self.off("keydown", self.handle_focus_keydown)
-        if self.focus_controller.current_focus is not None: 
+        if self.focus_controller.current_focus is not None:
             self.focus_controller.current_focus.unfocus()
 
         if centered:
