@@ -93,32 +93,10 @@ class Button(BaseButton):
         border_radius = 10
         drawing_rect = rect.inflate(-4, -4)
         drawing_rect.topleft = (2, 2)
-        normal_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
-        pygame.draw.rect(
-            normal_surface,
-            pygame.Color("#fff1e7"),
-            drawing_rect,
-            border_radius=border_radius,
-        )
 
-        hover_surface = normal_surface.copy()
-        pygame.draw.rect(
-            hover_surface,
-            pygame.Color("#ffe8d7"),
-            drawing_rect,
-            border_radius=border_radius,
-        )
-
-        pressed_surface = normal_surface.copy()
-        pygame.draw.rect(
-            pressed_surface,
-            pygame.Color("#ffdcc3"),
-            drawing_rect,
-            border_radius=border_radius,
-        )
         super().__init__(
             rect,
-            ButtonSurfaces(normal_surface, hover_surface, pressed_surface),
+            create_default_button_surfaces(rect, drawing_rect, border_radius),
             on_click,
         )
 
@@ -160,6 +138,36 @@ class Button(BaseButton):
         pressed_key: int = event.data["key"]
         if self.has_focus and pressed_key == pygame.K_RETURN:
             self.emit("click", Event(None))
+
+
+def create_default_button_surfaces(
+    rect: pygame.Rect, drawing_rect: pygame.Rect, border_radius: int
+) -> ButtonSurfaces:
+    normal_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
+    pygame.draw.rect(
+        normal_surface,
+        pygame.Color("#fff1e7"),
+        drawing_rect,
+        border_radius=border_radius,
+    )
+
+    hover_surface = normal_surface.copy()
+    pygame.draw.rect(
+        hover_surface,
+        pygame.Color("#ffe8d7"),
+        drawing_rect,
+        border_radius=border_radius,
+    )
+
+    pressed_surface = normal_surface.copy()
+    pygame.draw.rect(
+        pressed_surface,
+        pygame.Color("#ffdcc3"),
+        drawing_rect,
+        border_radius=border_radius,
+    )
+
+    return ButtonSurfaces(normal_surface, hover_surface, pressed_surface)
 
 
 class SpriteButton(BaseButton):

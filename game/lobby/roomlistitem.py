@@ -1,8 +1,8 @@
 import pygame
 from loguru import logger
 
+from engine.button import BaseButton, ButtonSurfaces, create_default_button_surfaces
 from engine.events.event import Event
-from engine.focus import Focusable
 from engine.gameobjectcontainer import GameObjectContainer
 from engine.layout import Layout, LayoutAnchor
 from engine.scene import Scene
@@ -10,12 +10,13 @@ from engine.text import Text
 from game.font import FontType, get_font
 from game.lobby.validatepasswordmodal import ValidatePasswordModal
 from game.messagemodal import MessageModal
+from game.surfaceutil import darken, lighten
 from network.client.client import clientio
 from network.common.messages import JoinRoom
 from network.common.models import LobbyRoom
 
 
-class RoomListItem(GameObjectContainer, Focusable):
+class RoomListItem(BaseButton, GameObjectContainer):
     font: pygame.font.Font
     text_color: pygame.Color
 
@@ -25,10 +26,13 @@ class RoomListItem(GameObjectContainer, Focusable):
         room: LobbyRoom,
         rect: pygame.Rect,
     ) -> None:
-        super().__init__()
+        surface_rect = pygame.Rect(0, 0, rect.width, rect.height)
+
+        super().__init__(
+            rect.copy(), create_default_button_surfaces(surface_rect, surface_rect, 10)
+        )
         self.scene = scene
         self.room = room
-        self.rect = rect.copy()
         self.layout = Layout(self.rect)
 
         self.text_color = pygame.Color("black")
@@ -96,12 +100,8 @@ class RoomListItem(GameObjectContainer, Focusable):
         self.layout.update(0)
 
     def render(self, surface: pygame.Surface) -> None:
-        pygame.draw.rect(
-            surface,
-            pygame.Color("#fff1e7"),
-            self.absolute_rect,
-            border_radius=8,
-        )
+        super().render(surface)
+        GameObjectContainer.render(self, surface)
 
         if self.has_focus:
             focus_ring_rect = self.absolute_rect.copy()
@@ -112,7 +112,6 @@ class RoomListItem(GameObjectContainer, Focusable):
                 width=2,
                 border_radius=8,
             )
-        super().render(surface)
 
     def try_enter_room(self, event: Event) -> None:
         if self.is_private:
