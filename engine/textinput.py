@@ -39,6 +39,10 @@ class TextInput(GameObject, Focusable):
         self.on("unfocus", self.stop_editing)
 
     def render(self, surface: pygame.Surface) -> None:
+        if not self.is_visible:
+            return
+        super().render(surface)
+        
         pygame.draw.rect(
             surface,
             pygame.Color("#fff1e7"),

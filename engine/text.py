@@ -23,6 +23,9 @@ class Text(GameObject):
         self.set_text(text)
 
     def render(self, surface: pygame.Surface) -> None:
+        if not self.is_visible:
+            return
+        super().render(surface)
         surface.blit(self._rendered_text, self.absolute_rect.topleft)
 
     def set_text(self, text: str) -> None:

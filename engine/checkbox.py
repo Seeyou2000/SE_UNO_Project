@@ -25,6 +25,8 @@ class Checkbox(GameObjectContainer, Focusable):
         self.layout.update(0)
 
     def render(self, surface: pygame.Surface) -> None:
+        if not self.is_visible:
+            return
         if self.is_checked:
             pygame.draw.rect(
                 surface,

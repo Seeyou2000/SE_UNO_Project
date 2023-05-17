@@ -143,6 +143,8 @@ class Button(BaseButton):
         self._rendered_text = self.font.render(text, True, pygame.Color("#451e11"))
 
     def render(self, surface: pygame.Surface) -> None:
+        if not self.is_visible:
+            return
         super().render(surface)
         surface.blit(
             self._rendered_text,

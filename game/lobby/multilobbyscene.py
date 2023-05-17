@@ -26,6 +26,7 @@ class MultiLobbyScene(Scene):
         self.font = get_font(FontType.UI_BOLD, 16)
         self.room_list = []
         self.place_ui(world)
+        self.refresh_lobby()
 
     def place_ui(self, world: World) -> None:
         refresh_button = Button(
