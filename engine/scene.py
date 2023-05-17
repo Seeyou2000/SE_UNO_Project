@@ -50,6 +50,12 @@ class Scene(GameObjectContainer):
         if use_focus:
             self.focus_controller.add(child)
 
+    def remove(self, child: GameObject) -> None:
+        self.remove_child(child)
+        self.layout.remove(child)
+        if self.focus_controller.has(child):
+            self.focus_controller.remove(child)
+
     def open_modal(self, modal: GameObject, centered: bool = True) -> None:
         self.modal_layer.add_child(modal)
         self.off("keydown", self.handle_focus_keydown)
