@@ -7,8 +7,8 @@ from engine.gameobjectcontainer import GameObjectContainer
 from engine.layout import Layout, LayoutAnchor
 from engine.scene import Scene
 from engine.text import Text
-from game.ingame.messagemodal import MessageModal
-from game.ingame.validatepasswordmodal import ValidatePasswordModal
+from game.lobby.validatepasswordmodal import ValidatePasswordModal
+from game.messagemodal import MessageModal
 from network.client.client import clientio
 from network.common.messages import JoinRoom
 from network.common.models import LobbyRoom
@@ -107,16 +107,10 @@ class RoomListItem(GameObjectContainer, Focusable):
 
     def show_validate_room_modal(self) -> None:
         self.validate_room_modal = ValidatePasswordModal(self.scene, self.enter_room)
-        self.scene.layout.add(
-            self.validate_room_modal, LayoutAnchor.CENTER, pygame.Vector2(0, 0)
-        )
         self.scene.open_modal(self.validate_room_modal)
 
     def show_connect_fail_modal(self) -> None:
         self.connect_fail_modal = MessageModal(self.scene, "접속에 실패했습니다.")
-        self.scene.layout.add(
-            self.connect_fail_modal, LayoutAnchor.CENTER, pygame.Vector2(0, 0)
-        )
         self.scene.open_modal(self.connect_fail_modal)
 
     def enter_room(self, password: str) -> None:

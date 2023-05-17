@@ -10,7 +10,7 @@ from engine.scene import Scene
 from engine.text import Text
 from engine.textinput import TextInput
 from game.font import FontType, get_font
-from game.ingame.messagemodal import MessageModal
+from game.messagemodal import MessageModal
 from network.client.client import clientio
 from network.common.messages import CreateRoom
 from network.common.models import LobbyRoom
@@ -127,7 +127,4 @@ class CreateRoomModal(Modal):
 
     def show_create_room_fail_modal(self) -> None:
         self.create_room_fail_modal = MessageModal(self.scene, "방 이름을 입력해주세요.")
-        self.scene.layout.add(
-            self.create_room_fail_modal, LayoutAnchor.CENTER, pygame.Vector2(0, 0)
-        )
         self.scene.open_modal(self.create_room_fail_modal)
