@@ -25,7 +25,7 @@ class Modal(GameObjectContainer):
             pygame.Color("#ffe1c7"),
             self.surface.get_rect(),
             border_radius=5,
-            width=2
+            width=2,
         )
         background = Sprite(self.surface)
         self.add_child(background)

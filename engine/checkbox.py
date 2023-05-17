@@ -7,9 +7,7 @@ from engine.text import Text
 
 
 class Checkbox(GameObjectContainer, Focusable):
-    def __init__(
-        self, rect: pygame.Rect, font: pygame.font.Font
-    ) -> None:
+    def __init__(self, rect: pygame.Rect, font: pygame.font.Font) -> None:
         super().__init__()
 
         self.rect = rect.copy()
@@ -45,7 +43,7 @@ class Checkbox(GameObjectContainer, Focusable):
             pygame.Color("#ffe1c7"),
             self.absolute_rect,
             border_radius=8,
-            width=2
+            width=2,
         )
         super().render(surface)
 

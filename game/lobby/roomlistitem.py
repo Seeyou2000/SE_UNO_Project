@@ -1,7 +1,7 @@
 import pygame
 from loguru import logger
 
-from engine.button import BaseButton, ButtonSurfaces, create_default_button_surfaces
+from engine.button import BaseButton, create_default_button_surfaces
 from engine.events.event import Event
 from engine.gameobjectcontainer import GameObjectContainer
 from engine.layout import Layout, LayoutAnchor
@@ -10,7 +10,6 @@ from engine.text import Text
 from game.font import FontType, get_font
 from game.lobby.validatepasswordmodal import ValidatePasswordModal
 from game.messagemodal import MessageModal
-from game.surfaceutil import darken, lighten
 from network.client.client import clientio
 from network.common.messages import JoinRoom
 from network.common.models import LobbyRoom

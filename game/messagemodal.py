@@ -1,7 +1,6 @@
 import pygame
 
 from engine.button import Button
-from engine.layout import Vertical
 from engine.modal import Modal
 from engine.scene import Scene
 from engine.text import Text
