@@ -23,12 +23,14 @@ class GameObject(EventEmitter, abc.ABC):
     parent: Self
     absolute_rect: pygame.Rect
     is_visible: bool
+    order: int
 
     def __init__(self) -> None:
         super().__init__()
         self.rect = pygame.Rect(0, 0, 0, 0)
         self.absolute_rect = self.rect.copy()
 
+        self.order = 0
         self.is_visible = True
 
     def update(self, dt: float) -> None:

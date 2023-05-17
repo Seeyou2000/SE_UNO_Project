@@ -10,7 +10,7 @@ from engine.events.system import EventSystem
 from engine.focus import FocusController, FocusMoveDirection
 from engine.gameobject import GameObject
 from engine.gameobjectcontainer import GameObjectContainer
-from engine.layout import Layout
+from engine.layout import Layout, LayoutAnchor
 
 if TYPE_CHECKING:
     from engine.world import World
@@ -30,19 +30,27 @@ class Scene(GameObjectContainer):
         self.on("textediting", self.handle_textediting)
         self.on("resize", self.handle_screen_resize)
 
+        self.modal_layer = GameObjectContainer()
+        self.modal_layer.order = 100
+        self.add_child(self.modal_layer)
+
     def update(self, dt: float) -> None:
         self.layout.update(dt)
         super().update(dt)
 
-    def open_modal(self, modal: GameObject) -> None:
-        self.add_child(modal)
+    def open_modal(self, modal: GameObject, centered: bool = True) -> None:
+        self.modal_layer.add_child(modal)
         self.off("keydown", self.handle_focus_keydown)
         if self.focus_controller.current_focus is not None: 
             self.focus_controller.current_focus.unfocus()
 
+        if centered:
+            self.layout.add(modal, LayoutAnchor.CENTER, pygame.Vector2(0, 0))
+
     def close_modal(self, modal: GameObject) -> None:
-        self.remove_child(modal)
+        self.modal_layer.remove_child(modal)
         self.on("keydown", self.handle_focus_keydown)
+        self.layout.remove(modal)
 
     def handle_focus_keydown(self, event: Event) -> None:
         pressed_key: int = event.data["key"]
