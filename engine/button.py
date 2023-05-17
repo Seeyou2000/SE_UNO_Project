@@ -8,6 +8,7 @@ from engine.events.event import Event
 from engine.focus import Focusable
 from engine.fsm import FlowMachine, FlowNode
 from engine.gameobject import GameObject
+from engine.world import AUDIO_PLAYER
 
 
 @dataclass
@@ -61,6 +62,9 @@ class BaseButton(GameObject, Focusable):
         self.on(
             "mouse_leave", lambda _: self.state_machine.transition_to(NormalState())
         )
+
+        self.on("mouse_enter", lambda _: AUDIO_PLAYER.effect_hover.play())
+        self.on("click", lambda _: AUDIO_PLAYER.effect_click.play())
 
         if on_click is not None:
             self.on("click", on_click)

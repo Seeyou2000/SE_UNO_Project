@@ -5,7 +5,7 @@ from game.settings.settings import Settings
 
 
 class AudioPlayer:
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self) -> None:
         self.bgm_volume = 1.0
         self.effect_volume = 1.0
         self.volume = 1.0
@@ -21,11 +21,11 @@ class AudioPlayer:
         self.effect_card_playing = pygame.mixer.Sound(
             "resources/audio/card_playing_sound.wav"
         )
+        self.effect_hover = pygame.mixer.Sound("resources/audio/hover.ogg")
+        self.effect_click = pygame.mixer.Sound("resources/audio/click.ogg")
         self.bg_music_playing = (
             False  # Add a flag to check if the background music is playing
         )
-
-        settings.on("change", self.handle_settings_change)
 
     def play_bg_music(self) -> None:
         # Play background music on loop
@@ -62,9 +62,13 @@ class AudioPlayer:
 
     def set_effect_volume(self, volume: float) -> None:
         self.effect_volume = volume
-        self.effect_uno_clicked.set_volume(self.volume * self.effect_volume)
-        self.effect_card_sliding.set_volume(self.volume * self.effect_volume)
-        self.effect_card_playing.set_volume(self.volume * self.effect_volume)
+        
+        final_volume = self.volume * self.effect_volume
+        self.effect_uno_clicked.set_volume(final_volume)
+        self.effect_card_sliding.set_volume(final_volume)
+        self.effect_card_playing.set_volume(final_volume)
+        self.effect_hover.set_volume(final_volume)
+        self.effect_click.set_volume(final_volume)
 
     def handle_settings_change(self, event: Event) -> None:
         settings: Settings = event.target

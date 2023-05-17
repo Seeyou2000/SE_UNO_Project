@@ -10,6 +10,8 @@ from game.audio_player import AudioPlayer
 from game.settings.settings import Settings
 from network.client.client import clientio
 
+AUDIO_PLAYER: AudioPlayer = AudioPlayer()
+
 
 class World:
     screen: pygame.Surface
@@ -27,8 +29,12 @@ class World:
         self.target_fps = target_fps
         self.settings = Settings()
         self.settings.on("change", self.handle_settings_change)
-        self.audio_player = AudioPlayer(self.settings)
-        self.audio_player.play_bg_music()
+
+        global AUDIO_PLAYER
+        AUDIO_PLAYER.play_bg_music()
+        self.settings.on("change", AUDIO_PLAYER.handle_settings_change)
+        
+        self.audio_player = AUDIO_PLAYER
         self.achievements = Achievements()
 
         pygame.scrap.init()
