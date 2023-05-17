@@ -61,7 +61,7 @@ class RoomListItem(GameObjectContainer, Focusable):
             pygame.Vector2(-10, 0),
         )
 
-        self.on("click", self.validate_private)
+        self.on("click", self.try_enter_room)
 
         if self.is_private:
             self.room_data = [
@@ -99,11 +99,11 @@ class RoomListItem(GameObjectContainer, Focusable):
             )
         super().render(surface)
 
-    def validate_private(self, event: Event) -> None:
+    def try_enter_room(self, event: Event) -> None:
         if self.is_private:
             self.show_validate_room_modal()
         else:
-            self.enter_room("")
+            self.enter_room()
 
     def show_validate_room_modal(self) -> None:
         self.validate_room_modal = ValidatePasswordModal(self.scene, self.enter_room)
@@ -113,7 +113,7 @@ class RoomListItem(GameObjectContainer, Focusable):
         self.connect_fail_modal = MessageModal(self.scene, "접속에 실패했습니다.")
         self.scene.open_modal(self.connect_fail_modal)
 
-    def enter_room(self, password: str) -> None:
+    def enter_room(self, password: str | None = None) -> None:
         success = clientio.call("join_room", JoinRoom(self.room_id, password).to_dict())
         if success:
             pass  # 방 안에 들어가는 거(동훈이 코드 필요.)
