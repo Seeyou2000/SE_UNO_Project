@@ -10,6 +10,7 @@ from game.achievementscene import AchievementScene
 from game.lobby.lobbyscene import LobbyScene
 from game.menu.menubutton import MenuButton
 from game.networktest.networktestscene import NetworkTestScene
+from game.room.roomscene import RoomScene
 from game.storyselect.storymodeselectscene import StoryModeSelectScene
 
 
@@ -65,4 +66,3 @@ class MenuScene(Scene):
     def handle_keydown(self, e: Event) -> None:
         if e.data["key"] == pygame.K_n:
             self.world.director.change_scene(NetworkTestScene(self.world))
-
