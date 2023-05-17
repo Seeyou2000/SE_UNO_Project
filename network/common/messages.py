@@ -38,7 +38,7 @@ def get_schema(cls: type[Message]) -> Schema:
     return schema_cache[cls]
 
 
-T = TypeVar("T", bound="Message")
+T = TypeVar("T", bound="DataClassJsonMixin")
 
 
 def parse_message(cls: type[T], data: dict, error_category: str) -> T | None:

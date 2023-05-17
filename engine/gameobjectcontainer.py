@@ -1,5 +1,6 @@
 import abc
 from collections.abc import Iterator
+from operator import attrgetter
 
 import pygame
 
@@ -22,6 +23,7 @@ class GameObjectContainer(GameObject, abc.ABC):
         if not self.is_visible:
             return
         super().render(surface)
+        self._children.sort(key=attrgetter("order"))
         for child in self._children:
             child.render(surface)
 

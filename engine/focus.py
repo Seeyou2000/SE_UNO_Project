@@ -28,7 +28,6 @@ class Focusable(EventEmitter, abc.ABC):
         self.has_focus = False
         self.controller = None
         self.on("keydown", self.emit_click)
-        self.on("mouse_enter", self.focus_on_hover)
 
     def focus(self) -> None:
         self.has_focus = True
@@ -70,6 +69,9 @@ class FocusController:
         self.current_focus = targets[targets.index(target) - 1]
         del self._targets[target]
         target.controller = None
+
+    def has(self, target: Focusable) -> bool:
+        return target in self._targets
 
     def set_siblings(self, target: Focusable, siblings: FocusSiblings) -> None:
         """
@@ -126,9 +128,9 @@ class FocusController:
     ) -> Focusable | None:
         distance_sorted = sorted(
             filter(lambda t: t is not target, self._targets.keys()),
-            key=lambda other: pygame.Vector2(other.rect.center).distance_squared_to(
-                target.absolute_rect.center
-            ),
+            key=lambda other: pygame.Vector2(
+                other.absolute_rect.center
+            ).distance_squared_to(target.absolute_rect.center),
             reverse=farthest,
         )
 
