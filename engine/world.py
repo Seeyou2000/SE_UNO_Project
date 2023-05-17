@@ -8,6 +8,7 @@ from engine.scene import SceneDirector
 from game.achievements import Achievements
 from game.audio_player import AudioPlayer
 from game.settings.settings import Settings
+from network.client.client import clientio
 
 
 class World:
@@ -86,3 +87,7 @@ class World:
 
     def handle_settings_change(self, _: Event) -> None:
         self.set_size(self.settings.window_size)
+
+    def exit(self) -> None:
+        clientio.disconnect()
+        sys.exit()
