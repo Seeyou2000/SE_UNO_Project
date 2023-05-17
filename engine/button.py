@@ -114,8 +114,6 @@ class Button(BaseButton):
         self.font = font
         self.set_text(text)
 
-        self.on("keydown", self.handle_keydown)
-
     def set_text(self, text: str) -> None:
         self.text = text
         self._rendered_text = self.font.render(text, True, pygame.Color("#451e11"))
@@ -133,11 +131,6 @@ class Button(BaseButton):
                 self.focus_ring_surface,
                 self.focus_ring_surface.get_rect(center=self.absolute_rect.center),
             )
-
-    def handle_keydown(self, event: Event) -> None:
-        pressed_key: int = event.data["key"]
-        if self.has_focus and pressed_key == pygame.K_RETURN:
-            self.emit("click", Event(None))
 
 
 def create_default_button_surfaces(

@@ -5,6 +5,7 @@ from game.menu.menuscene import MenuScene
 def main() -> None:
     world = World((800, 600), 120)
     world.settings.load()
+    world.achievements.load()
     world.director.change_scene(MenuScene(world))
 
     world.loop()

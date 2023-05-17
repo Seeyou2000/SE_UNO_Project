@@ -6,11 +6,13 @@ from engine.events.event import Event
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.world import World
+from game.achievementscene import AchievementScene
 from game.lobby.lobbyscene import LobbyScene
 from game.lobby.multilobbyscene import MultiLobbyScene
 from game.menu.menubutton import MenuButton
 from game.messagemodal import MessageModal
 from game.networktest.networktestscene import NetworkTestScene
+from game.room.roomscene import RoomScene
 from game.storyselect.storymodeselectscene import StoryModeSelectScene
 from network.client.client import clientio
 
@@ -18,7 +20,6 @@ from network.client.client import clientio
 class MenuScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
-
         from game.settings.settingscene import SettingScene
 
         button_size = pygame.Vector2(200, 60)
@@ -40,6 +41,11 @@ class MenuScene(Scene):
                 "Multi Play",
                 button_size,
                 self.change_to_multiplay,
+            ),
+            MenuButton(
+                "Achievements",
+                button_size,
+                lambda _: world.director.change_scene(AchievementScene(world)),
             ),
             MenuButton(
                 "Settings",

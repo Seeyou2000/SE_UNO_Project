@@ -60,3 +60,6 @@ class Achievements(EventEmitter):
         )
         self.save()
         self.emit("change", Event(target=self))
+
+    def reset(self) -> None:
+        self.load_dict(DEFAULT_ACHIEVEMENTS)
