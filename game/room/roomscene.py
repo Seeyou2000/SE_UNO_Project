@@ -16,7 +16,10 @@ from game.gameplay.timer import Timer
 class RoomScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
-
+        self.on("mouse_down", self.drag())
+        self.on("mouse_up", self.drop())
+        self.drag_data: str
+        self.drag_button: Button = None
         self.connect_failure_timer = Timer(2)
         self.text_connect_failure = Text(
             "", pygame.Vector2(), get_font(FontType.UI_BOLD, 20), pygame.Color("black")
@@ -131,11 +134,11 @@ class RoomScene(Scene):
         self.connect_failure_timer.update(dt)
 
     def create_player_button_set(self, i: int) -> None:
-        self.create_player_slot_button(i)
+        self.create_player_button(i)
         self.create_kick_button(i)
         self.create_return_button(i)
 
-    def create_player_slot_button(self, i: int) -> None:
+    def create_player_button(self, i: int) -> None:
         button = Button(
             "+",
             pygame.Rect(0, 0, 300, 100),
@@ -229,3 +232,43 @@ class RoomScene(Scene):
     def hide_text_connect_failure(self, event: Event) -> None:
         if self.has_child(self.text_connect_failure):
             self.remove_child(self.text_connect_failure)
+
+    def drag(self) -> None:
+        def handler(event: Event) -> None:
+            # print(f"{event.target}")
+            for player_button in self.player_buttons:
+                if event.target is player_button and event.target.text != "+":
+                    self.drag_data = event.target.text
+                    self.drag_button = event.target
+                    event.target.set_text("+")
+                    break
+
+        return handler
+
+    def drop(self) -> None:
+        def handler(event: Event) -> None:
+            # print(f"{event.target}")
+            for player_button in self.player_buttons:
+                if (
+                    self.drag_button is not None
+                    and event.target is player_button
+                    and self.drag_data != ""
+                    and event.target.text == "+"
+                ):
+                    event.target.set_text(f"{self.drag_data}")
+                    self.drag_data = ""
+                    self.drag_button is None
+                    return handler
+
+            for player_button in self.player_buttons:
+                if (
+                    self.drag_button is not None
+                    and self.drag_button is player_button
+                    and self.drag_data != ""
+                ):
+                    self.drag_button.set_text(f"{self.drag_data}")
+                    self.drag_data = ""
+                    self.drag_button = None
+                    break
+
+        return handler

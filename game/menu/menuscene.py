@@ -27,8 +27,7 @@ class MenuScene(Scene):
             MenuButton(
                 "Start",
                 button_size,
-                lambda _: world.director.change_scene(RoomScene(world)),
-                # lambda _: world.director.change_scene(LobbyScene(world)),
+                lambda _: world.director.change_scene(LobbyScene(world)),
             ),
             MenuButton(
                 "Story Mode",
