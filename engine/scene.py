@@ -8,6 +8,7 @@ from engine.events.emitter import EventEmitter
 from engine.events.event import Event
 from engine.events.system import EventSystem
 from engine.focus import FocusController, FocusMoveDirection
+from engine.gameobject import GameObject
 from engine.gameobjectcontainer import GameObjectContainer
 from engine.layout import Layout
 
@@ -32,6 +33,16 @@ class Scene(GameObjectContainer):
     def update(self, dt: float) -> None:
         self.layout.update(dt)
         super().update(dt)
+
+    def open_modal(self, modal: GameObject) -> None:
+        self.add_child(modal)
+        self.off("keydown", self.handle_focus_keydown)
+        if self.focus_controller.current_focus is not None: 
+            self.focus_controller.current_focus.unfocus()
+
+    def close_modal(self, modal: GameObject) -> None:
+        self.remove_child(modal)
+        self.on("keydown", self.handle_focus_keydown)
 
     def handle_focus_keydown(self, event: Event) -> None:
         pressed_key: int = event.data["key"]
