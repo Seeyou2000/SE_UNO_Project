@@ -29,6 +29,9 @@ class World:
         self.audio_player = AudioPlayer(self.settings)
         self.audio_player.play_bg_music()
         self.achievements = Achievements()
+        self.win_less_10turn = False
+        self.show_achieve_timer = 0.0
+        self.show_achieve = ""
 
         pygame.scrap.init()
         pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
@@ -52,10 +55,17 @@ class World:
         dt = self.clock.tick(self.target_fps) / 1000.0
         self.director.get_current().update(dt)
         tween.update(dt)
+        if self.win_less_10turn is True:  # 업적 최초 달성 여부 확인
+            self.show_achieve = "win_less_10turn"
+            self.show_achieve_timer += dt
+            if self.show_achieve_timer >= 5:
+                self.reset_show_achieve()
+                self.win_less_10turn = False
 
     def render(self) -> None:
         self.screen.fill(pygame.Color("#FFF6EF"))
         self.director.get_current().render(self.screen)
+        self.real_time_achieve_clear(self.show_achieve)
         pygame.display.flip()
 
     def handle_event(self) -> None:
@@ -86,3 +96,27 @@ class World:
 
     def handle_settings_change(self, _: Event) -> None:
         self.set_size(self.settings.window_size)
+
+    def real_time_achieve_clear(self, achieve: str = "") -> None:
+        screen_size = self.get_rect()
+        if achieve == "win_less_10turn":
+            pygame.draw.rect(
+                self.screen,
+                [255, 232, 214],
+                [screen_size.right - 400, screen_size.bottom - 100, 400, 100],
+            )
+            self.achieve_img = pygame.image.load(
+                "resources/images/unoarchieve_temp.jpg"
+            )
+            self.screen.blit(
+                self.achieve_img, (screen_size.right - 400, screen_size.bottom - 100)
+            )
+        self.font = pygame.font.SysFont("resources/fonts/GmarketSansTTFMedium.ttf", 30)
+        self.clear_achieve_text = self.font.render(achieve, True, pygame.Color("black"))
+        self.screen.blit(
+            self.clear_achieve_text, (screen_size.right - 290, screen_size.bottom - 58)
+        )
+
+    def reset_show_achieve(self) -> None:  # 실시간 업적표시 타이머&텍스트 초기화
+        self.show_achieve = ""
+        self.show_achieve_timer = 0

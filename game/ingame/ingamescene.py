@@ -694,6 +694,8 @@ class InGameScene(Scene):
 
     def check_win_less_10turn(self, event: Event) -> None:
         if event.data["turn"] <= 10 and event.data["player"] is self.get_me():
-            self.world.achievements.set_values(
-                win_less_10turn=[True, f"{datetime.now()}"]
-            )
+            if self.world.achievements.win_less_10turn[0] is not True:
+                self.world.achievements.set_values(
+                    win_less_10turn=[True, f"{datetime.now()}"]
+                )
+                self.world.win_less_10turn = True
