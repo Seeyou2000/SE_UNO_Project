@@ -2,7 +2,6 @@ import math
 
 import pygame
 import socketio
-import tween
 from loguru import logger
 
 from engine.events.event import Event
@@ -27,7 +26,6 @@ class MenuScene(Scene):
 
         button_size = pygame.Vector2(200, 60)
 
-        sprite = Sprite(pygame.image.load("resources/uno.jpg"))
         self.background_tile_surface = pygame.image.load(
             "resources/images/background-tile.png"
         )
