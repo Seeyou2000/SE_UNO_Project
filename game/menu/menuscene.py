@@ -27,9 +27,15 @@ class MenuScene(Scene):
 
         button_size = pygame.Vector2(200, 60)
 
-        self.background_tile_surface = pygame.image.load("resources/images/background-tile.png")
+        sprite = Sprite(pygame.image.load("resources/uno.jpg"))
+        self.background_tile_surface = pygame.image.load(
+            "resources/images/background-tile.png"
+        )
         self.background_tile_rect = self.background_tile_surface.get_rect()
-        self.background_surface = pygame.Surface((self.background_tile_rect.width, self.background_tile_rect.height * 2), pygame.SRCALPHA)
+        self.background_surface = pygame.Surface(
+            (self.background_tile_rect.width, self.background_tile_rect.height * 2),
+            pygame.SRCALPHA,
+        )
 
         self.logo = Sprite(pygame.image.load("resources/images/logo.png"))
         self.add(
@@ -98,13 +104,20 @@ class MenuScene(Scene):
         )
 
     def render(self, surface: pygame.Surface) -> None:
-        upper_y = (self.time * 120 % self.background_tile_rect.height) - self.background_tile_rect.height
+        upper_y = (
+            self.time * 120 % self.background_tile_rect.height
+        ) - self.background_tile_rect.height
         self.background_surface.fill((0, 0, 0, 0))
         self.background_surface.blit(self.background_tile_surface, (0, upper_y))
-        self.background_surface.blit(self.background_tile_surface, (0, upper_y + self.background_tile_rect.height))
-        surface.blit(pygame.transform.rotate(self.background_surface, -10), (self.rect.right - 1000, -150))
+        self.background_surface.blit(
+            self.background_tile_surface,
+            (0, upper_y + self.background_tile_rect.height),
+        )
+        surface.blit(
+            pygame.transform.rotate(self.background_surface, -10),
+            (self.rect.right - 1000, -150),
+        )
         super().render(surface)
-    
 
     def handle_keydown(self, e: Event) -> None:
         if e.data["key"] == pygame.K_n:
