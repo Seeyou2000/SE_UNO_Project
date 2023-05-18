@@ -8,6 +8,7 @@ from engine.scene import SceneDirector
 from game.achievements import Achievements
 from game.audio_player import AudioPlayer
 from game.settings.settings import Settings
+from game.storyclearstatus import StoryClearStatus
 from network.client.client import clientio
 
 AUDIO_PLAYER: AudioPlayer = AudioPlayer()
@@ -20,6 +21,7 @@ class World:
     target_fps: float
     settings: Settings
     achievements: Achievements
+    story_clear_status: StoryClearStatus
 
     def __init__(self, size: tuple[float, float], target_fps: float = 60) -> None:
         pygame.init()
@@ -33,9 +35,10 @@ class World:
         global AUDIO_PLAYER
         AUDIO_PLAYER.play_bg_music()
         self.settings.on("change", AUDIO_PLAYER.handle_settings_change)
-        
+
         self.audio_player = AUDIO_PLAYER
         self.achievements = Achievements()
+        self.story_clear_status = StoryClearStatus()
 
         pygame.scrap.init()
         pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
