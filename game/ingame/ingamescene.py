@@ -58,6 +58,7 @@ class InGameScene(Scene):
         random_color: bool = False,
         random_turn: bool = False,
         my_player_index: int = 0,
+        area_number: int | None = None,
     ) -> None:
         super().__init__(world)
 
@@ -69,6 +70,7 @@ class InGameScene(Scene):
         self.earned_card_idx_in_this_frame = 0
 
         self.my_player_index = my_player_index
+        self.area_number = area_number
 
         self.font = get_font(FontType.UI_BOLD, 20)
         self.other_player_entries = []
@@ -581,6 +583,8 @@ class InGameScene(Scene):
                 won_player = player
         if won_player is self.get_me():
             self.game_result = f"{won_player.name} Win!"
+            if self.area_number is not None:
+                self.world.story_clear_status.update_status(self.area_number, True)
         else:
             self.game_result = f"Lose! {won_player.name} Won!"
 

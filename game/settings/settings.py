@@ -41,7 +41,6 @@ class Settings(EventEmitter):
 
     def __init__(self) -> None:
         super().__init__()
-        pass
 
     def save(self) -> None:
         with open(SETTINGS_FILE_PATH, "w") as f:

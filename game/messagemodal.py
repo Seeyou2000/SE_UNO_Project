@@ -15,7 +15,7 @@ class MessageModal(Modal):
         self.display_text = Text(
             self.text,
             pygame.Vector2(0, 0),
-            get_font(FontType.UI_BOLD, 20),
+            self.font,
             pygame.Color("black"),
         )
 
