@@ -261,11 +261,12 @@ class InGameScene(Scene):
         from game.menu.menuscene import MenuScene
 
         menu_button = Button(
-            "Back to menu",
-            pygame.Rect(10, 10, 180, 60),
+            "메뉴로 돌아가기",
+            pygame.Rect(0, 0, 180, 60),
             self.font,
             lambda _: self.world.director.change_scene(MenuScene(self.world)),
         )
+        self.layout.add(menu_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 50))
         self.add_child(menu_button)
 
         center_base_sprite = Sprite(
@@ -605,13 +606,13 @@ class InGameScene(Scene):
         from game.menu.menuscene import MenuScene
 
         menu_button = Button(
-            "Back to menu",
-            pygame.Rect(10, 10, 180, 60),
+            "메뉴로 돌아가기",
+            pygame.Rect(0, 0, 180, 60),
             self.font,
             lambda _: self.world.director.change_scene(MenuScene(self.world)),
         )
         self.add_child(menu_button)
-        self.layout.add(menu_button, LayoutAnchor.CENTER, pygame.Vector2(0, 150))
+        self.layout.add(menu_button, LayoutAnchor.CENTER, pygame.Vector2(0, 100))
 
     def hide_text_ability(self, event: Event) -> None:
         if self.has_child(self.text_ability):

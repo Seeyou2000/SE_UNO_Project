@@ -29,7 +29,10 @@ class MultiLobbyScene(Scene):
 
     def place_ui(self, world: World) -> None:
         refresh_button = Button(
-            "새로고침", pygame.Rect(0, 0, 80, 60), self.font, lambda _: self.refresh_lobby()
+            "새로고침",
+            pygame.Rect(0, 0, 180, 60),
+            self.font,
+            lambda _: self.refresh_lobby(),
         )
         self.add(
             refresh_button,
@@ -37,25 +40,25 @@ class MultiLobbyScene(Scene):
         )
 
         change_menu_scene = Button(
-            "뒤로가기",
-            pygame.Rect(0, 0, 80, 60),
+            "메뉴로 돌아가기",
+            pygame.Rect(0, 0, 180, 60),
             self.font,
             self.change_to_menuscene,
         )
         self.add(
             change_menu_scene,
-            LayoutConstraint(LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-50, -50)),
+            LayoutConstraint(LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 50)),
         )
 
         create_room_button = Button(
             "방 만들기",
-            pygame.Rect(0, 0, 80, 60),
+            pygame.Rect(0, 0, 180, 60),
             self.font,
             lambda _: self.show_create_room_modal(),
         )
         self.add(
             create_room_button,
-            LayoutConstraint(LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-150, -50)),
+            LayoutConstraint(LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-50, -50)),
         )
 
         name_text = Text(
