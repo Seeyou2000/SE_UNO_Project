@@ -23,5 +23,5 @@ class ChangePlayerName(Message):
 
 @dataclass
 class PlayerNameChanged(Message):
-    sid: str = field(metadata=NON_EMPTY_STRING)
+    id: str = field(metadata=NON_EMPTY_STRING)
     new_name: str = field(metadata=NON_EMPTY_STRING)
