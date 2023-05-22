@@ -698,4 +698,5 @@ class InGameScene(Scene):
                 self.world.achievements.set_values(
                     win_less_10turn=[True, f"{datetime.now()}"]
                 )
-                self.world.win_less_10turn = True
+                self.world.achieve_clear = True
+                self.world.cleared_achieve_name = "win_less_10turn"

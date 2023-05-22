@@ -26,12 +26,13 @@ class World:
         self.target_fps = target_fps
         self.settings = Settings()
         self.settings.on("change", self.handle_settings_change)
+        self.achievements = Achievements()
+        self.achievements.on("clear", self.handle_achievements_clear)
         self.audio_player = AudioPlayer(self.settings)
         self.audio_player.play_bg_music()
-        self.achievements = Achievements()
-        self.win_less_10turn = False
+        self.achieve_clear = False
+        self.cleared_achieve_name = ""
         self.show_achieve_timer = 0.0
-        self.show_achieve = ""
 
         pygame.scrap.init()
         pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
@@ -55,17 +56,19 @@ class World:
         dt = self.clock.tick(self.target_fps) / 1000.0
         self.director.get_current().update(dt)
         tween.update(dt)
-        if self.win_less_10turn is True:  # 업적 최초 달성 여부 확인
-            self.show_achieve = "win_less_10turn"
+        if (
+            self.achieve_clear is True
+            and self.cleared_achieve_name == "win_less_10turn"
+        ):  # 업적 최초 달성 여부 확인
             self.show_achieve_timer += dt
             if self.show_achieve_timer >= 5:
                 self.reset_show_achieve()
-                self.win_less_10turn = False
+                self.achieve_clear = False
 
     def render(self) -> None:
         self.screen.fill(pygame.Color("#FFF6EF"))
         self.director.get_current().render(self.screen)
-        self.real_time_achieve_clear(self.show_achieve)
+        self.real_time_achieve_clear(self.cleared_achieve_name)
         pygame.display.flip()
 
     def handle_event(self) -> None:
@@ -97,6 +100,9 @@ class World:
     def handle_settings_change(self, _: Event) -> None:
         self.set_size(self.settings.window_size)
 
+    def handle_achievements_clear(self, _: Event) -> None:
+        print("a")
+
     def real_time_achieve_clear(self, achieve: str = "") -> None:
         screen_size = self.get_rect()
         if achieve == "win_less_10turn":
@@ -118,5 +124,5 @@ class World:
         )
 
     def reset_show_achieve(self) -> None:  # 실시간 업적표시 타이머&텍스트 초기화
-        self.show_achieve = ""
+        self.cleared_achieve_name = ""
         self.show_achieve_timer = 0
