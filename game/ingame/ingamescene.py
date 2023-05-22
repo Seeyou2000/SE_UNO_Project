@@ -39,6 +39,7 @@ from game.gameplay.gamestate import GameState, GameStateEventType
 from game.gameplay.player import Player
 from game.gameplay.timer import Timer
 from game.ingame.changecolormodal import ChangeColorModal
+from game.ingame.ingamepausescene import InGamePauseScene
 from game.ingame.nowcolorindicator import NowColorIndicator
 from game.ingame.otherplayerentry import OtherPlayerEntry
 from game.ingame.timerindicator import TimerIndicator
@@ -62,6 +63,7 @@ class InGameScene(Scene):
     ) -> None:
         super().__init__(world)
 
+        self.player_count = player_count
         self.deck_button = None
         self.more_ability_cards = more_ability_cards
         self.give_every_card_to_players = give_every_card_to_players
@@ -126,7 +128,7 @@ class InGameScene(Scene):
         self.flow.transition_to(
             PrepareFlowNode(
                 self.game_state,
-                [Player(name) for name in NAME[:player_count]],
+                [Player(name) for name in NAME[: self.player_count]],
                 self.more_ability_cards,
                 self.give_every_card_to_players,
             )
@@ -156,6 +158,11 @@ class InGameScene(Scene):
             self.try_draw()
         elif key == self.world.settings.keymap.get("uno"):
             self.flow.check_uno(self.game_state, self.get_me())
+
+        if key == pygame.K_ESCAPE:
+            self.world.director.change_scene(
+                InGamePauseScene(self.world, self.player_count, self)
+            )
 
         # 색 선택
         from game.gameplay.flow.endability import EndAbilityFlowNode
@@ -205,6 +212,7 @@ class InGameScene(Scene):
     def update(self, dt: float) -> None:
         super().update(dt)
         self.game_state.turn_timer.update(dt)
+
         for timer in self.delay_timers:
             timer.update(dt)
             if not timer.enabled:
@@ -268,6 +276,20 @@ class InGameScene(Scene):
         )
         self.layout.add(menu_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 50))
         self.add_child(menu_button)
+
+        pause_button = Button(
+            "일시정지",
+            pygame.Rect(0, 0, 180, 60),
+            self.font,
+            lambda _: self.world.director.change_scene(
+                InGamePauseScene(self.world, self.player_count, self)
+            ),
+        )
+
+        self.add(
+            pause_button,
+            LayoutConstraint(LayoutAnchor.TOP_RIGHT, pygame.Vector2(-50, 50)),
+        )
 
         center_base_sprite = Sprite(
             pygame.image.load("resources/images/center-base.png")
