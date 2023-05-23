@@ -14,21 +14,26 @@ from game.gameplay.gameparams import GameParams
 from game.gameplay.timer import Timer
 from game.room.slot import SlotStatusType
 from network.common.messages.common import PlayerNameChanged
-from network.common.messages.pregame import HumanRemoved, PreGameMessageType
-from network.common.messages.pregamehost import (AddAI, ClosePlayerSlot,
-                                                 HostMessageType, KickPlayer,
-                                                 OpenPlayerSlot, StartGame,
-                                                 SwapPlayerSlot)
+from network.common.messages.pregame import PreGameMessageType
+from network.common.messages.pregamehost import (
+    AddAI,
+    ClosePlayerSlot,
+    HostMessageType,
+    KickPlayer,
+    OpenPlayerSlot,
+    StartGame,
+    SwapPlayerSlot,
+)
 from network.common.models import PreGameRoom, PreGameRoomSlot
-from network.common.schema import parse_message
 
 
 class RoomScene(Scene):
     def __init__(self, world: World, room: PreGameRoom) -> None:
         super().__init__(world)
-        
+
         self.world.client.on("my_name_changed", self.change_player_name)
-        
+        self.world.client.on("other_name_changed", self.change_other_player_name)
+
         self.place_ui()
         self.refresh(room)
         self.world.client.on("room_state_changed", self.handle_refresh)
@@ -52,13 +57,13 @@ class RoomScene(Scene):
 
         self.font = get_font(FontType.UI_BOLD, 20)
 
-        password_text = Text(
+        self.password_text = Text(
             "PASSWORD",
             pygame.Vector2(50, 150),
             get_font(FontType.UI_BOLD, 16),
             pygame.Color("gray"),
         )
-        self.add_child(password_text)
+        self.add_child(self.password_text)
         self.password_input = TextInput(
             "",
             pygame.Rect(50, 190, 300, 80),
@@ -127,9 +132,7 @@ class RoomScene(Scene):
         )
         self.add_child(start_button)
         self.focus_controller.add(start_button)
-        
-        
-        
+
         self.player_name = Text(
             self.world.client.my_name,
             pygame.Vector2(),
@@ -140,7 +143,7 @@ class RoomScene(Scene):
             self.player_name,
             LayoutConstraint(LayoutAnchor.BOTTOM_LEFT, pygame.Vector2(60, -130)),
         )
-        
+
         self.change_name_button = Button(
             "플레이어 이름 변경",
             pygame.Rect(0, 0, 180, 60),
@@ -151,7 +154,6 @@ class RoomScene(Scene):
             self.change_name_button,
             LayoutConstraint(LayoutAnchor.BOTTOM_LEFT, pygame.Vector2(50, -50)),
         )
-        
 
     def handle_lobby_button(self, event: Event) -> None:
         from game.lobby.multilobbyscene import MultiLobbyScene
@@ -253,6 +255,9 @@ class RoomScene(Scene):
             return_button.is_visible = is_host_and_slot_occupied
             kick_button.is_visible = is_host_and_slot_occupied
 
+        self.password_text.is_visible = visible
+        self.password_input.is_visible = visible
+
     def refresh(self, room: PreGameRoom) -> None:
         me = [
             slot
@@ -289,7 +294,7 @@ class RoomScene(Scene):
 
     def start_game(self) -> None:
         self.io.emit(
-            HostMessageType.START_GAME,
+            HostMessageType.START_GAME.value,
             # TODO
             StartGame(GameParams()).to_dict(),
         )
@@ -344,7 +349,21 @@ class RoomScene(Scene):
     def show_change_player_name_modal(self) -> None:
         self.change_player_name_modal = ChangePlayerNameModal(self)
         self.open_modal(self.change_player_name_modal)
-        
+
     def change_player_name(self, event: Event) -> None:
         message: PlayerNameChanged = event.data["message"]
+
         self.player_name.set_text(message.new_name)
+
+        for i, player_button in enumerate(self.player_buttons):
+            slot = self.room.slots[i]
+            if slot.player is not None and slot.player.id == message.id:
+                player_button.set_text(message.new_name)
+
+    def change_other_player_name(self, event: Event) -> None:
+        message: PlayerNameChanged = event.data["message"]
+
+        for i, player_button in enumerate(self.player_buttons):
+            slot = self.room.slots[i]
+            if slot.player is not None and slot.player.id == message.id:
+                player_button.set_text(message.new_name)
