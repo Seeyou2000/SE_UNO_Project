@@ -17,6 +17,7 @@ AUDIO_PLAYER: AudioPlayer = AudioPlayer()
 
 
 class World:
+    screen: pygame.Surface
     director: SceneDirector
     clock: pygame.time.Clock
     target_fps: float
