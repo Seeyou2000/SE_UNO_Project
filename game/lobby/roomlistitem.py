@@ -10,8 +10,7 @@ from engine.text import Text
 from game.font import FontType, get_font
 from game.lobby.validatepasswordmodal import ValidatePasswordModal
 from game.messagemodal import MessageModal
-from network.client.client import clientio
-from network.common.messages import JoinRoom
+from network.common.messages.lobby import JoinRoom
 from network.common.models import LobbyRoom
 
 
@@ -127,7 +126,9 @@ class RoomListItem(BaseButton, GameObjectContainer):
         self.scene.open_modal(self.connect_fail_modal)
 
     def enter_room(self, password: str | None = None) -> None:
-        success = clientio.call("join_room", JoinRoom(self.room_id, password).to_dict())
+        success = self.scene.io.call(
+            "join_room", JoinRoom(self.room_id, password).to_dict()
+        )
         if success:
             pass  # 방 안에 들어가는 거(동훈이 코드 필요.)
         else:

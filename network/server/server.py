@@ -1,105 +1,109 @@
-from typing import cast
-from uuid import uuid4
+import asyncio
+import sys
+from collections.abc import Awaitable, Callable
+from time import monotonic_ns
 
-import socketio
 from aiohttp import web
 from loguru import logger
+from socketio import AsyncServer
 
-from network.common.messages import CreateRoom, JoinRoom, parse_message
-from network.server.room import PlayerLocation, PlayerSession, ServerRoomMetadata
+from network.common.messages.common import (
+    ChangePlayerName,
+    CommonMessageType,
+    Connected,
+    PlayerNameChanged,
+)
+from network.common.schema import parse_message
 
-sio = socketio.AsyncServer(async_mode="aiohttp")
 app = web.Application()
-sio.attach(app)
+io = AsyncServer(async_mode="aiohttp", logger=True)
+io.attach(app)
 
-room_meta_by_id: dict[str, ServerRoomMetadata] = {}
 
-
-@sio.event
+@io.event
 async def connect(sid: str, environ: dict, auth: dict) -> None:
-    logger.info(f"[CONNECT] {auth['username']}({sid})")
+    from network.server.common.user.userrepository import user_repository
 
-    # TODO: 재접속 처리
-    await sio.save_session(
-        sid,
-        {
-            "session": PlayerSession(
-                auth["username"],
-                sid,
-                PlayerLocation.LOBBY,
-            )
-        },
-    )
+    logger.info(f"[접속] {auth['username']}({sid})")
+    id = await user_repository.create(sid, auth["username"])
+    await io.emit(CommonMessageType.CONNECTED.value, Connected(id).to_dict(), to=sid)
 
 
-@sio.event
+@io.event
 async def disconnect(sid: str) -> None:
-    name = (await sio.get_session(sid))["session"].name
-    rooms = sio.rooms(sid)
-    for room in rooms:
-        print(room)
-    logger.info(f"[DISCONNECT] {name}({sid})")
+    from network.server.common.user.userrepository import user_repository
+
+    name = await user_repository.delete(sid)
+    logger.info(f"[접속 해제] {name}({sid})")
 
 
-@sio.event
-async def room_list(sid: str) -> None:
-    logger.info(f"{sid}")
-    return [
-        room_meta.convert_to_lobby().to_dict() for room_meta in room_meta_by_id.values()
-    ]
+@io.event
+async def change_player_name(sid: str, data: dict) -> None:
+    from network.server.common.room.roomrepository import room_repository
+    from network.server.common.user.userrepository import user_repository
 
-
-@sio.event
-async def create_room(sid: str, data: dict) -> bool:
-    message = parse_message(CreateRoom, data, "CREATE ROOM")
+    message = parse_message(ChangePlayerName, data, "이름 변경")
     if message is None:
         return False
 
-    new_room_id = str(uuid4())
+    user = await user_repository.get_by_sid(sid)
 
-    host_player_session = await sio.get_session(sid)
-    room_meta_by_id[new_room_id] = ServerRoomMetadata(
-        new_room_id, message.name, host_player_session["session"], message.password
-    )
-
-    logger.success(f"[CREATE ROOM] by: {sid}, room id: {new_room_id}")
-    await join_room_impl(sid, new_room_id, message.password)
-    return True
-
-
-@sio.event
-async def join_room(sid: str, data: dict) -> bool:
-    message = parse_message(JoinRoom, data, "JOIN ROOM")
-    if message is None:
-        return False
-
-    return await join_room_impl(sid, message.id, message.password)
+    user.name = message.new_name
+    room = room_repository.get_by_sid(user.sid)
+    if room is None:
+        await io.emit(
+            CommonMessageType.PLAYER_NAME_CHANGED.value,
+            PlayerNameChanged(user.id, user.name).to_dict(),
+            to=sid,
+        )
+    else:
+        await io.emit(
+            CommonMessageType.PLAYER_NAME_CHANGED.value,
+            PlayerNameChanged(user.id, user.name).to_dict(),
+            room=room.id,
+        )
 
 
-async def join_room_impl(sid: str, room_id: str, password: str) -> bool:
-    is_room_exist = room_id in room_meta_by_id.keys()
-    if not is_room_exist:
-        return False
+"""
+HACK: on-import side effect를 사용하는건 좋지 않은 일이지만,
+일을 가시적으로 나누기 위해 사용
+"""
+import network.server.ingame.handler  # noqa: E402, F401
+import network.server.lobby.handler  # noqa: E402, F401
+import network.server.pregame.handler  # noqa: E402, F401
 
-    is_same_password = room_meta_by_id[room_id].password == password
-
-    if is_same_password:
-        sio.enter_room(sid, room_id)
-
-        async with sio.session(sid) as session:
-            player = cast(PlayerSession, session["session"])
-            player.current_location = PlayerLocation.ROOM
-
-        logger.success(f"[JOIN ROOM] {sid} to {room_id}")
-        return True
-
-    if not is_room_exist:
-        logger.warning(f"[JOIN ROOM FAILED] No room({sid} to {room_id})")
-    elif not is_same_password:
-        logger.warning(f"[JOIN ROOM FAILED] Wrong password({sid} to {room_id})")
-
-    return False
+TARGET_SERVER_TICK = 1 / 20
 
 
-def run() -> None:
+async def loop() -> None:
+    from network.server.common.room.roomrepository import room_repository
+
+    # HACK: 싱글스레드지만 급하니까
+    game_time_seconds = monotonic_ns() / 1_000_000_000
+
+    while True:
+        current_time_seconds = monotonic_ns() / 1_000_000_000
+
+        while current_time_seconds - game_time_seconds > TARGET_SERVER_TICK:
+            room_repository.update_rooms(TARGET_SERVER_TICK)
+            game_time_seconds += TARGET_SERVER_TICK
+
+            if current_time_seconds - game_time_seconds > 4 * TARGET_SERVER_TICK:
+                game_time_seconds = current_time_seconds
+
+        await asyncio.sleep(TARGET_SERVER_TICK)
+
+
+task: asyncio.Task
+
+
+async def start_game_loop(_: web.Application) -> None:
+    global task
+    task = asyncio.create_task(loop())
+
+
+def run_server(task: Callable[[Awaitable[None]], None] | None = None) -> None:
+    if task is not None:
+        app.on_startup.append(task)
+    app.on_startup.append(start_game_loop)
     web.run_app(app, port=10008)

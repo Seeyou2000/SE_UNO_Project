@@ -73,7 +73,7 @@ class OtherPlayerEntry(GameObjectContainer):
             name_text.rect.topright = (size.x - 10, 10)
             self.next_text.rect.topleft = (10, 10)
             self.timer_display.rect.topright = (10, 10)
-            self.uno_text.rect.topright = (self.next_text.rect.right + 20, 10)
+            self.uno_text.rect.topleft = (self.next_text.rect.right + 20, 10)
         else:
             name_text.rect.top = 10
             name_text.rect.centerx = (size / 2).x

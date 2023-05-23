@@ -1,5 +1,8 @@
+import asyncio
+
 from engine.world import World
 from game.menu.menuscene import MenuScene
+from network.server.server import run_server
 
 
 def main() -> None:
@@ -9,7 +12,8 @@ def main() -> None:
     world.achievements.load()
     world.director.change_scene(MenuScene(world))
 
-    world.loop()
+    # run_server(world.loop)
+    asyncio.run(world.loop(None))
 
 
 if __name__ == "__main__":

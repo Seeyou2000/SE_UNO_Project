@@ -20,6 +20,7 @@ class Scene(GameObjectContainer):
     def __init__(self, world: World) -> None:
         super().__init__()
         self.world = world
+        self.io = world.client.io
         self.rect = self.world.get_rect()
         self.layout = Layout(world.get_rect())
         self.focus_controller = FocusController()
@@ -33,6 +34,9 @@ class Scene(GameObjectContainer):
         self.modal_layer = GameObjectContainer()
         self.modal_layer.order = 100
         self.add_child(self.modal_layer)
+
+    def cleanup(self) -> None:
+        pass
 
     def update(self, dt: float) -> None:
         self.layout.update(dt)
@@ -105,6 +109,8 @@ class SceneDirector:
         self._current_scene = None
 
     def change_scene(self, scene: Scene) -> None:
+        if self._current_scene is not None:
+            self._current_scene.cleanup()
         self._current_scene = scene
 
     def get_current(self) -> Scene:

@@ -11,8 +11,7 @@ from engine.text import Text
 from engine.textinput import TextInput
 from game.font import FontType, get_font
 from game.messagemodal import MessageModal
-from network.client.client import clientio
-from network.common.messages import CreateRoom
+from network.common.messages.lobby import CreateRoom, LobbyMessageType
 from network.common.models import LobbyRoom
 
 
@@ -116,13 +115,10 @@ class CreateRoomModal(Modal):
         if len(room_name.strip()) == 0:
             self.show_create_room_fail_modal()
 
-        success = clientio.call(
-            "create_room",
+        self.scene.io.call(
+            LobbyMessageType.CREATE_ROOM.value,
             CreateRoom(room_name, password).to_dict(),
         )
-        logger.info(success)
-        rooms: list[LobbyRoom] = clientio.call("room_list")
-        logger.info(rooms)
 
     def show_create_room_fail_modal(self) -> None:
         self.create_room_fail_modal = MessageModal(self.scene, "방 이름을 입력해주세요.")

@@ -1,4 +1,7 @@
+import random
+
 from engine.events.event import Event
+from game.constant import COLORS
 from game.gameplay.flow.abstractflownode import AbstractGameFlowNode
 from game.gameplay.gamestate import GameState
 
@@ -9,6 +12,13 @@ class StartTurnFlowNode(AbstractGameFlowNode):
 
     def enter(self) -> None:
         super().enter()
+
+        is_turn_five = self.game_state.turn.total % 5 == 0
+        if self.game_state.game_params.random_color and is_turn_five:
+            self.game_state.change_card_color(random.choice(COLORS))
+
+        if self.game_state.game_params.random_turn and is_turn_five:
+            self.game_state.reverse_turn_direction()
 
         player = self.game_state.get_current_player()
 
@@ -23,8 +33,6 @@ class StartTurnFlowNode(AbstractGameFlowNode):
             self.game_state.draw_card(player)
 
     def transition_to_draw_card(self, event: Event) -> None:
-        if self.game_state.is_attacked():
-            self.game_state.flush_attack_cards(self.game_state.get_current_player())
         from game.gameplay.flow.drawcard import DrawCardFlowNode
 
         self.machine.transition_to(DrawCardFlowNode(self.game_state))

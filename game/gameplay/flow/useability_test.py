@@ -1,5 +1,5 @@
 from game.constant import AbilityType
-from game.gameplay.aiplayer import AIPlayer
+from game.gameplay.aicontroller import AIController
 from game.gameplay.card import Card
 from game.gameplay.flow.gameflowmachine import GameFlowMachine
 from game.gameplay.flow.validatecard import ValidateCardFlowNode
@@ -39,7 +39,7 @@ def test_skip(flow_machine_2p: GameFlowMachine, game_state: GameState) -> None:
 
 
 def test_ai_skip(
-    flow_machine_2p_ai: tuple[GameFlowMachine, AIPlayer], game_state: GameState
+    flow_machine_2p_ai: tuple[GameFlowMachine, AIController], game_state: GameState
 ) -> None:
     flow, ai = flow_machine_2p_ai
     game_state.now_color = "red"

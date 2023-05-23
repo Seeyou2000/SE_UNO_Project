@@ -9,5 +9,7 @@ class DrawCardFlowNode(AbstractGameFlowNode):
 
     def enter(self) -> None:
         super().enter()
+        if self.game_state.is_attacked():
+            self.game_state.flush_attack_cards(self.game_state.get_current_player())
         self.game_state.draw_card(self.game_state.get_current_player())
         self.machine.transition_to(EndTurnFlowNode(self.game_state))
