@@ -46,7 +46,6 @@ class World:
         self.settings.on("change", AUDIO_PLAYER.handle_settings_change)
 
         self.audio_player = AUDIO_PLAYER
-        self.achievements = Achievements()
         self.story_clear_status = StoryClearStatus()
 
         self.client = Client()
