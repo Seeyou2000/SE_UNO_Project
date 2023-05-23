@@ -9,7 +9,6 @@ from engine.world import World
 from game.achievementscene import AchievementScene
 from game.lobby.lobbyscene import LobbyScene
 from game.menu.menubutton import MenuButton
-from game.networktest.networktestscene import NetworkTestScene
 from game.storyselect.storymodeselectscene import StoryModeSelectScene
 
 

@@ -9,8 +9,8 @@ from engine.events.event import Event
 
 ACHIEVEMENTS_FILE_PATH = "achievements.json"
 DEFAULT_ACHIEVEMENTS = {
-    "win_single_play": [False, None],
     "win_less_10turn": [False, None],
+    "win_single_play": [False, None],
     "win_never_use_ability": [False, None],
     "win_other_player_press_uno": [False, None],
     "???1": [False, None],
@@ -31,15 +31,15 @@ class Achievement:
 
 
 ACHIEVEMENT_DATA = {
-    "win_single_play": Achievement(
-        pygame.image.load("resources/images/unoarchieve_temp.jpg"),
-        "싱글플레이에서 승리",
-        "싱글플레이에서 1회 승리시 획득",
-    ),
     "win_less_10turn": Achievement(
         pygame.image.load("resources/images/unoarchieve_temp.jpg"),
         "10턴 안에 승리",
         "10턴 내로 승리시 획득",
+    ),
+    "win_single_play": Achievement(
+        pygame.image.load("resources/images/unoarchieve_temp.jpg"),
+        "싱글플레이에서 승리",
+        "싱글플레이에서 1회 승리시 획득",
     ),
     "win_never_use_ability": Achievement(
         pygame.image.load("resources/images/unoarchieve_temp.jpg"),
@@ -94,7 +94,7 @@ class Achievements(EventEmitter):
 
     def __init__(self) -> None:
         super().__init__()
-        pass
+        self.achieve_clear = False
 
     def save(self) -> None:
         with open(ACHIEVEMENTS_FILE_PATH, "w") as f:
@@ -134,13 +134,11 @@ class Achievements(EventEmitter):
         self,
         win_less_10turn: list | None = None,
     ) -> None:
-        before = win_less_10turn[0]
         self._win_less_10turn = (
             win_less_10turn if win_less_10turn is not None else self._win_less_10turn
         )
-        after = win_less_10turn[0]
         self.save()
-        if after is not before:
+        if self.achieve_clear is True:
             self.emit("clear", Event(target=self))
 
     def reset(self) -> None:

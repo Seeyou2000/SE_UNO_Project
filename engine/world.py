@@ -7,11 +7,11 @@ from engine.events.event import Event
 from engine.scene import SceneDirector
 from game.achievements import Achievements
 from game.audio_player import AudioPlayer
+from game.gameplay.timer import Timer
 from game.settings.settings import Settings
 
 
 class World:
-    screen: pygame.Surface
     director: SceneDirector
     clock: pygame.time.Clock
     target_fps: float
@@ -32,7 +32,8 @@ class World:
         self.audio_player.play_bg_music()
         self.achieve_clear = False
         self.cleared_achieve_name = ""
-        self.show_achieve_timer = 0.0
+        self.show_timer = Timer(5)
+        
 
         pygame.scrap.init()
         pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
@@ -56,14 +57,7 @@ class World:
         dt = self.clock.tick(self.target_fps) / 1000.0
         self.director.get_current().update(dt)
         tween.update(dt)
-        if (
-            self.achieve_clear is True
-            and self.cleared_achieve_name == "win_less_10turn"
-        ):  # 업적 최초 달성 여부 확인
-            self.show_achieve_timer += dt
-            if self.show_achieve_timer >= 5:
-                self.reset_show_achieve()
-                self.achieve_clear = False
+        self.show_timer.update(dt)
 
     def render(self) -> None:
         self.screen.fill(pygame.Color("#FFF6EF"))
@@ -101,7 +95,9 @@ class World:
         self.set_size(self.settings.window_size)
 
     def handle_achievements_clear(self, _: Event) -> None:
-        print("a")
+        self.show_timer.update(0)
+        self.show_timer = Timer(5)
+        self.show_timer.on("tick", self.reset_show_achieve)
 
     def real_time_achieve_clear(self, achieve: str = "") -> None:
         screen_size = self.get_rect()
@@ -123,6 +119,6 @@ class World:
             self.clear_achieve_text, (screen_size.right - 290, screen_size.bottom - 58)
         )
 
-    def reset_show_achieve(self) -> None:  # 실시간 업적표시 타이머&텍스트 초기화
+    def reset_show_achieve(self, event: Event) -> None:  # 실시간 업적표시 타이머&텍스트 초기화
         self.cleared_achieve_name = ""
-        self.show_achieve_timer = 0
+        self.achieve_clear = False
