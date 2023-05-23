@@ -134,4 +134,5 @@ dmypy.json
 # Project-specific
 settings.json
 achievements.json
+storyclearstatus.json
 .DS_Store

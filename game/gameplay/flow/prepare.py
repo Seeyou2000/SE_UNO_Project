@@ -9,14 +9,10 @@ class PrepareFlowNode(AbstractGameFlowNode):
         self,
         game_state: GameState,
         players: list[Player],
-        more_ability_cards: bool = False,
-        give_every_card_to_players: bool = False,
     ) -> None:
         super().__init__(game_state)
 
         self.players = players
-        self.more_ability_cards = more_ability_cards
-        self.give_every_card_to_players = give_every_card_to_players
 
     def enter(self) -> None:
         super().enter()
@@ -27,9 +23,9 @@ class PrepareFlowNode(AbstractGameFlowNode):
         self.game_state.discard_pile.cards.append(first_card)
         self.game_state.now_color = self.game_state.discard_pile.get_last().color
 
-        if self.more_ability_cards:
+        if self.game_state.game_params.more_ability_cards:
             self.give_more_ability_cards_to_ai()
-        elif self.give_every_card_to_players:
+        elif self.game_state.game_params.give_every_card_to_players:
             self.give_all_cards()
         else:
             self.give_players_initial_cards()
@@ -48,7 +44,7 @@ class PrepareFlowNode(AbstractGameFlowNode):
 
     def give_players_initial_cards(self) -> None:
         for player in self.players:
-            for _ in range(0, 7):
+            for _ in range(0, 5):
                 self.game_state.draw_card(player)
 
     def give_more_ability_cards_to_ai(self) -> None:

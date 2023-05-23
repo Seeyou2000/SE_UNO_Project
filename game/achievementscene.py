@@ -1,6 +1,7 @@
 import pygame
 
 from engine.button import Button
+from engine.layout import LayoutAnchor
 from engine.scene import Scene
 from engine.sprite import Sprite
 from engine.text import Text
@@ -31,11 +32,12 @@ class AchievementScene(Scene):
             self.is_cleared.append(True)
 
         menu_button = Button(
-            "Back to menu",
-            pygame.Rect(10, 10, 180, 60),
+            "메뉴로 돌아가기",
+            pygame.Rect(0, 0, 180, 60),
             self.font,
             lambda _: self.world.director.change_scene(MenuScene(self.world)),
         )
+        self.layout.add(menu_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(10, 10))
         self.add_child(menu_button)
 
         self.achieve_text1_cleartime_list = [

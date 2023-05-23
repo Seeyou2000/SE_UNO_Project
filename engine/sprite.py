@@ -12,5 +12,7 @@ class Sprite(GameObject):
         self.rect = surface.get_rect()
 
     def render(self, surface: pygame.Surface) -> None:
+        if not self.is_visible:
+            return
         super().render(surface)
         surface.blit(self.image, self.absolute_rect)

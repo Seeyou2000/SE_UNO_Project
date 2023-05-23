@@ -10,11 +10,14 @@ from engine.textinput import TextInput
 from engine.world import World
 from game.constant import NAME
 from game.font import FontType, get_font
+from game.gameplay.gameparams import GameParams
 
 
 class LobbyScene(Scene):
     def __init__(self, world: World) -> None:
         super().__init__(world)
+
+        default_player_name = "PLAYER"
 
         font = get_font(FontType.UI_BOLD, 20)
 
@@ -26,7 +29,7 @@ class LobbyScene(Scene):
         )
         self.add_child(name_text)
         self.name_input = TextInput(
-            NAME[0],
+            default_player_name,
             pygame.Rect(50, 340, 300, 80),
             get_font(FontType.UI_BOLD, 30),
             pygame.Color("black"),
@@ -58,18 +61,16 @@ class LobbyScene(Scene):
         from game.menu.menuscene import MenuScene
 
         menu_button = Button(
-            "Back to menu",
+            "메뉴로 돌아가기",
             pygame.Rect(0, 0, 180, 60),
             font,
             lambda _: self.world.director.change_scene(MenuScene(self.world)),
         )
-        self.layout.add(
-            menu_button, LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-250, -50)
-        )
+        self.layout.add(menu_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 50))
         self.add_child(menu_button)
 
         start_button = Button(
-            "Start",
+            "게임 시작",
             pygame.Rect(0, 0, 180, 60),
             font,
             self.start_with_player_count,

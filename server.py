@@ -1,4 +1,4 @@
-from network.server.server import run
+from network.server.server import run_server
 
 if __name__ == "__main__":
-    run()
+    run_server()

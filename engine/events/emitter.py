@@ -61,7 +61,10 @@ class EventEmitter:
         capturing: bool = True,
         bubbling: bool = False,
     ) -> None:
-        self.event_map[event_name].remove(EmitterHandler(handler, capturing, bubbling))
+        emitter_handler = EmitterHandler(handler, capturing, bubbling)
+
+        if emitter_handler in self.event_map[event_name]:
+            self.event_map[event_name].remove(emitter_handler)
 
     def emit(
         self,
