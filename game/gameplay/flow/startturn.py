@@ -33,8 +33,6 @@ class StartTurnFlowNode(AbstractGameFlowNode):
             self.game_state.draw_card(player)
 
     def transition_to_draw_card(self, event: Event) -> None:
-        if self.game_state.is_attacked():
-            self.game_state.flush_attack_cards(self.game_state.get_current_player())
         from game.gameplay.flow.drawcard import DrawCardFlowNode
 
         self.machine.transition_to(DrawCardFlowNode(self.game_state))

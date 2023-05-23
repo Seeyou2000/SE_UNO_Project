@@ -64,7 +64,11 @@ class AIController:
 
     def check_ai_uno(self) -> bool:
         for player in self.game_state.players:
-            if player is self.player and len(player.cards) == 2:
+            if (
+                player is self.player
+                and self.game_state.get_current_player() is self.player
+                and len(player.cards) == 2
+            ):
                 self.is_waiting_uno = True
                 self.uno_timer.set_duration(random.random() * 3 + 1)
                 self.uno_timer.reset()
