@@ -7,22 +7,18 @@ from engine.scene import Scene
 from engine.text import Text
 from engine.textinput import TextInput
 from engine.world import World
-from game.constant import NAME
+from game.changeplayernamemodal import ChangePlayerNameModal
 from game.font import FontType, get_font
 from game.gameplay.aicontroller import AIType
 from game.gameplay.gameparams import GameParams
 from game.gameplay.timer import Timer
 from game.room.slot import SlotStatusType
+from network.common.messages.common import PlayerNameChanged
 from network.common.messages.pregame import HumanRemoved, PreGameMessageType
-from network.common.messages.pregamehost import (
-    AddAI,
-    ClosePlayerSlot,
-    HostMessageType,
-    KickPlayer,
-    OpenPlayerSlot,
-    StartGame,
-    SwapPlayerSlot,
-)
+from network.common.messages.pregamehost import (AddAI, ClosePlayerSlot,
+                                                 HostMessageType, KickPlayer,
+                                                 OpenPlayerSlot, StartGame,
+                                                 SwapPlayerSlot)
 from network.common.models import PreGameRoom, PreGameRoomSlot
 from network.common.schema import parse_message
 
@@ -30,6 +26,9 @@ from network.common.schema import parse_message
 class RoomScene(Scene):
     def __init__(self, world: World, room: PreGameRoom) -> None:
         super().__init__(world)
+        
+        self.world.client.on("my_name_changed", self.change_player_name)
+        
         self.place_ui()
         self.refresh(room)
         self.world.client.on("room_state_changed", self.handle_refresh)
@@ -52,24 +51,6 @@ class RoomScene(Scene):
         )
 
         self.font = get_font(FontType.UI_BOLD, 20)
-
-        name_text = Text(
-            "PLAYER NAME",
-            pygame.Vector2(50, 300),
-            get_font(FontType.UI_BOLD, 16),
-            pygame.Color("gray"),
-        )
-        self.add_child(name_text)
-        self.name_input = TextInput(
-            self.world.client.my_name,
-            pygame.Rect(50, 340, 300, 80),
-            get_font(FontType.UI_BOLD, 30),
-            pygame.Color("black"),
-            10,
-            self.focus_controller,
-        )
-        self.add_child(self.name_input)
-        self.focus_controller.add(self.name_input)
 
         password_text = Text(
             "PASSWORD",
@@ -146,6 +127,31 @@ class RoomScene(Scene):
         )
         self.add_child(start_button)
         self.focus_controller.add(start_button)
+        
+        
+        
+        self.player_name = Text(
+            self.world.client.my_name,
+            pygame.Vector2(),
+            get_font(FontType.UI_BOLD, 30),
+            pygame.Color("black"),
+        )
+        self.add(
+            self.player_name,
+            LayoutConstraint(LayoutAnchor.BOTTOM_LEFT, pygame.Vector2(60, -130)),
+        )
+        
+        self.change_name_button = Button(
+            "플레이어 이름 변경",
+            pygame.Rect(0, 0, 180, 60),
+            self.font,
+            lambda _: self.show_change_player_name_modal(),
+        )
+        self.add(
+            self.change_name_button,
+            LayoutConstraint(LayoutAnchor.BOTTOM_LEFT, pygame.Vector2(50, -50)),
+        )
+        
 
     def handle_lobby_button(self, event: Event) -> None:
         from game.lobby.multilobbyscene import MultiLobbyScene
@@ -334,3 +340,11 @@ class RoomScene(Scene):
                     break
 
         return handler
+
+    def show_change_player_name_modal(self) -> None:
+        self.change_player_name_modal = ChangePlayerNameModal(self)
+        self.open_modal(self.change_player_name_modal)
+        
+    def change_player_name(self, event: Event) -> None:
+        message: PlayerNameChanged = event.data["message"]
+        self.player_name.set_text(message.new_name)
