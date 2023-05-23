@@ -10,7 +10,7 @@ from game.achievements import Achievements
 from game.audio_player import AudioPlayer
 from game.settings.settings import Settings
 from game.storyclearstatus import StoryClearStatus
-from network.client.client import clientio
+from network.client.client import Client
 
 AUDIO_PLAYER: AudioPlayer = AudioPlayer()
 
@@ -23,6 +23,7 @@ class World:
     settings: Settings
     achievements: Achievements
     story_clear_status: StoryClearStatus
+    client: Client
 
     def __init__(self, size: tuple[float, float], target_fps: float = 60) -> None:
         pygame.init()
@@ -40,6 +41,9 @@ class World:
         self.audio_player = AUDIO_PLAYER
         self.achievements = Achievements()
         self.story_clear_status = StoryClearStatus()
+
+        self.client = Client()
+        self.client.on("room_state_changed", self.handle_room_state_changed)
 
         pygame.scrap.init()
         pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
@@ -98,7 +102,15 @@ class World:
     def handle_settings_change(self, _: Event) -> None:
         self.set_size(self.settings.window_size)
 
+    def handle_room_state_changed(self, event: Event) -> None:
+        from game.room.roomscene import RoomScene
+
+        if isinstance(self.director.get_current(), RoomScene):
+            return
+
+        self.director.change_scene(RoomScene(self, event.data["room"]))
+
     def exit(self) -> None:
-        clientio.disconnect()
+        self.client.io.disconnect()
         pygame.quit()
         sys.exit()

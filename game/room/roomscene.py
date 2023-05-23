@@ -2,30 +2,46 @@ import pygame
 
 from engine.button import Button
 from engine.events.event import Event
-from engine.focus import FocusMoveDirection
-from engine.layout import LayoutAnchor
+from engine.layout import LayoutAnchor, LayoutConstraint
 from engine.scene import Scene
 from engine.text import Text
 from engine.textinput import TextInput
 from engine.world import World
 from game.constant import NAME
 from game.font import FontType, get_font
+from game.gameplay.aicontroller import AIType
+from game.gameplay.gameparams import GameParams
 from game.gameplay.timer import Timer
-from network.client.client import clientio, my_user_id
+from game.room.slot import SlotStatusType
 from network.common.messages.pregame import HumanRemoved, PreGameMessageType
+from network.common.messages.pregamehost import (
+    AddAI,
+    ClosePlayerSlot,
+    HostMessageType,
+    KickPlayer,
+    OpenPlayerSlot,
+    StartGame,
+    SwapPlayerSlot,
+)
+from network.common.models import PreGameRoom, PreGameRoomSlot
 from network.common.schema import parse_message
 
 
 class RoomScene(Scene):
-    def __init__(self, world: World, room_id: str) -> None:
+    def __init__(self, world: World, room: PreGameRoom) -> None:
         super().__init__(world)
+        self.place_ui()
+        self.refresh(room)
+        self.world.client.on("room_state_changed", self.handle_refresh)
 
-        clientio.on(PreGameMessageType.HUMAN_REMOVED.value, self.handle_human_removed)
+    def cleanup(self) -> None:
+        self.world.client.off("room_state_changed", self.handle_refresh)
 
+    def place_ui(self) -> None:
         self.on("mouse_down", self.drag())
         self.on("mouse_up", self.drop())
-        self.drag_data: str
-        self.drag_button: Button = None
+        self.drag_data: PreGameRoomSlot | None = None
+        self.drag_button: Button | None = None
         self.connect_failure_timer = Timer(2)
         self.text_connect_failure = Text(
             "", pygame.Vector2(), get_font(FontType.UI_BOLD, 20), pygame.Color("black")
@@ -45,7 +61,7 @@ class RoomScene(Scene):
         )
         self.add_child(name_text)
         self.name_input = TextInput(
-            NAME[0],
+            self.world.client.my_name,
             pygame.Rect(50, 340, 300, 80),
             get_font(FontType.UI_BOLD, 30),
             pygame.Color("black"),
@@ -74,41 +90,46 @@ class RoomScene(Scene):
         self.focus_controller.add(self.password_input)
 
         self.names = []
-        self.ai_buttons = []
-        self.player_slot_buttons = []
-        self.player_buttons = []
-        self.return_buttons = []
-        self.kick_buttons = []
+        self.add_ai_buttons: list[Button] = []
+        self.open_slot_buttons: list[Button] = []
+        self.player_buttons: list[Button] = []
+        self.kick_buttons: list[Button] = []
+        self.return_buttons: list[Button] = []
 
-        for i in range(0, 5):
+        for i in range(0, 6):
             button = Button(
                 "AI",
                 pygame.Rect(0, 0, 150, 100),
                 self.font,
+                lambda _, i=i: self.io.emit(
+                    HostMessageType.ADD_AI.value,
+                    AddAI(i, AIType.NORMAL.value).to_dict(),
+                ),
             )
-            self.layout.add(
+            self.add(
                 button,
-                LayoutAnchor.MIDDLE_RIGHT,
-                pygame.Vector2(-200, (i - 3) * 500 / 5),
+                LayoutConstraint(
+                    LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(-200, (i - 3) * 500 / 5)
+                ),
             )
-            self.focus_controller.add(button)
-            self.add_child(button)
-            self.ai_buttons.insert(i, button)
+            self.add_ai_buttons.insert(i, button)
 
             button = Button(
                 "슬롯 열기",
                 pygame.Rect(0, 0, 150, 100),
                 self.font,
-                self.show_buttons(i),
+                lambda _, i=i: self.io.emit(
+                    HostMessageType.OPEN_PLAYER_SLOT.value, OpenPlayerSlot(i).to_dict()
+                ),
             )
-            self.layout.add(
+            self.add(
                 button,
-                LayoutAnchor.MIDDLE_RIGHT,
-                pygame.Vector2(-50, (i - 3) * 500 / 5),
+                LayoutConstraint(
+                    LayoutAnchor.MIDDLE_RIGHT,
+                    pygame.Vector2(-50, (i - 3) * 500 / 5),
+                ),
             )
-            self.focus_controller.add(button)
-            self.add_child(button)
-            self.player_slot_buttons.insert(i, button)
+            self.open_slot_buttons.insert(i, button)
             self.create_player_button_set(i)
 
         lobby_button = Button(
@@ -118,9 +139,7 @@ class RoomScene(Scene):
         self.add_child(lobby_button)
 
         start_button = Button(
-            "게임 시작",
-            pygame.Rect(0, 0, 180, 60),
-            self.font,
+            "게임 시작", pygame.Rect(0, 0, 180, 60), self.font, lambda _: self.start_game()
         )
         self.layout.add(
             start_button, LayoutAnchor.BOTTOM_RIGHT, pygame.Vector2(-50, -50)
@@ -128,19 +147,14 @@ class RoomScene(Scene):
         self.add_child(start_button)
         self.focus_controller.add(start_button)
 
-    def handle_human_removed(self, data: dict) -> None:
-        message = parse_message(HumanRemoved, data, "사람 나감")
-
-        if message.id == my_user_id:
-            from game.lobby.multilobbyscene import MultiLobbyScene
-
-            self.world.director.change_scene(MultiLobbyScene(self.world))
-
     def handle_lobby_button(self, event: Event) -> None:
         from game.lobby.multilobbyscene import MultiLobbyScene
 
-        clientio.emit(PreGameMessageType.QUIT_ROOM.value)
+        self.io.emit(PreGameMessageType.QUIT_ROOM.value)
         self.world.director.change_scene(MultiLobbyScene(self.world))
+
+    def handle_refresh(self, event: Event) -> None:
+        self.refresh(event.data["room"])
 
     def update(self, dt: float) -> None:
         super().update(dt)
@@ -158,83 +172,121 @@ class RoomScene(Scene):
             self.font,
         )
         self.player_buttons.insert(i, button)
+        self.add(
+            button,
+            LayoutConstraint(
+                LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(-50, (i - 3) * 500 / 5)
+            ),
+        )
 
     def create_kick_button(self, i: int) -> None:
         button = Button(
-            "X",
-            pygame.Rect(0, 0, 30, 30),
+            "추방",
+            pygame.Rect(0, 0, 60, 30),
             self.font,
+            lambda _: self.io.emit(
+                HostMessageType.KICK_PLAYER.value, KickPlayer(i).to_dict()
+            ),
         )
         self.kick_buttons.insert(i, button)
+        self.add(
+            button,
+            LayoutConstraint(
+                LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(-55, (i - 3) * 500 / 5 - 30)
+            ),
+        )
 
     def create_return_button(self, i: int) -> None:
         button = Button(
-            "◀", pygame.Rect(0, 0, 30, 30), self.font, self.remove_buttons(i)
+            "<",
+            pygame.Rect(0, 0, 30, 30),
+            self.font,
+            lambda _: self.io.emit(
+                HostMessageType.CLOSE_PLAYER_SLOT.value, ClosePlayerSlot(i).to_dict()
+            ),
         )
         self.return_buttons.insert(i, button)
+        self.add(
+            button,
+            LayoutConstraint(
+                LayoutAnchor.MIDDLE_RIGHT, pygame.Vector2(-315, (i - 3) * 500 / 5 - 30)
+            ),
+        )
 
-    def show_buttons(self, i: int) -> None:
-        def handler(event: Event) -> None:
-            self.layout.add(
-                self.player_buttons[i],
-                LayoutAnchor.MIDDLE_RIGHT,
-                pygame.Vector2(-50, (i - 3) * 500 / 5),
+    def open_slot(self, i: int, is_host: bool) -> None:
+        self.player_buttons[i].set_text("+")
+        self.player_buttons[i].is_visible = True
+        self.return_buttons[i].is_visible = is_host
+
+        self.add_ai_buttons[i].is_visible = False
+        self.open_slot_buttons[i].is_visible = False
+
+    def close_slot(self, i: int, is_host: bool) -> None:
+        if is_host:
+            self.player_buttons[i].is_visible = False
+            self.return_buttons[i].is_visible = False
+
+            self.add_ai_buttons[i].is_visible = True
+            self.open_slot_buttons[i].is_visible = True
+        else:
+            self.player_buttons[i].set_text("닫힘")
+            self.player_buttons[i].is_visible = True
+
+    def set_host_control_visibility(self, visible: bool, host_index: int) -> None:
+        for slot_index, kick_button in enumerate(self.kick_buttons):
+            return_button = self.return_buttons[slot_index]
+            if slot_index == host_index:
+                return_button.is_visible = False
+                kick_button.is_visible = False
+                continue
+
+            is_host_and_slot_occupied = (
+                visible and self.room.slots[slot_index].player is not None
             )
-            self.focus_controller.add(self.player_buttons[i])
-            self.add_child(self.player_buttons[i])
-            self.layout.add(
-                self.kick_buttons[i],
-                LayoutAnchor.MIDDLE_RIGHT,
-                pygame.Vector2(-55, (i - 3) * 500 / 5 - 30),
-            )
-            self.focus_controller.add(self.kick_buttons[i])
-            self.add_child(self.kick_buttons[i])
-            self.layout.add(
-                self.return_buttons[i],
-                LayoutAnchor.MIDDLE_RIGHT,
-                pygame.Vector2(-315, (i - 3) * 500 / 5 - 30),
-            )
-            self.focus_controller.add(self.return_buttons[i])
-            self.add_child(self.return_buttons[i])
 
-            self.remove_child(self.ai_buttons[i])
-            self.layout.remove(self.ai_buttons[i])
-            self.focus_controller.remove(self.ai_buttons[i])
-            self.remove_child(self.player_slot_buttons[i])
-            self.layout.remove(self.player_slot_buttons[i])
-            self.focus_controller.remove(self.player_slot_buttons[i])
+            return_button.is_visible = is_host_and_slot_occupied
+            kick_button.is_visible = is_host_and_slot_occupied
 
-        return handler
+    def refresh(self, room: PreGameRoom) -> None:
+        me = [
+            slot
+            for slot in room.slots
+            if slot.player is not None and slot.player.id == self.world.client.my_id
+        ]
+        if len(me) == 0:
+            # TODO: 싱글일때 다르게
+            from game.lobby.multilobbyscene import MultiLobbyScene
 
-    def remove_buttons(self, i: int) -> None:
-        def handler(event: Event) -> None:
-            self.remove_child(self.player_buttons[i])
-            self.layout.remove(self.player_buttons[i])
-            self.focus_controller.remove(self.player_buttons[i])
-            self.remove_child(self.return_buttons[i])
-            self.layout.remove(self.return_buttons[i])
-            self.focus_controller.remove(self.return_buttons[i])
-            self.remove_child(self.kick_buttons[i])
-            self.layout.remove(self.kick_buttons[i])
-            self.focus_controller.remove(self.kick_buttons[i])
+            self.world.director.change_scene(MultiLobbyScene(self.world))
+            return
 
-            self.layout.add(
-                self.ai_buttons[i],
-                LayoutAnchor.MIDDLE_RIGHT,
-                pygame.Vector2(-200, (i - 3) * 500 / 5),
-            )
-            self.focus_controller.add(self.ai_buttons[i])
-            self.add_child(self.ai_buttons[i])
+        self.room = room
+        host_index = [
+            slot.slot_index
+            for slot in room.slots
+            if slot.player is not None and slot.player.id == room.host.id
+        ]
+        is_host = room.host.id == self.world.client.my_id
+        self.set_host_control_visibility(is_host, host_index[0])
 
-            self.layout.add(
-                self.player_slot_buttons[i],
-                LayoutAnchor.MIDDLE_RIGHT,
-                pygame.Vector2(-50, (i - 3) * 500 / 5),
-            )
-            self.focus_controller.add(self.player_slot_buttons[i])
-            self.add_child(self.player_slot_buttons[i])
+        for slot in room.slots:
+            if slot.status is not None:
+                if slot.status == SlotStatusType.CLOSE.value:
+                    self.close_slot(slot.slot_index, is_host)
+                else:
+                    self.open_slot(slot.slot_index, is_host)
+            else:
+                self.player_buttons[slot.slot_index].set_text(slot.player.name)
+                self.player_buttons[slot.slot_index].is_visible = True
+                self.add_ai_buttons[slot.slot_index].is_visible = False
+                self.open_slot_buttons[slot.slot_index].is_visible = False
 
-        return handler
+    def start_game(self) -> None:
+        self.io.emit(
+            HostMessageType.START_GAME,
+            # TODO
+            StartGame(GameParams()).to_dict(),
+        )
 
     def connect_failure(self) -> None:
         self.text_connect_failure.set_text("다른 플레이어가 접속할 슬롯이 없어 접속하지 못했습니다.")
@@ -249,9 +301,12 @@ class RoomScene(Scene):
     def drag(self) -> None:
         def handler(event: Event) -> None:
             # print(f"{event.target}")
-            for player_button in self.player_buttons:
-                if event.target is player_button and event.target.text != "+":
-                    self.drag_data = event.target.text
+            for slot_index, player_button in enumerate(self.player_buttons):
+                if (
+                    event.target is player_button
+                    and self.room.slots[slot_index].player is not None
+                ):
+                    self.drag_data = self.room.slots[slot_index]
                     self.drag_button = event.target
                     event.target.set_text("+")
                     break
@@ -261,26 +316,20 @@ class RoomScene(Scene):
     def drop(self) -> None:
         def handler(event: Event) -> None:
             # print(f"{event.target}")
-            for player_button in self.player_buttons:
+            for target_slot_index, player_button in enumerate(self.player_buttons):
                 if (
                     self.drag_button is not None
                     and event.target is player_button
-                    and self.drag_data != ""
-                    and event.target.text == "+"
+                    and self.drag_data is not None
+                    and target_slot_index != self.drag_data.slot_index
                 ):
-                    event.target.set_text(f"{self.drag_data}")
-                    self.drag_data = ""
-                    self.drag_button is None
-                    return handler
-
-            for player_button in self.player_buttons:
-                if (
-                    self.drag_button is not None
-                    and self.drag_button is player_button
-                    and self.drag_data != ""
-                ):
-                    self.drag_button.set_text(f"{self.drag_data}")
-                    self.drag_data = ""
+                    self.io.emit(
+                        HostMessageType.SWAP_PLAYER_SLOT.value,
+                        SwapPlayerSlot(
+                            self.drag_data.slot_index, target_slot_index
+                        ).to_dict(),
+                    )
+                    self.drag_data = None
                     self.drag_button = None
                     break
 

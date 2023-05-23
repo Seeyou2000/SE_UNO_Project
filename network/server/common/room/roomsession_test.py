@@ -1,9 +1,11 @@
+import asyncio
 from collections.abc import Generator
 from uuid import uuid4
 
 import pytest
+import pytest_asyncio
 
-from network.server.common.room.roomsession import RoomSession
+from network.server.common.room.roomsession import RoomSession, SlotStatusType
 from network.server.common.user.usersession import UserSession
 from network.server.server import io
 
@@ -20,9 +22,16 @@ def user() -> Generator[UserSession]:
     yield UserSession(str(uuid4()), "USER", "USER")
 
 
-@pytest.fixture
-def room(host: RoomSession) -> Generator[RoomSession]:
-    yield RoomSession(str(uuid4()), "TEST ROOM", host, None)
+@pytest_asyncio.fixture()
+async def room(monkeypatch: pytest.MonkeyPatch, host: RoomSession) -> RoomSession:
+    monkeypatch.setattr(io, "enter_room", lambda _, __: None)
+    session = RoomSession(str(uuid4()), "TEST ROOM", None, host)
+    tasks = asyncio.all_tasks()
+    current_task = asyncio.current_task()
+    tasks.remove(current_task)
+    await asyncio.wait(tasks)
+
+    return session
 
 
 def test_initial_player_count(room: RoomSession) -> None:
@@ -49,7 +58,7 @@ async def test_remove_player(
     monkeypatch.setattr(io, "enter_room", lambda _, __: None)
     await room.join(None, user)
 
-    await room.remove_human_player(user)
+    await room.remove_human_player(user, SlotStatusType.OPEN)
     current, _ = room.player_count
     assert current == 1
 
@@ -66,7 +75,7 @@ async def test_remove_host(
     monkeypatch.setattr(io, "enter_room", lambda _, __: None)
     await room.join(None, user)
 
-    await room.remove_human_player(host)
+    await room.remove_human_player(host, SlotStatusType.OPEN)
     current, _ = room.player_count
     assert current == 1
 

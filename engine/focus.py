@@ -1,10 +1,12 @@
 import abc
 from enum import Enum
+from typing import cast
 
 import pygame
 
 from engine.events.emitter import EventEmitter
 from engine.events.event import Event
+from engine.gameobject import GameObject
 
 
 class FocusMoveDirection(Enum):
@@ -105,7 +107,9 @@ class FocusController:
             return
 
         if direction in self._targets[target]:
-            return self._targets[target][direction]
+            candidate = self._targets[target][direction]
+            if not cast(GameObject, candidate).is_visible:
+                return self._targets[target][direction]
 
         closest = self.find_in_direction_vector(target, direction.value, farthest=False)
         if closest is not None:
@@ -120,7 +124,9 @@ class FocusController:
         self, target: Focusable, direction_vector: pygame.Vector2, farthest: bool
     ) -> Focusable | None:
         distance_sorted = sorted(
-            filter(lambda t: t is not target, self._targets.keys()),
+            filter(
+                lambda t: (t is not target) and (t.is_visible), self._targets.keys()
+            ),
             key=lambda other: pygame.Vector2(
                 other.absolute_rect.center
             ).distance_squared_to(target.absolute_rect.center),

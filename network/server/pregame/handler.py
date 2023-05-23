@@ -1,12 +1,15 @@
 from loguru import logger
 
+from game.gameplay.aicontroller import AIType
 from network.common.messages.pregamehost import (
     AddAI,
+    ClosePlayerSlot,
     KickPlayer,
     OpenPlayerSlot,
     StartGame,
     SwapPlayerSlot,
 )
+from network.server.common.room.roomsession import SlotStatusType
 from network.server.server import io
 from network.server.utils import parse_if_valid_room
 
@@ -20,7 +23,8 @@ async def quit_room(sid: str) -> None:
     room = room_repository.get_by_sid(sid)
     if room is None:
         logger.warning("방에 없는데 quit 요청을 날림")
-    await room.remove_human_player(user)
+        return
+    await room.remove_human_player(user, SlotStatusType.OPEN)
 
 
 @io.event
@@ -40,12 +44,7 @@ async def add_ai(sid: str, data: dict) -> None:
         logger.warning("잘못된 메시지 형식")
         return
 
-    index = message.slot_index
-
-    # if index in room.players:
-    #     logger.error("이미 접속된 자리에 AI를 추가하려고 함")
-    #     return
-    # room.players[index] = RoomAIPlayer(AIController(ai_type))
+    await room.add_ai_player(message.slot_index, AIType(message.ai_type))
 
 
 @io.event
@@ -56,6 +55,16 @@ async def open_player_slot(sid: str, data: dict) -> None:
         return
 
     await room.open_player_slot(message.slot_index)
+
+
+@io.event
+async def close_player_slot(sid: str, data: dict) -> None:
+    room, message = parse_if_valid_room(sid, ClosePlayerSlot, data, "슬롯 닫기")
+    if room is None or message is None:
+        logger.warning("잘못된 메시지 형식")
+        return
+
+    await room.close_player_slot(message.slot_index)
 
 
 @io.event
@@ -75,4 +84,4 @@ async def kick_player(sid: str, data: dict) -> None:
         logger.warning("잘못된 메시지 형식")
         return
 
-    await room.remove_player(message.slot_index)
+    await room.remove_player(message.slot_index, SlotStatusType.OPEN)

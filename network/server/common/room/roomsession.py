@@ -1,10 +1,10 @@
 import asyncio
 from enum import Enum
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from loguru import logger
 
-from game.gameplay.aicontroller import AIController
+from game.gameplay.aicontroller import AIController, AIType
 from game.gameplay.card import Card
 from game.gameplay.flow.changefieldcolor import ChangeFieldColorFlowNode
 from game.gameplay.flow.endability import EndAbilityFlowNode
@@ -20,20 +20,29 @@ from game.gameplay.gameparams import GameParams
 from game.gameplay.gamestate import GameState
 from game.gameplay.player import Player
 from network.common.messages.ingame import InGameMessageType
-from network.common.messages.pregame import HostChanged, PreGameMessageType
-from network.common.models import LobbyRoom
+from network.common.messages.pregame import (
+    HostChanged,
+    PreGameMessageType,
+    RoomStateChanged,
+)
+from network.common.models import (
+    LobbyRoom,
+    PreGameRoom,
+    PreGameRoomPlayer,
+    PreGameRoomSlot,
+)
 from network.server.common.room.models import RoomAIPlayer, RoomHumanPlayer, RoomPlayer
 from network.server.common.user.usersession import UserSession
 from network.server.ingame.gamesession import GameSession
 from network.server.server import io
 
 
-class SlotState(Enum):
+class SlotStatusType(Enum):
     CLOSE = 0
     OPEN = 1
 
 
-Slot = RoomAIPlayer | RoomHumanPlayer | SlotState
+Slot = RoomAIPlayer | RoomHumanPlayer | SlotStatusType
 
 
 class RoomSession:
@@ -43,6 +52,7 @@ class RoomSession:
     host_player: UserSession
     slots: dict[int, Slot]
     password: str | None
+    game_params: GameParams
     game_session: GameSession
 
     def __init__(
@@ -55,13 +65,15 @@ class RoomSession:
         self.id = id
         self.name = name
         self.host_player = host_player
-        self.slots = {i: SlotState.OPEN for i in range(0, self.MAX_PLAYER)}
-        self.slots[0] = RoomHumanPlayer(host_player)
+        self.slots = {i: SlotStatusType.OPEN for i in range(0, self.MAX_PLAYER)}
         io.enter_room(host_player.sid, self.id)
 
         self.password = password
         self.is_game_started = False
+        self.game_params = GameParams()
         self.game_session = None
+
+        asyncio.create_task(self.add_human_player(host_player))
 
     async def join(self, password: str | None, user: UserSession) -> bool:
         is_same_password = (
@@ -88,31 +100,68 @@ class RoomSession:
             logger.error("중복 입장")
             return
         available_index = 0
-        while self.slots[available_index] != SlotState.OPEN:
+        while self.slots[available_index] != SlotStatusType.OPEN:
             available_index += 1
         if available_index >= 6:
             return
         self.slots[available_index] = RoomHumanPlayer(user)
 
-        await io.emit("room_player_changed", room=self.id)
+        await io.emit(
+            PreGameMessageType.ROOM_STATE_CHANGED.value,
+            RoomStateChanged(self.as_pregame()).to_dict(),
+            room=self.id,
+        )
 
-    async def remove_human_player(self, user_to_remove: UserSession) -> None:
+    async def add_ai_player(self, slot_index: int, ai_type: AIType) -> None:
+        self.slots[slot_index] = RoomAIPlayer(str(uuid4()), AIController(ai_type))
+
+        await io.emit(
+            PreGameMessageType.ROOM_STATE_CHANGED.value,
+            RoomStateChanged(self.as_pregame()).to_dict(),
+            room=self.id,
+        )
+
+    async def remove_player(
+        self, slot_index: int, final_slot_status: SlotStatusType
+    ) -> None:
+        slot = self.slots[slot_index]
+        match slot:
+            case RoomHumanPlayer(user=user):
+                await self.remove_human_player(user, final_slot_status)
+            case RoomAIPlayer():
+                await self.remove_ai_player(slot_index, final_slot_status)
+
+    async def remove_ai_player(
+        self, slot_index: int, final_slot_status: SlotStatusType
+    ) -> None:
+        self.slots[slot_index] = final_slot_status
+
+        await io.emit(
+            PreGameMessageType.ROOM_STATE_CHANGED.value,
+            RoomStateChanged(self.as_pregame()).to_dict(),
+            room=self.id,
+        )
+
+    async def remove_human_player(
+        self, user_to_remove: UserSession, final_slot_status: SlotStatusType
+    ) -> None:
         from network.server.common.room.roomrepository import room_repository
 
-        def is_user_slot(slot: Slot) -> bool:
+        def is_user_to_remove_slot(slot: Slot) -> bool:
             match slot:
                 case RoomHumanPlayer(user=user) if user is user_to_remove:
                     return True
                 case _:
                     return False
 
-        self.slots = {
-            key: slot for key, slot in self.slots.items() if not is_user_slot(slot)
-        }
+        for slot_index, slot in self.slots.items():
+            if is_user_to_remove_slot(slot):
+                self.slots[slot_index] = final_slot_status
 
-        if user_to_remove is self.host_player:
+        human_players = self.get_human_players()
+
+        if user_to_remove.id == self.host_player.id:
             logger.info("방장이 나감")
-            human_players = self.get_human_players()
             if len(human_players) > 0:
                 self.host_player = human_players[0].user
 
@@ -121,10 +170,9 @@ class RoomSession:
             room_repository.delete(self.id)
             return
 
-        await io.emit(PreGameMessageType.HUMAN_ADDED, room=self.id)
         await io.emit(
-            PreGameMessageType.HOST_CHANGED,
-            HostChanged(self.host_player.id).to_dict(),
+            PreGameMessageType.ROOM_STATE_CHANGED.value,
+            RoomStateChanged(self.as_pregame()).to_dict(),
             room=self.id,
         )
 
@@ -232,13 +280,38 @@ class RoomSession:
             )
         )
 
-    def open_player_slot(self, slot_index: int) -> None:
+    async def open_player_slot(self, slot_index: int) -> None:
         match self.slots[slot_index]:
-            case SlotState.CLOSE:
-                self.slots[slot_index] = SlotState.OPEN
+            case SlotStatusType.CLOSE:
+                self.slots[slot_index] = SlotStatusType.OPEN
 
-    def swap_player_slot(self, left: int, right: int) -> None:
+        await io.emit(
+            PreGameMessageType.ROOM_STATE_CHANGED.value,
+            RoomStateChanged(self.as_pregame()).to_dict(),
+            room=self.id,
+        )
+
+    async def close_player_slot(self, slot_index: int) -> None:
+        match self.slots[slot_index]:
+            case SlotStatusType.OPEN:
+                self.slots[slot_index] = SlotStatusType.CLOSE
+            case RoomPlayer():
+                await self.remove_player(slot_index, SlotStatusType.CLOSE)
+
+        await io.emit(
+            PreGameMessageType.ROOM_STATE_CHANGED.value,
+            RoomStateChanged(self.as_pregame()).to_dict(),
+            room=self.id,
+        )
+
+    async def swap_player_slot(self, left: int, right: int) -> None:
         self.slots[left], self.slots[right] = self.slots[right], self.slots[left]
+
+        await io.emit(
+            PreGameMessageType.ROOM_STATE_CHANGED.value,
+            RoomStateChanged(self.as_pregame()).to_dict(),
+            room=self.id,
+        )
 
     @property
     def player_count(self) -> tuple[int, int]:
@@ -247,7 +320,7 @@ class RoomSession:
 
         for slot in self.slots.values():
             match slot:
-                case SlotState.OPEN:
+                case SlotStatusType.OPEN:
                     max_player_count += 1
                 case RoomPlayer():
                     current_player_count += 1
@@ -255,7 +328,7 @@ class RoomSession:
 
         return (current_player_count, max_player_count)
 
-    def convert_to_lobby(self) -> LobbyRoom:
+    def as_lobby(self) -> LobbyRoom:
         current, max = self.player_count
         return LobbyRoom(
             self.id,
@@ -265,6 +338,25 @@ class RoomSession:
             max,
             self.password is not None,
             self.is_game_started,
+        )
+
+    def as_pregame(self) -> PreGameRoom:
+        slots: list[PreGameRoomSlot] = []
+
+        for slot_index, v in self.slots.items():
+            match v:
+                case RoomPlayer():
+                    slots.append(
+                        PreGameRoomSlot(slot_index, player=v.as_pregame_room_player())
+                    )
+                case SlotStatusType.CLOSE | SlotStatusType.OPEN:
+                    slots.append(PreGameRoomSlot(slot_index, status=v.value))
+
+        return PreGameRoom(
+            self.id,
+            PreGameRoomPlayer(self.host_player.id, self.host_player.name, False, None),
+            slots,
+            self.game_params,
         )
 
     def __str__(self) -> str:

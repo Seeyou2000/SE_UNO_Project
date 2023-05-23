@@ -2,6 +2,7 @@ from typing import cast
 from uuid import uuid4
 
 from network.server.common.room.roomrepository import room_repository
+from network.server.common.room.roomsession import SlotStatusType
 from network.server.common.user.usersession import UserSession
 from network.server.server import io
 
@@ -30,7 +31,7 @@ class UserRepository:
         user = await user_repository.get_by_sid(sid)
         room = room_repository.get_by_sid(sid)
         if room is not None:
-            await room.remove_human_player(user)
+            await room.remove_human_player(user, SlotStatusType.OPEN)
         return user.name
 
 

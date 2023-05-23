@@ -15,7 +15,7 @@ from game.lobby.multilobbyscene import MultiLobbyScene
 from game.menu.menubutton import MenuButton
 from game.messagemodal import MessageModal
 from game.storyselect.storymodeselectscene import StoryModeSelectScene
-from network.client.client import clientio
+from network.client.client import REMOTE_SERVER_ADDRESS
 
 
 class MenuScene(Scene):
@@ -115,12 +115,12 @@ class MenuScene(Scene):
         super().render(surface)
 
     def change_to_multiplay(self, e: Event) -> None:
-        if self.try_connect("http://127.0.0.1:10008"):
+        if self.try_connect(REMOTE_SERVER_ADDRESS):
             self.world.director.change_scene(MultiLobbyScene(self.world))
 
     def try_connect(self, server_ip: str) -> bool:
         try:
-            clientio.connect(server_ip, auth={"username": "Test Player"})
+            self.io.connect(server_ip, auth={"username": self.world.client.my_name})
 
         except socketio.client.exceptions.ConnectionError as e:
             self.open_modal(MessageModal(self, "서버에 접속하지 못했습니다."))

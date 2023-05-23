@@ -35,7 +35,7 @@ from game.ingame.turndirectionindicator import TurnDirectionIndicator
 from network.client.client import clientio
 from network.client.localgamestate import LocalGameState
 from network.common.messages.ingame import ChangeColor, InGameMessageType
-from network.common.messages.pregamehost import StartGame
+from network.common.messages.pregamehost import HostMessageType, StartGame
 
 
 class InGameScene(Scene):
@@ -73,11 +73,6 @@ class InGameScene(Scene):
 
         self.setup_board()
         self.setup_network_handlers()
-
-        clientio.emit(
-            "start_game",
-            StartGame(game_params).to_dict(),
-        )
 
         self.world.settings.on("change", lambda _: self.update_cards_colorblind)
 

@@ -60,7 +60,7 @@ class RoomRepository:
             machine.update(dt)
 
     def as_lobby_rooms(self) -> list[LobbyRoom]:
-        return [room.convert_to_lobby().to_dict() for room in self._room_by_id.values()]
+        return [room.as_lobby().to_dict() for room in self._room_by_id.values()]
 
 
 room_repository = RoomRepository()

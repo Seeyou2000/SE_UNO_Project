@@ -7,9 +7,12 @@ from aiohttp import web
 from loguru import logger
 from socketio import AsyncServer
 
-from network.common.messages.common import (ChangePlayerName,
-                                            CommonMessageType, Connected,
-                                            PlayerNameChanged)
+from network.common.messages.common import (
+    ChangePlayerName,
+    CommonMessageType,
+    Connected,
+    PlayerNameChanged,
+)
 from network.common.schema import parse_message
 
 app = web.Application()
@@ -23,7 +26,7 @@ async def connect(sid: str, environ: dict, auth: dict) -> None:
 
     logger.info(f"[접속] {auth['username']}({sid})")
     id = await user_repository.create(sid, auth["username"])
-    await io.emit(CommonMessageType.CONNECTED.value, Connected(id).to_dict())
+    await io.emit(CommonMessageType.CONNECTED.value, Connected(id).to_dict(), to=sid)
 
 
 @io.event
@@ -32,32 +35,33 @@ async def disconnect(sid: str) -> None:
 
     name = await user_repository.delete(sid)
     logger.info(f"[접속 해제] {name}({sid})")
-    
+
+
 @io.event
 async def change_player_name(sid: str, data: dict) -> None:
     from network.server.common.room.roomrepository import room_repository
     from network.server.common.user.userrepository import user_repository
-    
+
     message = parse_message(ChangePlayerName, data, "이름 변경")
     if message is None:
         return False
 
     user = await user_repository.get_by_sid(sid)
-    
+
     user.name = message.new_name
     room = room_repository.get_by_sid(user.sid)
     if room is None:
         await io.emit(
-            CommonMessageType.PLAYER_NAME_CHANGED.value, 
-            PlayerNameChanged(user.id, user.name).to_dict(), to=sid
+            CommonMessageType.PLAYER_NAME_CHANGED.value,
+            PlayerNameChanged(user.id, user.name).to_dict(),
+            to=sid,
         )
     else:
         await io.emit(
-            CommonMessageType.PLAYER_NAME_CHANGED.value, 
-            PlayerNameChanged(user.id, user.name).to_dict(), room=room.id
+            CommonMessageType.PLAYER_NAME_CHANGED.value,
+            PlayerNameChanged(user.id, user.name).to_dict(),
+            room=room.id,
         )
-        
-    
 
 
 """
