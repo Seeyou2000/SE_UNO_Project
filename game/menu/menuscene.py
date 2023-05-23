@@ -120,6 +120,7 @@ class MenuScene(Scene):
 
     def try_connect(self, server_ip: str) -> bool:
         try:
+            print(f"Server IP: {server_ip}")
             self.io.connect(server_ip, auth={"username": self.world.client.my_name})
 
         except socketio.client.exceptions.ConnectionError as e:
