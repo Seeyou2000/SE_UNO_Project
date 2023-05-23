@@ -7,6 +7,7 @@ from game.gameplay.card import Card
 from game.gameplay.flow.changefieldcolor import ChangeFieldColorFlowNode
 from game.gameplay.flow.drawcard import DrawCardFlowNode
 from game.gameplay.flow.endability import EndAbilityFlowNode
+from game.gameplay.flow.gameend import GameEndFlowNode
 from game.gameplay.flow.gameflowmachine import (
     GameFlowMachine,
     GameFlowMachineEventType,
@@ -63,7 +64,11 @@ class AIController:
 
     def check_ai_uno(self) -> bool:
         for player in self.game_state.players:
-            if len(player.cards) == 2:
+            if player is self.player and len(player.cards) == 2:
+                self.is_waiting_uno = True
+                self.uno_timer.set_duration(random.random() * 3 + 1)
+                self.uno_timer.reset()
+            elif len(player.cards) == 1:
                 self.is_waiting_uno = True
                 self.uno_timer.set_duration(random.random() * 3 + 1)
                 self.uno_timer.reset()
@@ -117,6 +122,8 @@ class AIController:
         self.machine.transition_to(DrawCardFlowNode(self.game_state))
 
     def update(self, dt: float) -> None:
+        if isinstance(self.machine.current_node, GameEndFlowNode):
+            return
         time, duration = self.game_state.turn_timer.get_time()
 
         if self.is_waiting_uno:
