@@ -40,6 +40,7 @@ class AIController:
         self.is_enabled = False
         self.is_change_color_enabled = False
         self.is_waiting_uno = False
+        self.ai_time = 50
 
         transition_handlers = [
             on_transition(None, StartTurnFlowNode, self.check_ai_turn_start),
@@ -122,7 +123,7 @@ class AIController:
             self.uno_timer.update(dt)
         else:
             self.check_ai_uno()
-        if self.is_enabled and time > self.ai_time:
+        if time > self.ai_time:
             self.action()
             self.is_enabled = False
         if self.is_change_color_enabled and time > self.ai_time:

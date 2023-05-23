@@ -99,9 +99,6 @@ class InGameScene(Scene):
         ]
         self.flow = GameFlowMachine(ai_controllers)
         transition_handlers = [
-            lambda event: print(
-                f"\nFLOW: {type(event.before).__name__} -> {type(event.after).__name__}"  # noqa: E501
-            ),
             on_transition(PrepareFlowNode, None, self.setup_players),
             on_transition(
                 UseAbilityFlowNode,
@@ -212,6 +209,8 @@ class InGameScene(Scene):
 
     def update(self, dt: float) -> None:
         super().update(dt)
+        for controller in self.flow.ai_controllers:
+            controller.update(dt)
         self.game_state.turn_timer.update(dt)
         for timer in self.delay_timers:
             timer.update(dt)
