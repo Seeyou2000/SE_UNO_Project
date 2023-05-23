@@ -48,15 +48,15 @@ class PrepareFlowNode(AbstractGameFlowNode):
 
     def give_players_initial_cards(self) -> None:
         for player in self.players:
-            for _ in range(0, 1):
+            for _ in range(0, 7):
                 self.game_state.draw_card(player)
 
     def give_more_ability_cards_to_ai(self) -> None:
         cards = self.game_state.weighty_draw_cards()
 
-        for _ in range(0, 1):
+        for _ in range(0, 7):
             self.players[1].cards.append(cards.pop())
-        for _ in range(0, 1):
+        for _ in range(0, 7):
             self.players[0].cards.append(cards.pop())
 
         self.game_state.game_deck = Deck(cards)
