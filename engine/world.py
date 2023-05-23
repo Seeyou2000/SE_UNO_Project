@@ -36,12 +36,12 @@ class World:
         self.settings.on("change", self.handle_settings_change)
         self.achievements = Achievements()
         self.achievements.on("clear", self.handle_achievements_clear)
-        self.audio_player = AudioPlayer(self.settings)
+        global AUDIO_PLAYER
+        self.audio_player = AUDIO_PLAYER
         self.audio_player.play_bg_music()
         self.achieve_clear = False
         self.cleared_achieve_name = ""
         self.show_timer = Timer(5)
-        global AUDIO_PLAYER
         AUDIO_PLAYER.play_bg_music()
         self.settings.on("change", AUDIO_PLAYER.handle_settings_change)
 
