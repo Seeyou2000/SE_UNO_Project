@@ -17,7 +17,7 @@ from engine.text import Text
 from engine.world import World
 from game.constant import COLORS, NAME, AbilityType
 from game.font import FontType, get_font
-from game.gameplay.aicontroller import AIController
+from game.gameplay.aicontroller import AIController, AIType
 from game.gameplay.card import Card
 from game.gameplay.cardentitiy import CardEntity, create_card_sprite
 from game.gameplay.flow.changefieldcolor import ChangeFieldColorFlowNode
@@ -35,6 +35,7 @@ from game.gameplay.flow.prepare import PrepareFlowNode
 from game.gameplay.flow.startturn import StartTurnFlowNode
 from game.gameplay.flow.useability import UseAbilityFlowNode
 from game.gameplay.flow.validatecard import ValidateCardFlowNode
+from game.gameplay.gameparams import GameParams
 from game.gameplay.gamestate import GameState, GameStateEventType
 from game.gameplay.player import Player
 from game.gameplay.timer import Timer
@@ -63,10 +64,6 @@ class InGameScene(Scene):
         super().__init__(world)
 
         self.deck_button = None
-        self.more_ability_cards = more_ability_cards
-        self.give_every_card_to_players = give_every_card_to_players
-        self.random_color = random_color
-        self.random_turn = random_turn
         self.earned_card_idx_in_this_frame = 0
 
         self.my_player_index = my_player_index
@@ -77,7 +74,14 @@ class InGameScene(Scene):
         self.my_card_entities = []
         self.discarding_card_entities = []
         self.delay_timers = []
-        self.game_state = GameState()
+        self.game_state = GameState(
+            GameParams(
+                more_ability_cards,
+                give_every_card_to_players,
+                random_color,
+                random_turn,
+            )
+        )
         self.screen_size = self.world.get_rect()
         self.mytimer_display = None
         self.card_effect_timer = Timer(2)
@@ -89,7 +93,11 @@ class InGameScene(Scene):
         self.change_color_modal = None
 
         self.setup_base()
-        self.flow = GameFlowMachine()
+
+        ai_controllers = [
+            AIController(AIType.NORMAL) for _ in range(0, player_count - 1)
+        ]
+        self.flow = GameFlowMachine(ai_controllers)
         transition_handlers = [
             lambda event: print(
                 f"\nFLOW: {type(event.before).__name__} -> {type(event.after).__name__}"  # noqa: E501
@@ -127,10 +135,10 @@ class InGameScene(Scene):
             PrepareFlowNode(
                 self.game_state,
                 [Player(name) for name in NAME[:player_count]],
-                self.more_ability_cards,
-                self.give_every_card_to_players,
             )
         )
+        for i, controller in enumerate(ai_controllers):
+            controller.setup(self.game_state.players[i + 1], self.flow, self.game_state)
 
         self.world.settings.on("change", lambda _: self.update_cards_colorblind)
 
@@ -141,12 +149,12 @@ class InGameScene(Scene):
 
     def handle_color_change(self, event: TransitionEvent) -> None:
         is_turn_five = self.game_state.turn.total % 5 == 0
-        if self.random_color and is_turn_five:
+        if self.game_state.game_params.random_color and is_turn_five:
             self.game_state.change_card_color(random.choice(COLORS))
 
     def handle_reverse_change(self, event: TransitionEvent) -> None:
         is_turn_five = self.game_state.turn.total % 5 == 0
-        if self.random_turn and is_turn_five:
+        if self.game_state.game_params.random_turn and is_turn_five:
             self.game_state.reverse_turn_direction()
 
     def handle_keydown(self, event: Event) -> None:
@@ -212,9 +220,6 @@ class InGameScene(Scene):
 
         self.earned_card_idx_in_this_frame = 0
 
-        for ai in self.ai:
-            ai.update(dt)
-
         self.card_effect_timer.update(dt)
 
         update_horizontal_linear_overlapping_layout(
@@ -261,12 +266,12 @@ class InGameScene(Scene):
         from game.menu.menuscene import MenuScene
 
         menu_button = Button(
-            "메뉴로 돌아가기",
+            "일시정지",
             pygame.Rect(0, 0, 180, 60),
             self.font,
             lambda _: self.world.director.change_scene(MenuScene(self.world)),
         )
-        self.layout.add(menu_button, LayoutAnchor.TOP_LEFT, pygame.Vector2(50, 50))
+        self.layout.add(menu_button, LayoutAnchor.TOP_RIGHT, pygame.Vector2(-50, -50))
         self.add_child(menu_button)
 
         center_base_sprite = Sprite(
@@ -376,11 +381,6 @@ class InGameScene(Scene):
 
     def setup_other_players(self) -> None:
         players = self.game_state.players
-        me = self.get_me()
-        self.ai = [
-            AIController(player, self.flow, self.game_state)
-            for player in filter(lambda x: x is not me, players)
-        ]
         layout_infos = [  # 플레이어 위치에서 시계방향으로
             (LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(0, 80)),
             (LayoutAnchor.MIDDLE_LEFT, pygame.Vector2(0, -80)),
@@ -658,6 +658,8 @@ class InGameScene(Scene):
             card_entity.set_colorblind(self.world.settings.is_colorblind)
             self.focus_controller.add(card_entity)
             card_entity.on("focus", self.handle_focus_sound)
+            card_entity.on("mouse_enter", lambda _: card_entity.focus())
+            card_entity.on("mouse_leave", lambda _: card_entity.unfocus())
         else:
             self.add_child(card_entity)
             self.set_order(card_entity, 4)
